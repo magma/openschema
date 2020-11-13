@@ -1,6 +1,8 @@
 const express = require(`express`)
 const morgan = require(`morgan`);
 const helmet = require(`helmet`);
+const fs = require('fs')
+const https = require('https')
 require('dotenv').config() //Pull process.env values declared in .env
 
 const routes = require("./routes");
@@ -16,7 +18,9 @@ app.use(express.json()) //Populate req.body from JSON body
 //Our app routes
 app.use(routes)
 
-//TODO: Create a self-signed certificate and use HTTPS instead
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`)
-})
+//Start listening using a self-signed certificate for HTTPS
+https.createServer({
+    key: fs.readFileSync('keys/server.key'),
+    cert: fs.readFileSync('keys/server.crt')
+  }, app)
+  .listen(port, () => console.log(`App listening at https://localhost:${port}`))

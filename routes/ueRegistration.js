@@ -8,7 +8,7 @@ var router = express.Router()
 
 router.post('/register', am(async (req, res) => {
     //Trim request body to only expected parameters
-    req.body = _.pick(req.body, ['uuid', 'key'])
+    req.body = _.pick(req.body, ['uuid', 'publicKey'])
 
     let ueRegistered = await sendRegister(req.body)
     if (ueRegistered) {
@@ -65,7 +65,7 @@ const sendRegister = async (ueData) => {
             }
         },
         // id: UE_BASE_ID + currentCount,
-        id: UE_BASE_ID +ueData.uuid.replace(/-/g, ""),
+        id: UE_BASE_ID + ueData.uuid.replace(/-/g, ""),
         magmad: {
             autoupgrade_enabled: true,
             autoupgrade_poll_interval: 300,
@@ -84,10 +84,13 @@ const sendRegister = async (ueData) => {
         // console.log(data)
         console.log(`UE registration was successful`)
         success = true
-        ueCount++
+        // ueCount++
     } catch (error) {
-        // console.log(error);
-        console.log(error.response.data);
+        if (error.response) {
+            console.log(error.response.data);
+        } else {
+            console.log(error);
+        }
     }
 
     return success
