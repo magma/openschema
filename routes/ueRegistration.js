@@ -12,10 +12,14 @@ router.post('/register', am(async (req, res) => {
 
     let ueRegistered = await sendRegister(req.body)
     if (ueRegistered) {
-        res.status(200).send('Registered Successfully')
+        res.status(200).json({
+            message: 'Registered Successfully'
+        })
     } else {
         //TODO: Return different responses depending on error received?
-        res.status(400).send('Registration Failed')
+        res.status(400).json({
+            message: 'Registration Failed'
+        })
     }
 }))
 
