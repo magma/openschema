@@ -12,15 +12,18 @@ router.post('/register', am(async (req, res) => {
 
     console.log(req.body)
 
-    let ueRegistered = await sendRegister(req.body)
-    if (ueRegistered) {
+    let registrationResult = await sendRegister(req.body)
+    if (registrationResult === REGISTRATION_SUCCESS) {
         res.status(200).json({
-            message: 'Registered Successfully'
+            message: 'Registration was successful'
+        })
+    } else if (registrationResult === REGISTRATION_DUPLICATE) {
+        res.status(409).json({
+            message: 'UUID is already registered'
         })
     } else {
-        //TODO: Return different responses depending on error received?
         res.status(400).json({
-            message: 'Registration Failed'
+            message: 'Registration failed'
         })
     }
 }))
@@ -44,8 +47,12 @@ const customAxios = axios.create({
     })
 })
 
+const REGISTRATION_SUCCESS = 0
+const REGISTRATION_DUPLICATE = 1
+const REGISTRATION_FAILED = 2
+
 const sendRegister = async (ueData) => {
-    let success = false
+    let result = REGISTRATION_FAILED
 
     //Check if the count for IDs has already been initialized
     // if (ueCount == UE_ID_ERROR_NOT_INITIALIZED) {
@@ -89,17 +96,23 @@ const sendRegister = async (ueData) => {
         // const data = response.data
         // console.log(data)
         console.log(`UE registration was successful`)
-        success = true
+        result = REGISTRATION_SUCCESS
         // ueCount++
     } catch (error) {
         if (error.response) {
             console.log(error.response.data);
+
+            //TODO: Currently the server responds with 400 BAD REQUEST. Comparing this string is the only way to determine if UE has already been registered.
+            let duplicateMessage = `device ${body.device.hardware_id} is already mapped to gateway ${body.id}`
+            if (duplicateMessage === error.response.data.message) {
+                result = REGISTRATION_DUPLICATE
+            }
         } else {
             console.log(error);
         }
     }
 
-    return success
+    return result
 }
 
 // const getIdNumber = async () => {
