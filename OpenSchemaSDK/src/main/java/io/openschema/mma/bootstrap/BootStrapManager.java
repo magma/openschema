@@ -1,6 +1,7 @@
 package io.openschema.mma.bootstrap;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.spongycastle.operator.OperatorCreationException;
 
@@ -42,6 +43,8 @@ import io.openschema.mma.identity.AccessGatewayID;
  *
  */
 public class BootStrapManager {
+
+    private static final String TAG = "BootStrapManager";
 
     private static final String KEY_STORE = "AndroidKeyStore";
     private static final String HW_KEY_ALIAS = "";
@@ -98,6 +101,7 @@ public class BootStrapManager {
     public void bootstrapNow(String controllerAddress, int controllerPort)
             throws NoSuchAlgorithmException, KeyManagementException, IOException, OperatorCreationException, UnrecoverableKeyException, CertificateException, SignatureException, KeyStoreException, InvalidKeyException {
 
+        Log.d(TAG, "MMA: Starting bootstrap process");
         //final SSLContext sslContext = SSLContext.getInstance("TLS");
         //sslContext.init(null, trustManagerFactory.getTrustManagers(), new java.security.SecureRandom());
 
@@ -108,17 +112,16 @@ public class BootStrapManager {
                 controllerPort,
                 mSSLContext.getSocketFactory());
 
-        BootstrapperGrpc.BootstrapperBlockingStub stub = BootstrapperGrpc.newBlockingStub(bootStrapChannel);
+        BootstrapperGrpc.BootstrapperBlockingStub blockingStub = BootstrapperGrpc.newBlockingStub(bootStrapChannel);
 
         AccessGatewayID hw_id = AccessGatewayID.newBuilder()
                 .setId(mIdentity.getUUID())
                 .build();
 
         // 1) get challenge
-        Challenge challenge = stub.getChallenge(hw_id);
-
+        Log.d(TAG, "MMA: Requesting challenge...");
+        Challenge challenge = blockingStub.getChallenge(hw_id);
         RandSByteString rands = KeyHelper.getRandS(challenge);
-
         CertSignRequest csr = new CertSignRequest(KeyHelper.generateRSAKeyPairForAlias(GW_KEY_ALIAS), mIdentity.getUUID());
 
         ChallengeResponse response = new ChallengeResponse(
@@ -131,14 +134,13 @@ public class BootStrapManager {
                 rands.getS());
 
         // 2) send CSR to sign
-        Certificate certificate = stub.requestSign(response.getResponse());
-
+        Log.d(TAG, "MMA: Sending csr...");
+        Certificate certificate = blockingStub.requestSign(response.getResponse());
 
         // 3) Add cert to keystore for mutual TLS and use for calling Collect() and Push()
-
-
         storeSignedCertificate(certificate);
 
+        Log.d(TAG, "MMA: Bootstrapping was successful");
         mBootStrapSuccess = true;
 
 //        kmf.init(keyStore, password.toCharArray());

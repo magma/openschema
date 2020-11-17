@@ -39,8 +39,9 @@ public class HardwareKey {
     private String loadKey(String alias) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         KeyStore ks = KeyStore.getInstance(KEY_STORE);
         ks.load(null);
-        if (ks.getCertificate(alias) != null) {
-            return KeyHelper.getPubKeyString(ks.getCertificate(alias).getPublicKey());
+        Certificate cert = ks.getCertificate(alias);
+        if (cert != null) {
+            return KeyHelper.getPubKeyString(cert.getPublicKey());
         }
 
         return null;

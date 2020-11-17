@@ -1,6 +1,7 @@
 package io.openschema.mma;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.spongycastle.operator.OperatorCreationException;
 
@@ -22,6 +23,8 @@ import io.openschema.mma.networking.RetrofitService;
 import io.openschema.mma.register.RegistrationManager;
 
 public class MobileMetricsAgent {
+
+    private static final String TAG = "MobileMetricsAgent";
 
     private String mControllerAddress;
     private String mBoostStrapperAddress;
@@ -47,7 +50,9 @@ public class MobileMetricsAgent {
         mAppContext = mmaBuilder.mAppContext;
     }
 
+    //Will register the UE & run the bootstrap process for GRPC
     public void init() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
+        Log.d(TAG, "MMA: Initializing MMA...");
         Identity identity = new Identity(mAppContext);
 
         RetrofitService mRetrofitService = RetrofitService.getService(mAppContext);
@@ -56,6 +61,18 @@ public class MobileMetricsAgent {
 
         mRegistrationManager = new RegistrationManager(mAppContext, identity, mBackendApi);
         mBootStrapManager = new BootStrapManager(mAppContext, identity);
+
+
+        //TODO: spawn a background thread instead? Bootstrapping process is currently blocking the main thread
+        mRegistrationManager.setOnRegisterListener(() -> {
+            try {
+                mBootStrapManager.bootstrapNow(mBoostStrapperAddress, mControllerPort);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        mRegistrationManager.register();
     }
 
     public String getControllerAddress() {
@@ -72,15 +89,6 @@ public class MobileMetricsAgent {
 
     public int getControllerPort() {
         return mControllerPort;
-    }
-
-    //TODO: Merge register & bootstrap into init(), they need to be called sequentially
-    public void register() {
-        mRegistrationManager.register();
-    }
-
-    public void bootstrap() throws IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, InvalidKeyException, SignatureException, OperatorCreationException, KeyStoreException, KeyManagementException {
-        mBootStrapManager.bootstrapNow(mControllerAddress, mControllerPort);
     }
 
 

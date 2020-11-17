@@ -32,8 +32,6 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             mma.init();
-//            mma.register();
-            mma.bootstrap();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -34,22 +34,46 @@ public class RegistrationManager {
     private Identity mIdentity;
     private BackendApi mBackendApi;
 
+    private OnRegisterListener mListener = null;
+
     public RegistrationManager(Context context, Identity identity, BackendApi backendApi) {
         mIdentity = identity;
         mBackendApi = backendApi;
     }
 
+    //Send POST request to register the UE as a gateway in magma
     public void register() {
+        Log.d(TAG, "MMA: Sending registration request.");
         mBackendApi.register(new RegisterRequest(mIdentity.getUUID(), mIdentity.getPublicKey()))
                 .enqueue(new Callback<BaseResponse>() {
                     @Override
-                    public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
-                        Log.d(TAG, "onResponse: " + response.body().getMessage());
+                    public void onResponse(Call<BaseResponse> call, Response<BaseResponse> res) {
+                        if (res.isSuccessful() && mListener != null) {
+                            Log.d(TAG, "MMA: onResponse success: " + res.body().getMessage());
+                            Log.d(TAG, "MMA: UE registration was successful.");
+                            mListener.OnRegister();
+                        } else {
+                            String errorMessage = BaseResponse.getErrorMessage(res.errorBody());
+                            Log.d(TAG, "MMA: onResponse failure (" + res.code() + "): " + errorMessage);
+
+                            //If the user is already registered, proceed to bootstrapping as normal
+                            if (res.code() == 409) {
+                                mListener.OnRegister();
+                            }
+                        }
                     }
                     @Override
                     public void onFailure(Call<BaseResponse> call, Throwable t) {
-                        Log.d(TAG, "onFailure: " + t.toString());
+                        Log.d(TAG, "MMA: onFailure: " + t.toString());
                     }
                 });
+    }
+
+    public void setOnRegisterListener(OnRegisterListener listener) {
+        mListener = listener;
+    }
+
+    public interface OnRegisterListener {
+        void OnRegister();
     }
 }

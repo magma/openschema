@@ -56,11 +56,12 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     // for grpc
-    implementation 'io.grpc:grpc-netty-shaded:1.30.2'
-    implementation 'io.grpc:grpc-okhttp:1.30.2'
-    implementation 'io.grpc:grpc-protobuf:1.30.2'
-    implementation 'io.grpc:grpc-stub:1.30.2'
-    implementation 'io.grpc:grpc-cronet:1.30.2'
+    def grpc_version = "1.33.1"
+    implementation "io.grpc:grpc-netty-shaded:$grpc_version"
+    implementation "io.grpc:grpc-okhttp:$grpc_version"
+    implementation "io.grpc:grpc-protobuf:$grpc_version"
+    implementation "io.grpc:grpc-stub:$grpc_version"
+    implementation "io.grpc:grpc-cronet:$grpc_version"
     implementation 'com.google.android.gms:play-services-cronet:16.0.0'
     compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // necessary for Java 9+
 

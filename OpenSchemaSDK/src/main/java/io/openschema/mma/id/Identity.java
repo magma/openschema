@@ -23,9 +23,8 @@ public class Identity {
     public Identity(Context context)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, InvalidAlgorithmParameterException, NoSuchProviderException {
         mUUID = new UUID(context).getUUID();
-        // TODO: Store the PK string to make sure same key is sent is used for registration and bootstrapping
         mPublicKey = new HardwareKey().getHwPublicKey();
-        Log.d("TestIdentity", mUUID + "\n" + mPublicKey);
+        Log.d("MMA: TestIdentity", mUUID + "\n" + mPublicKey);
     }
 
     public String getUUID() {
