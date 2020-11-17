@@ -10,6 +10,8 @@ router.post('/register', am(async (req, res) => {
     //Trim request body to only expected parameters
     req.body = _.pick(req.body, ['uuid', 'publicKey'])
 
+    console.log(req.body)
+
     let ueRegistered = await sendRegister(req.body)
     if (ueRegistered) {
         res.status(200).json({
@@ -64,7 +66,7 @@ const sendRegister = async (ueData) => {
         device: {
             hardware_id: ueData.uuid,
             key: {
-                key: ueData.key,
+                key: ueData.publicKey,
                 key_type: "SOFTWARE_ECDSA_SHA256"
             }
         },
