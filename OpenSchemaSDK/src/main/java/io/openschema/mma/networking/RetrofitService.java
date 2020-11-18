@@ -2,6 +2,7 @@ package io.openschema.mma.networking;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Base64;
 import android.util.Log;
 
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -50,10 +52,14 @@ public class RetrofitService {
 
     public BackendApi getApi() { return mApi;}
 
-    public void initApi(Context context, String baseURL, int certificateResId) {
+    public void initApi(Context context, String baseURL, int certificateResId, String username, String password) {
+
+        //Build credentials string for Basic Auth
+        String basicCredentials = "Basic " + Base64.encodeToString((username + ":" + password).getBytes(), Base64.NO_WRAP);
+
         OkHttpClient httpClient = certificateResId == -1 ?
-                getSafeHttpClient(context) :
-                getUnsafeHttpClient(context, certificateResId);
+                getSafeHttpClient(context, basicCredentials) :
+                getUnsafeHttpClient(context, certificateResId, basicCredentials);
 
         mApi = new Retrofit.Builder()
                 .baseUrl(baseURL)
@@ -63,18 +69,17 @@ public class RetrofitService {
                 .create(BackendApi.class);
     }
 
-    private OkHttpClient getSafeHttpClient(Context context) {
+    private OkHttpClient getSafeHttpClient(Context context, String credentials) {
         return new OkHttpClient.Builder()
-                //TODO: Need to add an authentication method
-//                .addInterceptor(chain -> {
-//                    Request req = chain.request().newBuilder().addHeader("Authorization", "Bearer " + mToken).build();
-//                    return chain.proceed(req);
-//                })
+                .addInterceptor(chain -> {
+                    Request req = chain.request().newBuilder().addHeader("Authorization", credentials).build();
+                    return chain.proceed(req);
+                })
                 .build();
     }
 
-    //Unsafe httpclient that allows a self-signed certificate
-    private OkHttpClient getUnsafeHttpClient(Context context, int certificateResId) {
+    //Unsafe httpclient that accepts a server using a self-signed certificate
+    private OkHttpClient getUnsafeHttpClient(Context context, int certificateResId, String credentials) {
         //Load our self-signed certificate
         SSLContext sslContext = null;
         try {
@@ -97,11 +102,10 @@ public class RetrofitService {
 
         //Interceptor for including JWT token in every request
         return new OkHttpClient.Builder()
-                //TODO: Need to add an authentication method
-//                .addInterceptor(chain -> {
-//                    Request req = chain.request().newBuilder().addHeader("Authorization", "Bearer " + mToken).build();
-//                    return chain.proceed(req);
-//                })
+                .addInterceptor(chain -> {
+                    Request req = chain.request().newBuilder().addHeader("Authorization", credentials).build();
+                    return chain.proceed(req);
+                })
                 .sslSocketFactory(sslContext.getSocketFactory()) //Overriding certificate verification for self-signed certificate
                 .hostnameVerifier((hostname, session) -> true) //Overriding hostname verification
                 .build();

@@ -68,7 +68,6 @@ public class BootStrapManager {
         initializeTrustManagerFactory(context);
     }
 
-
     private void initializeTrustManagerFactory(Context context)
             throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         CertificateFactory cf = CertificateFactory.getInstance(CERT_TYPE);

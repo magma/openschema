@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String METRICS_AUTHORITY_HEADER = "metricsd-" + CONTROLLER_ADDRESS;
 
     private static final String OPENSCHEMA_BACKEND_BASE_URL = "https://13.52.214.86:3100/";
-    private static final int CERTIFICATE_RESOURCE_ID = R.raw.server;
+    private static final int OPENSCHEMA_BACKEND_CERTIFICATE_RESID = R.raw.server;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +27,9 @@ public class MainActivity extends AppCompatActivity {
                 .setBootStrapperAddress(BOOTSTRAPPER_CONTROLLER_ADDRESS)
                 .setControllerPort(CONTROLLER_PORT)
                 .setBackendBaseURL(OPENSCHEMA_BACKEND_BASE_URL)
-                .setCertificateResId(CERTIFICATE_RESOURCE_ID)
+                .setBackendCertificateResId(OPENSCHEMA_BACKEND_CERTIFICATE_RESID)
+                .setBackendUsername(getString(R.string.backend_username))
+                .setBackendPassword(getString(R.string.backend_password))
                 .build();
 
         try {

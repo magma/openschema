@@ -33,6 +33,8 @@ public class MobileMetricsAgent {
 
     private String mBackendBaseURL;
     private int mCertificateResId;
+    private String mBackendUsername;
+    private String mBackendPassword;
 
     private Context mAppContext;
     private RegistrationManager mRegistrationManager;
@@ -46,6 +48,8 @@ public class MobileMetricsAgent {
 
         mBackendBaseURL = mmaBuilder.mBackendBaseURL;
         mCertificateResId = mmaBuilder.mCertificateResId;
+        mBackendUsername=mmaBuilder.mBackendUsername;
+        mBackendPassword=mmaBuilder.mBackendPassword;
 
         mAppContext = mmaBuilder.mAppContext;
     }
@@ -56,12 +60,11 @@ public class MobileMetricsAgent {
         Identity identity = new Identity(mAppContext);
 
         RetrofitService mRetrofitService = RetrofitService.getService(mAppContext);
-        mRetrofitService.initApi(mAppContext, mBackendBaseURL, mCertificateResId);
+        mRetrofitService.initApi(mAppContext, mBackendBaseURL, mCertificateResId, mBackendUsername, mBackendPassword);
         BackendApi mBackendApi = mRetrofitService.getApi();
 
         mRegistrationManager = new RegistrationManager(mAppContext, identity, mBackendApi);
         mBootStrapManager = new BootStrapManager(mAppContext, identity);
-
 
         //TODO: spawn a background thread instead? Bootstrapping process is currently blocking the main thread
         mRegistrationManager.setOnRegisterListener(() -> {
@@ -72,6 +75,7 @@ public class MobileMetricsAgent {
             }
         });
 
+        //TODO: Consider checking whether uuid is already saved in sharedprefs instead of sending a new request
         mRegistrationManager.register();
     }
 
@@ -100,6 +104,8 @@ public class MobileMetricsAgent {
 
         private String mBackendBaseURL;
         private int mCertificateResId;
+        private String mBackendUsername;
+        private String mBackendPassword;
 
         private Context mAppContext;
 
@@ -129,8 +135,18 @@ public class MobileMetricsAgent {
             return this;
         }
 
-        public Builder setCertificateResId(int certificateResId) {
+        public Builder setBackendCertificateResId(int certificateResId) {
             mCertificateResId = certificateResId;
+            return this;
+        }
+
+        public Builder setBackendUsername(String backendUsername) {
+            mBackendUsername = backendUsername;
+            return this;
+        }
+
+        public Builder setBackendPassword(String backendPassword) {
+            mBackendPassword = backendPassword;
             return this;
         }
 
