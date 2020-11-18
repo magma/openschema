@@ -1,5 +1,15 @@
 const express = require('express')
+const basicAuth = require('express-basic-auth')
 var router = express.Router()
+
+router.use(basicAuth({
+    users: {
+        [process.env.AUTH_USERNAME]: process.env.AUTH_PASSWORD
+    },
+    unauthorizedResponse: {
+        message: `You are not authorized`
+    }
+}))
 
 router.use('/', require('./ueRegistration'))
 router.use('/', require('./qosScoring'))

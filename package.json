@@ -12,6 +12,7 @@
     "axios": "^0.21.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-basic-auth": "^1.2.0",
     "helmet": "^4.2.0",
     "lodash": "^4.17.20",
     "morgan": "^1.10.0"

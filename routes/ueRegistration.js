@@ -10,8 +10,6 @@ router.post('/register', am(async (req, res) => {
     //Trim request body to only expected parameters
     req.body = _.pick(req.body, ['uuid', 'publicKey'])
 
-    console.log(req.body)
-
     let registrationResult = await sendRegister(req.body)
     if (registrationResult === REGISTRATION_SUCCESS) {
         res.status(200).json({
