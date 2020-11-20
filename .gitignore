@@ -1,9 +1,9 @@
 .DS_Store
-.Trashes
-*.swp
-*~.nib
-/.build/
-/Packages
-*.xcodeproj
-xcuserdata/
-/.swiftpm/
+project.xcworkspace
+xcuserdata
+DerivedData/
+.build
+.swiftpm
+build
+/*.xcodeproj
+Package.resolved
