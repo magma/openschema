@@ -43,6 +43,7 @@
 		7962251B255EF9C600BEDA6B /* Reachability in Frameworks */ = {isa = PBXBuildFile; productRef = 7962251A255EF9C600BEDA6B /* Reachability */; };
 		79622521255EFA4D00BEDA6B /* GRPC in Frameworks */ = {isa = PBXBuildFile; productRef = 79622520255EFA4D00BEDA6B /* GRPC */; };
 		79622523255EFA4D00BEDA6B /* CGRPCZlib in Frameworks */ = {isa = PBXBuildFile; productRef = 79622522255EFA4D00BEDA6B /* CGRPCZlib */; };
+		79AAF665256786DF00AAB161 /* RegistrationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79AAF664256786DF00AAB161 /* RegistrationManager.swift */; };
 		79F85C27255DB2C600680532 /* mma_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 79F85C1D255DB2C600680532 /* mma_ios.framework */; };
 		79F85C2C255DB2C600680532 /* mma_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F85C2B255DB2C600680532 /* mma_iosTests.swift */; };
 		79F85C2E255DB2C600680532 /* mma_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = 79F85C20255DB2C600680532 /* mma_ios.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -92,6 +93,7 @@
 		796224FE255EF63A00BEDA6B /* metrics.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = metrics.pb.swift; sourceTree = "<group>"; };
 		79622503255EF64300BEDA6B /* metricsd.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = metricsd.pb.swift; sourceTree = "<group>"; };
 		79622504255EF64300BEDA6B /* metricsd.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = metricsd.grpc.swift; sourceTree = "<group>"; };
+		79AAF664256786DF00AAB161 /* RegistrationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationManager.swift; sourceTree = "<group>"; };
 		79F85C1D255DB2C600680532 /* mma_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mma_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		79F85C20255DB2C600680532 /* mma_ios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mma_ios.h; sourceTree = "<group>"; };
 		79F85C21255DB2C600680532 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -131,6 +133,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		794C5BC02564787F000D0F84 /* Register */ = {
+			isa = PBXGroup;
+			children = (
+				79AAF664256786DF00AAB161 /* RegistrationManager.swift */,
+			);
+			path = Register;
+			sourceTree = "<group>";
+		};
 		7962246E255EF09900BEDA6B /* mma-ios-examples */ = {
 			isa = PBXGroup;
 			children = (
@@ -259,6 +269,7 @@
 		79F85C1F255DB2C600680532 /* mma-ios */ = {
 			isa = PBXGroup;
 			children = (
+				794C5BC02564787F000D0F84 /* Register */,
 				79622490255EF20600BEDA6B /* ProtoFiles */,
 				7962248F255EF1EC00BEDA6B /* NetworkInfo */,
 				7962248D255EF1C000BEDA6B /* Metrics */,
@@ -443,6 +454,7 @@
 			files = (
 				796224F8255EF5DB00BEDA6B /* metrics.proto in Sources */,
 				796224BD255EF3BB00BEDA6B /* ClientConfig.swift in Sources */,
+				79AAF665256786DF00AAB161 /* RegistrationManager.swift in Sources */,
 				7962249A255EF24200BEDA6B /* CellularNetworkInfo.swift in Sources */,
 				796224B2255EF2FD00BEDA6B /* CertSignRequest.swift in Sources */,
 				796224D6255EF4B900BEDA6B /* WifiNetworkMetrics.swift in Sources */,

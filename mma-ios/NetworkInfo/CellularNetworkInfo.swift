@@ -37,11 +37,10 @@ public class CellularNetworkInfo {
         let radioInfo = networkInfo.serviceCurrentRadioAccessTechnology
         dump(radioInfo)
         
-        let serviceIdentifier = String(networkInfo.dataServiceIdentifier ?? "Unknown service Identifier" )
+        let serviceIdentifier = String(networkInfo.dataServiceIdentifier ?? "Unknown service Identifier")
         print(serviceIdentifier)
     }
-    
-    
+
     func getFirstCarrierInfo() -> Void {
         
         let serviceSubscriberCellularProviders = networkInfo.serviceSubscriberCellularProviders
