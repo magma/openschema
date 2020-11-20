@@ -28,10 +28,15 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "OpenSchemaSDK",
-            dependencies: [.product(name: "GRPC", package: "grpc-swift"),
-                           .product(name: "CryptorECC", package: "CryptorECC"),
-                           .product(name: "CertificateSigningRequest", package: "CertificateSigningRequest"),
-                           .product(name: "Reachability", package: "Reachability")
+            dependencies: [
+                .product(name: "GRPC", package: "grpc-swift"),
+                .product(name: "CryptorECC", package: "CryptorECC"),
+                .product(name: "CertificateSigningRequest", package: "CertificateSigningRequest"),
+                .product(name: "Reachability", package: "Reachability")
+            ],
+            resources: [
+                .process("Resources/Certificates/rootca.pem"),
+                .process("Resources/Certificates/server.der")
             ]
         ),
         .testTarget(
