@@ -49,7 +49,7 @@ public class RegistrationManager {
             "publicKey": self.trimPublicKeyPEMString
         ]
             
-        let username = "Dw5QIUx0Ric2yLo7IogrfHZGiJ6s3gC+FQaekCw3pY8/FlG+9g+Xp8Fo1fuADpRhBmQNsyeuhmjbq+A4QEz1VLeyHFHkNilhQE9NsUArSC1UjyiO/CY01vxVaIcydOSW
+        let username = "Dw5QIUx0Ric2yLo7IogrfHZGiJ6s3gC+FQaekCw3pY8/FlG+9g+Xp8Fo1fuADpRhBmQNsyeuhmjbq+A4QEz1VLeyHFHkNilhQE9NsUArSC1UjyiO/CY01vxVaIcydOSW"
         let password = " 4fvgk4YJGeJYWYL/FVld3gKs0FXHhQ3KBD5yKtg7h/7IlH3o+C/kuCnyjFT8RTXTYBPl4n01scp1/LMgh8mUhY0ZxCJek48Fguig5PZVIoy7yozB+f8oROASiFrBji6u"
         let loginString = String(format: "%@:%@", username, password)
         let loginData = loginString.data(using: String.Encoding.utf8)!

@@ -20,13 +20,13 @@ public class LocationManager: NSObject, ObservableObject {
         self.locationManager.startUpdatingLocation()
     }
 
-    @Published var locationStatus: CLAuthorizationStatus? {
+    @Published public var locationStatus: CLAuthorizationStatus? {
         willSet {
             objectWillChange.send()
         }
     }
 
-    @Published var lastLocation: CLLocation? {
+    @Published public var lastLocation: CLLocation? {
         willSet {
             objectWillChange.send()
         }
@@ -50,7 +50,7 @@ public class LocationManager: NSObject, ObservableObject {
 
     public let objectWillChange = PassthroughSubject<Void, Never>()
 
-    private let locationManager = CLLocationManager()
+    public let locationManager = CLLocationManager()
 }
 
 extension LocationManager: CLLocationManagerDelegate {
