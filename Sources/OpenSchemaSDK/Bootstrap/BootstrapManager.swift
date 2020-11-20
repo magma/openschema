@@ -15,7 +15,7 @@ import Logging
 import Reachability
 
 /// This class handles the bootstrap process to create a GRPC connection to Magma server and get a Signed certificate from it to be able to strat pushing metrics to Magma.
-public class BootstrapManager {
+public final class BootstrapManager {
     
     private let clientConfig = ClientConfig.shared
     private let uuidManager = UUIDManager.shared
