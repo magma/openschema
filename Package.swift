@@ -32,10 +32,6 @@ let package = Package(
                            .product(name: "CryptorECC", package: "CryptorECC"),
                            .product(name: "CertificateSigningRequest", package: "CertificateSigningRequest"),
                            .product(name: "Reachability", package: "Reachability")
-            ],
-            resources: [
-                .process("Bootstrap/rootca.pem"),
-                .process("Register/server.der")
             ]
         ),
         .testTarget(
