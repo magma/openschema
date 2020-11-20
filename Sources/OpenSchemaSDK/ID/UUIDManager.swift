@@ -10,7 +10,7 @@ import Foundation
 ///This class handles generating, storing and retrieving the UUID.
 public class UUIDManager {
     
-    static let shared = UUIDManager()
+    public static let shared = UUIDManager()
     private let KEY_UUID = "uuid"
     private var uuid : String = "UNKNOWN_UUID"
     
@@ -43,11 +43,11 @@ public class UUIDManager {
     This function retrieves the stored UUID.
     */
     
-    func getUUID() -> String { return uuid }
+    public func getUUID() -> String { return uuid }
     
     /**
     This function overrides current stored UUID. Currently unused function. Might be useful if want to register device to magma with a new UUID without uninstalling app from device.
     */
-    func setUUID(uuid : String) { self.uuid = uuid }
+    public func setUUID(uuid : String) { self.uuid = uuid }
         
 }

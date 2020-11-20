@@ -12,10 +12,8 @@ import NIOSSL
 import SwiftProtobuf
 import Logging
 
-import Reachability
-
 /// This class handles the bootstrap process to create a GRPC connection to Magma server and get a Signed certificate from it to be able to strat pushing metrics to Magma.
-public final class BootstrapManager {
+public class BootstrapManager {
     
     private let clientConfig = ClientConfig.shared
     private let uuidManager = UUIDManager.shared
@@ -23,7 +21,7 @@ public final class BootstrapManager {
     let keyHelper = KeyHelper()
     let certSignRequest = CertSignRequest()
 
-    init(){
+    public init() {
         print(self.uuidManager.getUUID())
         CreateSSIDObserver()
         //BootstrapNow()
@@ -52,7 +50,7 @@ public final class BootstrapManager {
     }
     
     
-    func BootstrapNow(){
+    public func BootstrapNow(){
         let dispatchQueue = DispatchQueue(label: "QueueIdentification", qos: .background)
         dispatchQueue.async{
             self.BootstrapLogic()

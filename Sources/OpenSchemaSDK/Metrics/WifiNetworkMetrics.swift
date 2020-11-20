@@ -20,7 +20,7 @@ public class WifiNetworkMetrics {
     //Family Names
     private let wifiNetworkInfoFamilyName = "ios_wifi_network_info"
     
-    init(){
+    public init(){
         
     }
     

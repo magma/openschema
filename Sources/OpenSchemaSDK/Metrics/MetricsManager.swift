@@ -31,7 +31,7 @@ public class MetricsManager {
     
     private let signedCert : Data
     private let clientConfig = ClientConfig.shared
-    private let uuidManager = UUIDManager.shared
+    public let uuidManager = UUIDManager.shared
     private let keyHelper = KeyHelper()
     private let cellularNetworkMetrics : CellularNetworkMetrics = CellularNetworkMetrics()
     private let wifiNetworkMetrics : WifiNetworkMetrics = WifiNetworkMetrics()
@@ -41,11 +41,11 @@ public class MetricsManager {
         
     }
     
-    func CheckCertValidity() {
+    public func CheckCertValidity() {
         //TODO: Implement a way to check Bootstrap certificate is still valid
     }
     
-    func CollectAndPushMetrics() {
+    public func CollectAndPushMetrics() {
         
         let certificateFileName = "rootca"
         let certificateFilePath = Bundle.main.path(forResource: certificateFileName, ofType: "pem")

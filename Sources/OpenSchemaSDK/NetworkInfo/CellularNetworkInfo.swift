@@ -11,23 +11,23 @@ import CoreTelephony
 ///This class retrieves currently connected Cellular Network Information.
 public class CellularNetworkInfo {
     
-    let networkInfo = CTTelephonyNetworkInfo()
+    private let networkInfo = CTTelephonyNetworkInfo()
     
-    var firstCarrier = "Unknown"
-    var firstMobileNetworkCode = "Unknown"
-    var firstMobileCountryCode = "Unknown"
-    var firstIsoCountryCode = "Unknown"
+    private var firstCarrier = "Unknown"
+    private var firstMobileNetworkCode = "Unknown"
+    private var firstMobileCountryCode = "Unknown"
+    private var firstIsoCountryCode = "Unknown"
     
-    init(){
+    public init(){
       getFirstCarrierInfo()
     }
     
-    func getCarrierName() ->  String { return firstCarrier }
-    func getMobileCountryCode() -> String { return firstMobileCountryCode }
-    func getMobileNetworkCode() -> String { return firstMobileNetworkCode }
-    func getIsoCountryCode() -> String { return firstIsoCountryCode }
+    public func getCarrierName() ->  String { return firstCarrier }
+    public func getMobileCountryCode() -> String { return firstMobileCountryCode }
+    public func getMobileNetworkCode() -> String { return firstMobileNetworkCode }
+    public func getIsoCountryCode() -> String { return firstIsoCountryCode }
     
-    func Info() -> Void {
+    public func Info() -> Void {
         
         print(" Testing...")
         
@@ -41,7 +41,7 @@ public class CellularNetworkInfo {
         print(serviceIdentifier)
     }
 
-    func getFirstCarrierInfo() -> Void {
+    public func getFirstCarrierInfo() -> Void {
         
         let serviceSubscriberCellularProviders = networkInfo.serviceSubscriberCellularProviders
         let firstCarrier = serviceSubscriberCellularProviders?.values.first
@@ -53,7 +53,7 @@ public class CellularNetworkInfo {
 
     }
     
-    func getCurrentRadioAccessTechnology() -> String {
+    public func getCurrentRadioAccessTechnology() -> String {
 
         let currCarrierType: String?
 

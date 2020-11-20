@@ -15,7 +15,7 @@ public class HardwareKEY {
     private var eccPrivateKey : ECPrivateKey? = nil
     private var eccPublicKey : ECPublicKey? = nil
     
-    init() {
+    public init() {
         self.GenerateECKeyPairForAlias()
     }
     
@@ -81,28 +81,28 @@ public class HardwareKEY {
     /**
     This function retrieves Hardware Private key as a PEM String.
      */
-    func getHwPrivateKeyPEMString() -> String {
+    public func getHwPrivateKeyPEMString() -> String {
         return self.eccPrivateKey!.pemString
     }
     
     /**
     This function retrieves Hardware Public key as a PEM String.
      */
-    func getHwPublicKeyPEMString() -> String {
+    public func getHwPublicKeyPEMString() -> String {
         return self.eccPublicKey!.pemString
     }
     
     /**
     This function retrieves Hardware Private key as a ECPrivateKey Class
      */
-    func getHwPrivateKey() -> ECPrivateKey {
+    public func getHwPrivateKey() -> ECPrivateKey {
         return self.eccPrivateKey!
     }
     
     /**
     This function retrieves Hardware Public key as a ECPrivateKey Class
      */
-    func getHWPublicKey() -> ECPublicKey {
+    public func getHWPublicKey() -> ECPublicKey {
         return self.eccPublicKey!
     }
 }

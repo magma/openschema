@@ -14,7 +14,7 @@ public class RegistrationManager {
     private let uuidManager = UUIDManager.shared
     private let registerServerAddress : String = "https://13.52.214.86:3100/register"
     
-    init() {
+    public init() {
     }
     
     /**
@@ -39,7 +39,7 @@ public class RegistrationManager {
     /**
     This function Registers the device UUID and Public Hardware Key to the server to be able to collect and push analytics to it.
     */
-    func registerDevice() {
+    public func registerDevice() {
 
         let Url = String(format: self.registerServerAddress)
             guard let serviceUrl = URL(string: Url) else { return }

@@ -23,7 +23,7 @@ public class CellularNetworkMetrics {
     //Family Names
     private let cellularNetworkInfoFamilyName = "ios_cellular_network_info"
     
-    init(){
+    public init(){
         
     }
     

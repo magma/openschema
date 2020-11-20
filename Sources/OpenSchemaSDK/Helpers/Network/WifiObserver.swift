@@ -10,7 +10,7 @@ import Foundation
 ///This Class Handles the observer that listens SSID being Changed.
 public class WifiObserver {
     
-    static let shared = WifiObserver()
+    public static let shared = WifiObserver()
     private let wifiNetworkInfo = WifiNetworkInfo.shared
     private var SSIDChanged : Bool = false
 

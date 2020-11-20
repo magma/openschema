@@ -10,9 +10,9 @@ import CoreLocation
 import Combine
 
 ///This class asks users for location permission and handles the location information.
-class LocationManager: NSObject, ObservableObject {
+public class LocationManager: NSObject, ObservableObject {
 
-    override init() {
+    override public init() {
         super.init()
         self.locationManager.delegate = self
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -32,7 +32,7 @@ class LocationManager: NSObject, ObservableObject {
         }
     }
 
-    var statusString: String {
+    public var statusString: String {
         guard let status = locationStatus else {
             return "unknown"
         }
@@ -48,19 +48,19 @@ class LocationManager: NSObject, ObservableObject {
 
     }
 
-    let objectWillChange = PassthroughSubject<Void, Never>()
+    public let objectWillChange = PassthroughSubject<Void, Never>()
 
     private let locationManager = CLLocationManager()
 }
 
 extension LocationManager: CLLocationManagerDelegate {
 
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         self.locationStatus = status
         print(#function, statusString)
     }
 
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         self.lastLocation = location
         print(#function, location)

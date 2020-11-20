@@ -11,7 +11,7 @@ import Reachability
 ///This Class Handles the observer that listens to network connectivity changes. Possible Modes: Wi-Fi connected, Cellular Connected, No Connection.
 public class ReachabilityObserver {
     
-    static let shared = ReachabilityObserver()
+    public static let shared = ReachabilityObserver()
     private let reachability = try! Reachability()
     private var newSSID : String = "No Wi-Fi Connected"
     private var currentSSID : String = "No Wi-Fi Connected"
@@ -27,7 +27,7 @@ public class ReachabilityObserver {
         
     }
     
-    @objc func reachabilityChanged(note: Notification) {
+    @objc private func reachabilityChanged(note: Notification) {
         let reachability = note.object as! Reachability
         
         if reachability.connection == .wifi {

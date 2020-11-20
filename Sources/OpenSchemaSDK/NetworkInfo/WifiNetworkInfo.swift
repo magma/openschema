@@ -12,18 +12,18 @@ import SystemConfiguration.CaptiveNetwork
 ///This class retrieves currently connected Wi-Fi information.
 public class WifiNetworkInfo {
     
-    static let shared = WifiNetworkInfo()
-    var SSID = "Unable to get value"
-    var BSSID = "Unable to get value"
+    public static let shared = WifiNetworkInfo()
+    private var SSID = "Unable to get value"
+    private var BSSID = "Unable to get value"
     
     private init(){
       fetchSSIDInfo()
     }
     
-    func getSSID() -> String { return self.SSID }
-    func getBSSID() -> String { return self.BSSID }
+    public func getSSID() -> String { return self.SSID }
+    public func getBSSID() -> String { return self.BSSID }
     
-    func fetchSSIDInfo() -> Void {
+    public func fetchSSIDInfo() -> Void {
         if let interfaces = CNCopySupportedInterfaces() {
             for i in 0..<CFArrayGetCount(interfaces) {
                 let interfaceName: UnsafeRawPointer = CFArrayGetValueAtIndex(interfaces, i)
@@ -38,7 +38,7 @@ public class WifiNetworkInfo {
         }
     }
     
-    func updateWifiNetworkInfo() -> Void {
+    public func updateWifiNetworkInfo() -> Void {
         self.fetchSSIDInfo()
     }
     
