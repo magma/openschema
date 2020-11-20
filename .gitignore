@@ -1,6 +1,9 @@
 .DS_Store
-/.build
+.Trashes
+*.swp
+*~.nib
+/.build/
 /Packages
-/*.xcodeproj
+*.xcodeproj
 xcuserdata/
-/.swiftpm
+/.swiftpm/
