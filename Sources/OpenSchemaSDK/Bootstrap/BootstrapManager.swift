@@ -65,7 +65,7 @@ public class BootstrapManager {
         
         
         let certificateFilePath = Bundle.main.path(forResource: certificateFileName, ofType: "pem")
-        
+        Bundle.module
        
  
         do {
