@@ -61,12 +61,7 @@ public class BootstrapManager {
         //Step i: get certificate; Tutorial at: https://medium.com/@ambrose12silveira/ios-swift-grpc-integration-with-tls-client-authentication-f2e2164ed125
         let certificateFileName = "rootca"
         
-        print(Bundle(for: BootstrapManager.self).bundlePath)
-        
-        
         let certificateFilePath = Bundle.main.path(forResource: certificateFileName, ofType: "pem")
-        Bundle.module
-       
  
         do {
             let pemCert = try NIOSSLCertificate.fromPEMFile(certificateFilePath!)
