@@ -1,10 +1,22 @@
+/*
+ * Copyright (c) 2020, The Magma Authors
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.openschema.mma.helpers;
 
-import android.content.Context;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
-import android.util.Log;
 
 import com.google.protobuf.ByteString;
 
@@ -12,10 +24,8 @@ import org.spongycastle.asn1.ASN1InputStream;
 import org.spongycastle.asn1.ASN1Integer;
 import org.spongycastle.asn1.ASN1Primitive;
 import org.spongycastle.asn1.ASN1Sequence;
-import org.spongycastle.asn1.util.ASN1Dump;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -29,16 +39,8 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.spec.ECGenParameterSpec;
-import java.util.Arrays;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManagerFactory;
-
-import io.openschema.mma.R;
 import io.openschema.mma.bootstrapper.Challenge;
 
 /**
@@ -49,7 +51,7 @@ public class KeyHelper {
     private static final String KEY_STORE = "AndroidKeyStore";
     private static final String HW_KEY_ALIAS = "hw_key_alias";
 
-    public static KeyPair generateRSAKeyPairForAlias(String alias){
+    public static KeyPair generateRSAKeyPairForAlias(String alias) {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
                     KeyProperties.KEY_ALGORITHM_RSA, KEY_STORE);
@@ -77,14 +79,13 @@ public class KeyHelper {
     }
 
 
-
-    public static String getPubKeyString(PublicKey key){
-        byte[] publicKeyBytes = Base64.encode(key.getEncoded(),0);
+    public static String getPubKeyString(PublicKey key) {
+        byte[] publicKeyBytes = Base64.encode(key.getEncoded(), 0);
         return new String(publicKeyBytes);
     }
 
-    public static String getPrivKeyString(PrivateKey key){
-        byte[] privateKeyBytes = Base64.encode(key.getEncoded(),0);
+    public static String getPrivKeyString(PrivateKey key) {
+        byte[] privateKeyBytes = Base64.encode(key.getEncoded(), 0);
         return new String(privateKeyBytes);
     }
 

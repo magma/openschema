@@ -22,3 +22,6 @@ allprojects {
 Picture below shows the call flow of UE registration and BootStrapping. Please note registration is not implemented yet.
 
 ![UE success flow](docs/assets/ue_success_flow.png)
+
+## License
+mma-android is BSD-3 licensed, as found in the LICENSE file.

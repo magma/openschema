@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2020, The Magma Authors
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.openschema.mma.helpers;
 
 import org.spongycastle.asn1.ASN1ObjectIdentifier;
@@ -93,7 +107,7 @@ public class CsrHelper {
 
         PrivateKey pk = keyPair.getPrivate();
 
-        ContentSigner signer = new JCESigner (keyPair.getPrivate(),DEFAULT_SIGNATURE_ALGORITHM);
+        ContentSigner signer = new JCESigner(keyPair.getPrivate(), DEFAULT_SIGNATURE_ALGORITHM);
 
         PKCS10CertificationRequestBuilder csrBuilder = new JcaPKCS10CertificationRequestBuilder(
                 new X500Name(principal), keyPair.getPublic());
