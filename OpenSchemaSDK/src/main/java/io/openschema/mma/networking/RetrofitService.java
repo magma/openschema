@@ -104,7 +104,7 @@ public class RetrofitService {
 
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(null, null);
-            keyStore.setCertificateEntry("ca", cert);
+            keyStore.setCertificateEntry("backend", cert);
 
             sslContext = SSLContext.getInstance("TLS");
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());

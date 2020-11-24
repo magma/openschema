@@ -73,22 +73,22 @@ public class BootStrapManager {
 
     private boolean mBootStrapSuccess;
 
-    public BootStrapManager(Context context, Identity identity) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, InvalidAlgorithmParameterException, NoSuchProviderException {
+    public BootStrapManager(Context context, int certificateResId, Identity identity) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, InvalidAlgorithmParameterException, NoSuchProviderException {
         // create new identity or load an exiting one
         // TODO: if this is a new identity it should be registered first
         mIdentity = identity;
         mKeyStore = KeyStore.getInstance(KEY_STORE);
         mKeyStore.load(null, null);
-        initializeTrustManagerFactory(context);
+        initializeTrustManagerFactory(context, certificateResId);
     }
 
-    private void initializeTrustManagerFactory(Context context)
+    private void initializeTrustManagerFactory(Context context, int certificateResId)
             throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         CertificateFactory cf = CertificateFactory.getInstance(CERT_TYPE);
-        InputStream in = context.getResources().openRawResource(R.raw.rootca);
+        InputStream in = context.getResources().openRawResource(certificateResId);
         java.security.cert.Certificate rootcert = cf.generateCertificate(in);
         in.close();
-        mKeyStore.setCertificateEntry("rootca", rootcert);
+        mKeyStore.setCertificateEntry("bootstrap", rootcert);
         String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
         mTrustManagerFactory = TrustManagerFactory.getInstance(tmfAlgorithm);
         mTrustManagerFactory.init(mKeyStore);

@@ -17,17 +17,11 @@ package io.openschema.mma;
 import android.content.Context;
 import android.util.Log;
 
-import org.spongycastle.operator.OperatorCreationException;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 import io.openschema.mma.bootstrap.BootStrapManager;
@@ -41,12 +35,13 @@ public class MobileMetricsAgent {
     private static final String TAG = "MobileMetricsAgent";
 
     private String mControllerAddress;
-    private String mBoostStrapperAddress;
+    private String mBootstrapperAddress;
+    private int mBootstrapperCertificateResId;
     private String mMetricsAuthorityHeader;
     private int mControllerPort;
 
     private String mBackendBaseURL;
-    private int mCertificateResId;
+    private int mBackendCertificateResId;
     private String mBackendUsername;
     private String mBackendPassword;
 
@@ -55,13 +50,14 @@ public class MobileMetricsAgent {
     private BootStrapManager mBootStrapManager;
 
     private MobileMetricsAgent(Builder mmaBuilder) {
-        mBoostStrapperAddress = mmaBuilder.mBoostStrapperAddress;
         mControllerAddress = mmaBuilder.mControllerAddress;
+        mBootstrapperAddress = mmaBuilder.mBootstrapperAddress;
+        mBootstrapperCertificateResId = mmaBuilder.mBootstrapperCertificateResId;
         mMetricsAuthorityHeader = mmaBuilder.mMetricsAuthorityHeader;
         mControllerPort = mmaBuilder.mControllerPort;
 
         mBackendBaseURL = mmaBuilder.mBackendBaseURL;
-        mCertificateResId = mmaBuilder.mCertificateResId;
+        mBackendCertificateResId = mmaBuilder.mBackendCertificateResId;
         mBackendUsername = mmaBuilder.mBackendUsername;
         mBackendPassword = mmaBuilder.mBackendPassword;
 
@@ -74,16 +70,16 @@ public class MobileMetricsAgent {
         Identity identity = new Identity(mAppContext);
 
         RetrofitService mRetrofitService = RetrofitService.getService(mAppContext);
-        mRetrofitService.initApi(mAppContext, mBackendBaseURL, mCertificateResId, mBackendUsername, mBackendPassword);
+        mRetrofitService.initApi(mAppContext, mBackendBaseURL, mBackendCertificateResId, mBackendUsername, mBackendPassword);
         BackendApi mBackendApi = mRetrofitService.getApi();
 
         mRegistrationManager = new RegistrationManager(mAppContext, identity, mBackendApi);
-        mBootStrapManager = new BootStrapManager(mAppContext, identity);
+        mBootStrapManager = new BootStrapManager(mAppContext, mBootstrapperCertificateResId, identity);
 
         //TODO: spawn a background thread instead? Bootstrapping process is currently blocking the main thread
         mRegistrationManager.setOnRegisterListener(() -> {
             try {
-                mBootStrapManager.bootstrapNow(mBoostStrapperAddress, mControllerPort);
+                mBootStrapManager.bootstrapNow(mBootstrapperAddress, mControllerPort);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -98,7 +94,7 @@ public class MobileMetricsAgent {
     }
 
     public String getBoostStrapperAddress() {
-        return mBoostStrapperAddress;
+        return mBootstrapperAddress;
     }
 
     public String getMetricsAuthorityHeader() {
@@ -112,12 +108,13 @@ public class MobileMetricsAgent {
 
     public static class Builder {
         private String mControllerAddress;
-        private String mBoostStrapperAddress;
+        private String mBootstrapperAddress;
+        private int mBootstrapperCertificateResId;
         private String mMetricsAuthorityHeader;
         private int mControllerPort;
 
         private String mBackendBaseURL;
-        private int mCertificateResId;
+        private int mBackendCertificateResId;
         private String mBackendUsername;
         private String mBackendPassword;
 
@@ -129,8 +126,13 @@ public class MobileMetricsAgent {
             return this;
         }
 
-        public Builder setBootStrapperAddress(String address) {
-            mBoostStrapperAddress = address;
+        public Builder setBootstrapperAddress(String address) {
+            mBootstrapperAddress = address;
+            return this;
+        }
+
+        public Builder setBootstrapperCertificateResId(int certificateResId) {
+            mBootstrapperCertificateResId = certificateResId;
             return this;
         }
 
@@ -150,7 +152,7 @@ public class MobileMetricsAgent {
         }
 
         public Builder setBackendCertificateResId(int certificateResId) {
-            mCertificateResId = certificateResId;
+            mBackendCertificateResId = certificateResId;
             return this;
         }
 

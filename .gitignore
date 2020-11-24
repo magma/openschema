@@ -82,4 +82,7 @@ lint/tmp/
 # Android Profiling
 *.hprof
 
+# Resources used for example app
+*.crt
+keys.xml
 
