@@ -27,4 +27,4 @@ For Swift 5.2 (`swift-tools-version:5.2`):
 ```
 
 ## License
-mma-android is BSD-3 licensed, as found in the LICENSE file.
+mma-ios is BSD-3 licensed, as found in the LICENSE file.
