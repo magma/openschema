@@ -25,3 +25,6 @@ For Swift 5.2 (`swift-tools-version:5.2`):
   dependencies: [.product(name: "OpenSchemaSDK", package: "OpenSchemaSDK")]
 )
 ```
+
+## License
+mma-android is BSD-3 licensed, as found in the LICENSE file.
