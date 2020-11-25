@@ -36,9 +36,7 @@ public class RegistrationManager {
         self.registerDevice()
     }
     
-    /**
-    Remove Header, Footer and spaces to just send the key to Registration Server.
-    */
+    ///Remove Header, Footer and spaces to just send the key to Registration Server.
     private func trimPublicKeyPEMString() -> String {
         
         var publicKeyString : String = hardwareKey.getHwPublicKeyPEMString()
@@ -116,9 +114,7 @@ class NSURLSessionPinningDelegate : NSObject, URLSessionDelegate {
         self.registerServerAuthCertPath = registerServerAuthCertPath
     }
     
-    /**
-    This extends the urlSession function to verify server identity
-    */
+    ///This extends the urlSession function to verify server identity
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
 
         print("*** received SESSION challenge...\(challenge)")

@@ -18,11 +18,16 @@ import Reachability
 ///This Class Handles the observer that listens to network connectivity changes. Possible Modes: Wi-Fi connected, Cellular Connected, No Connection.
 public class ReachabilityObserver {
     
+    ///Declare singleton to be shared on other classes.
     public static let shared = ReachabilityObserver()
+    ///Creates Reachabilty object
     private let reachability = try! Reachability()
+    ///Variable to compare with current SSID
     private var newSSID : String = "No Wi-Fi Connected"
+    ///Current SSID
     private var currentSSID : String = "No Wi-Fi Connected"
     
+    ///Initializes the class and ads an observer to constantly monitor changes in connectivity using Reachability class.
     private init() {
         NotificationCenter.default.addObserver(self, selector: #selector(reachabilityChanged(note:)), name: .reachabilityChanged, object: reachability)
             do{
@@ -34,7 +39,7 @@ public class ReachabilityObserver {
         
     }
     
-    /**This function monitors the connection status and updates accordingly*/
+    ///This function monitors the connection status and updates accordingly
     @objc private func reachabilityChanged(note: Notification) {
         let reachability = note.object as! Reachability
         

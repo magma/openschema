@@ -31,7 +31,7 @@ public class WifiNetworkMetrics {
         
     }
     
-    /**This function has a template to creare a GRPC String type metric from the proto files.*/
+    ///This function has a template to creare a GRPC String type metric from the proto files.
     private func CreateGRPCStringMetric(labelName : String, labelValue : String) -> Magma_Orc8r_MetricFamily {
         let label : Magma_Orc8r_LabelPair = Magma_Orc8r_LabelPair.with {
             $0.name = labelName
@@ -63,7 +63,7 @@ public class WifiNetworkMetrics {
         return family
     }
     
-    /**Using CreateGRPCStringMetric it collects the values from Wi-Fi connection  and return a Magma_Orc8r_MetricsContainer with them*/
+    ///Using CreateGRPCStringMetric it collects the values from Wi-Fi connection  and return a Magma_Orc8r_MetricsContainer with them.
     public func CollectWifiNetworkInfoMetrics() -> Magma_Orc8r_MetricsContainer {
         
         var wifiNetworkInfoFamilies = [Magma_Orc8r_MetricFamily]()

@@ -18,26 +18,23 @@ import CryptorECC
 ///This class creates hardware key from device and has functions to store it and retrieve it.
 public class HardwareKEY {
     
+    ///Iniatlize a KeyHelper Class.
     private let keyHelper : KeyHelper = KeyHelper()
+    ///ECDSA Private Key
     private var eccPrivateKey : ECPrivateKey? = nil
+    ///ECDSA Public Key
     private var eccPublicKey : ECPublicKey? = nil
     
     public init() {
         self.GenerateECKeyPairForAlias()
     }
-    
-    /**
-    This function checks if there is a Hardware Key stored.
-    */
-    
+
+    ///This function checks if there is a Hardware Key stored.
     private func HardwareKeyExists(key: String) -> Bool {
         return UserDefaults.standard.object(forKey: key) != nil
     }
     
-    
-    /**
-    This function generates Private EC Key and stores it as user default
-    */
+    ///This function generates Private ECDSA Key and stores it as user default
     private func GenerateECPrivateKey() -> String {
         if HardwareKeyExists(key: "HardwareKey"){
             return  UserDefaults.standard.string(forKey: "HardwareKey") ?? "Error in UUID"
@@ -64,11 +61,10 @@ public class HardwareKEY {
     }
 
     
-    /**
-     This function creates private and public ECDSA key for bootstrap challenge.
-     TODO:
-        - Store Using Keychain
-     */
+
+    ///This function creates private and public ECDSA key for bootstrap challenge.
+    //TODO:
+    //1.  Store Using Keychain
     private func GenerateECKeyPairForAlias() {
         
         do {
@@ -84,31 +80,23 @@ public class HardwareKEY {
         }
 
     }
-    
-    /**
-    This function retrieves Hardware Private key as a PEM String.
-     */
+
+    ///This function retrieves Hardware Private key as a PEM String.
     public func getHwPrivateKeyPEMString() -> String {
         return self.eccPrivateKey!.pemString
     }
-    
-    /**
-    This function retrieves Hardware Public key as a PEM String.
-     */
+
+    ///This function retrieves Hardware Public key as a PEM String.
     public func getHwPublicKeyPEMString() -> String {
         return self.eccPublicKey!.pemString
     }
     
-    /**
-    This function retrieves Hardware Private key as a ECPrivateKey Class
-     */
+    ///This function retrieves Hardware Private key as a ECPrivateKey Class
     public func getHwPrivateKey() -> ECPrivateKey {
         return self.eccPrivateKey!
     }
-    
-    /**
-    This function retrieves Hardware Public key as a ECPrivateKey Class
-     */
+
+    ///This function retrieves Hardware Public key as a ECPrivateKey Class
     public func getHWPublicKey() -> ECPublicKey {
         return self.eccPublicKey!
     }

@@ -17,17 +17,21 @@ import Foundation
 ///This Class Handles the observer that listens SSID being Changed.
 public class WifiObserver {
     
+    ///Singleton to be shared by other classes.
     public static let shared = WifiObserver()
+    ///WifiNetworkInfo shared Singleton
     private let wifiNetworkInfo = WifiNetworkInfo.shared
+    ///Bool that tracks if SSID changes
     private var SSIDChanged : Bool = false
-
+    
+    ///Initialize class and call CreateSSIDObserver
     private init() {
         
         self.CreateSSIDObserver()
         
     }
 
-    /**This function creates the observer to check for any change on SSID value. Should not happen but is a safety measure*/
+    ///This function creates the observer to check for any change on SSID value. Should not happen but is a safety measure.
     private func CreateSSIDObserver() {
         let observer : UnsafeRawPointer! = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
         let object : UnsafeRawPointer! = nil

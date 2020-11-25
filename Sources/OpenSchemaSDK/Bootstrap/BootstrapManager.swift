@@ -22,21 +22,27 @@ import Logging
 /// This class handles the bootstrap process to create a GRPC connection to Magma server and get a Signed certificate from it to be able to strat pushing metrics to Magma.
 public class BootstrapManager {
     
+    ///Shared clientConfig class singleton instance.
     private let clientConfig = ClientConfig.shared
+    ///Shared UUIDManager class singleton instance.
     private let uuidManager = UUIDManager.shared
+    ///Shared wifiNetworkInfo singleton instance.
     private let wifiNetworkinfo = WifiNetworkInfo.shared
+    ///KeyHelper class instance.
     private let keyHelper = KeyHelper()
+    ///CertSignRequest class instance.
     private let certSignRequest = CertSignRequest()
-    
+    ///String that contains the path to the certificate to be used for connecting to the server on Bootstrap.
     private var certificateFilePath : String
-
+    
+    ///Initialize Bootstrap Class, it requires the path to the server certificate for Bootstrap.
     public init(certificateFilePath : String) {
         self.certificateFilePath = certificateFilePath
         print(self.uuidManager.getUUID())
         CreateSSIDObserver()
     }
     
-    /**This function creates an observer that detects if the Wi-Fi changed since last time app using the framework was on foregorund.
+    ///This function creates an observer that detects if the Wi-Fi changed since last time app using the framework was on foregorund.
      if the Wi-Fi information is different BootstrapNow function is called */
     private func CreateSSIDObserver() {
         let observer : UnsafeRawPointer! = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
@@ -60,7 +66,7 @@ public class BootstrapManager {
                                         .deliverImmediately)
     }
     
-    /**This function calls BootstrapLogic and sends it to a background thread to prevent locking the UI during its execution*/
+    ///This function calls BootstrapLogic and sends it to a background thread to prevent locking the UI during its execution.
     public func BootstrapNow(){
         let dispatchQueue = DispatchQueue(label: "QueueIdentification", qos: .background)
         dispatchQueue.async{
@@ -68,7 +74,7 @@ public class BootstrapManager {
         }
     }
     
-    /**This creates a GRPC channel and tries to connect to the specified server using the certificate provided on class init. If connection is succesful a connection is created and MetricsManager CollectAndPushMetrics function is called.*/
+    ///This creates a GRPC channel and tries to connect to the specified server using the certificate provided on class init. If connection is succesful a connection is created and MetricsManager CollectAndPushMetrics function is called.
     private func BootstrapLogic() {
 
         do {

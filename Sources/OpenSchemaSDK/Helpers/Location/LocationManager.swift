@@ -18,7 +18,8 @@ import Combine
 
 ///This class asks users for location permission and handles the location information.
 public class LocationManager: NSObject, ObservableObject {
-
+    
+    ///Initialize LocationManager. First  This request the user for permission to use location
     override public init() {
         super.init()
         self.locationManager.delegate = self
@@ -26,19 +27,29 @@ public class LocationManager: NSObject, ObservableObject {
         self.locationManager.requestWhenInUseAuthorization()
         self.locationManager.startUpdatingLocation()
     }
-
+    
+    ///This variable tracks if location permission has changed. Example revoked manually by user.
     @Published public var locationStatus: CLAuthorizationStatus? {
         willSet {
             objectWillChange.send()
         }
     }
-
+    
+     ///This variable tracks the location from the device.
     @Published public var lastLocation: CLLocation? {
         willSet {
             objectWillChange.send()
         }
     }
-
+    
+    ///Return current permission status for location
+    ///Posible values:
+    ///1. notDetermined
+    ///2. authorizedWhenInUse
+    ///3. authorizedAlways
+    ///4. restricted
+    ///5. denied
+    ///6. unknown
     public var statusString: String {
         guard let status = locationStatus else {
             return "unknown"

@@ -17,11 +17,10 @@ import Foundation
 /// This is a class created for handling Key related functions for TLS communication
 public class KeyHelper {
     
+    ///Initialize class, receives no parameters and does not call any class function.
     init(){}
     
-    /**
-    This function creates a 2048 bytes RSA public and private key and stores it in keychain. It is used to create the key to create the csr request.
-    */
+    ///This function creates a 2048 bytes RSA public and private key and stores it in keychain. It is used to create the key to create the csr request.
     func generateRSAKeyPairForAlias (alias : String) {
         
         var publicKeyMaybe: SecKey? = nil
@@ -48,9 +47,7 @@ public class KeyHelper {
         
     }
     
-    /**
-    This function retrieves a key from keychain as Data type. Assumes there exists a key with the attributes specified.
-     */
+    ///This function retrieves a key from keychain as Data type. Assumes there exists a key with the attributes specified.
     func getKeyAsData(alias : String, keyType : CFString) -> Data {
         
         var tempKeyRef: CFTypeRef?
@@ -64,9 +61,7 @@ public class KeyHelper {
         return tempKeyRef as! Data
     }
     
-    /**
-    This function retrieves a key from keychain as SecKey type. Assumes there exists a key with the attributes specified.
-     */
+    ///This function retrieves a key from keychain as SecKey type. Assumes there exists a key with the attributes specified.
     func getKeyAsSecKey(alias : String, keyType : CFString) -> SecKey {
         var tempKeyRef: CFTypeRef?
         let getDataQuery : [String: Any]  = [   kSecClass as String: kSecClassKey,
@@ -78,9 +73,7 @@ public class KeyHelper {
         return tempKeyRef as! SecKey
     }
     
-    /**
-    This function deletes a key from keychain. Assumes there exists a key with the attributes specified.
-     */
+    ///This function deletes a key from keychain. Assumes there exists a key with the attributes specified.
     func DeleteKeyFromKeyChain(alias : String, keyType : CFString) {
         let deleteKeyQuery : [String: Any] = [ kSecClass as String: kSecClassKey,
                             kSecAttrApplicationTag as String: alias,
@@ -90,9 +83,7 @@ public class KeyHelper {
         SecItemDelete(deleteKeyQuery as CFDictionary)
     }
     
-    /**
-    This function deletes a key from keychain. Assumes there exists a key with the attributes specified.
-     */
+    ///This function deletes a key from keychain. Assumes there exists a key with the attributes specified.
     func getKeyAsBase64String(alias : String, keyType : CFString) -> String {
         var tempKeyRef: CFTypeRef?
         let getDataQuery : [String: Any]  = [   kSecClass as String: kSecClassKey,

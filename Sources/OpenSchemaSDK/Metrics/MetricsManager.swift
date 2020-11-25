@@ -51,11 +51,12 @@ public class MetricsManager {
         
     }
     
+    ///Check Certificate generated for bootrap validity. NOT IMPLEMENTED YET
     public func CheckCertValidity() {
         //TODO: Implement a way to check Bootstrap certificate is still valid
     }
     
-    /**This function is called after a succesful bootstrap to push available metrics to server*/
+    ///This function is called after a succesful bootstrap to push available metrics to server
     public func CollectAndPushMetrics() {
         
         do {

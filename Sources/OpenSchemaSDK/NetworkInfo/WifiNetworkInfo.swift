@@ -30,7 +30,7 @@ public class WifiNetworkInfo {
     public func getSSID() -> String { return self.SSID }
     public func getBSSID() -> String { return self.BSSID }
     
-    /**This function returns current SSID and BSSID info from the connnected Wi-Fi*/
+    ///This function returns current SSID and BSSID info from the connnected Wi-Fi.
     public func fetchSSIDInfo() -> Void {
         if let interfaces = CNCopySupportedInterfaces() {
             for i in 0..<CFArrayGetCount(interfaces) {
@@ -46,7 +46,7 @@ public class WifiNetworkInfo {
         }
     }
     
-    /**Calls fetchSSIDInfo used to update values on Wi-Fi change. For example to refresh UI*/
+    ///Calls fetchSSIDInfo used to update values on Wi-Fi change. For example to refresh UI.
     public func updateWifiNetworkInfo() -> Void {
         self.fetchSSIDInfo()
     }

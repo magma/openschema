@@ -17,24 +17,32 @@ import Foundation
 ///This class handles the GRPC creation of cellular bundles and metrics that will be pushed using MetricsManager.
 public class CellularNetworkMetrics {
     
+    ///Shared UUIDManager.
     private let uuidManager = UUIDManager.shared
+    ///CellularNetworkInfo class object.
     private let cellularNetworkInfo : CellularNetworkInfo = CellularNetworkInfo()
     
     //Label Names
+    ///Carrier Label Name
     private let carrierNameLabelName : String = "carrier_name"
+    ///Mobile Network Code Label Name
     private let mobileNetworkCodeLabelName : String = "mobile_network_code"
+    ///Mobile Country Code Label Name
     private let mobileCountryCodeLabelName : String = "mobile_country_code"
+    ///ISO  Country Code Label Name
     private let isoCountryCodeLabelName : String = "iso_country_code"
+    ///Radio Technology Label Name
     private let radiotechnologyLabelName : String = "radio_technology_code"
     
     //Family Names
+    ///Cellular Network Info Family Name
     private let cellularNetworkInfoFamilyName = "ios_cellular_network_info"
     
     public init(){
         
     }
     
-    /**This function has a template to creare a GRPC String type metric from the proto files.*/
+    ///This function has a template to creare a GRPC String type metric from the proto files.
     private func CreateGRPCStringMetric(labelName : String, labelValue : String) -> Magma_Orc8r_MetricFamily {
         let label : Magma_Orc8r_LabelPair = Magma_Orc8r_LabelPair.with {
             $0.name = labelName
@@ -66,7 +74,7 @@ public class CellularNetworkMetrics {
         return family
     }
     
-    /**Using CreateGRPCStringMetric it collects the values from cellular connection  and return a Magma_Orc8r_MetricsContainer with them*/
+    ///Using CreateGRPCStringMetric it collects the values from cellular connection  and return a Magma_Orc8r_MetricsContainer with them
     public func CollectCellularNetworkInfoMetrics() -> Magma_Orc8r_MetricsContainer {
         
         var cellularNetworkInfoFamilies = [Magma_Orc8r_MetricFamily]()
