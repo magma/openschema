@@ -54,7 +54,7 @@ public class RegistrationManager {
         publicKeyString = publicKeyString.trimmingCharacters(in: .whitespacesAndNewlines)
         
         
-        print("Before Trim: \n" + publicKeyString)
+        print("After Trim: \n" + publicKeyString)
         
         return publicKeyString
     }
@@ -76,7 +76,7 @@ public class RegistrationManager {
         request.httpMethod = "POST"
         
         if (self.authorityRequiresAuthentication) {
-            let loginString = String(format: "%@:%@", "Dw5QIUx0Ric2yLo7IogrfHZGiJ6s3gC+FQaekCw3pY8/FlG+9g+Xp8Fo1fuADpRhBmQNsyeuhmjbq+A4QEz1VLeyHFHkNilhQE9NsUArSC1UjyiO/CY01vxVaIcydOSW", "Dw5QIUx0Ric2yLo7IogrfHZGiJ6s3gC+FQaekCw3pY8/FlG+9g+Xp8Fo1fuADpRhBmQNsyeuhmjbq+A4QEz1VLeyHFHkNilhQE9NsUArSC1UjyiO/CY01vxVaIcydOSW")
+            let loginString = String(format: "%@:%@", "Dw5QIUx0Ric2yLo7IogrfHZGiJ6s3gC+FQaekCw3pY8/FlG+9g+Xp8Fo1fuADpRhBmQNsyeuhmjbq+A4QEz1VLeyHFHkNilhQE9NsUArSC1UjyiO/CY01vxVaIcydOSW", "4fvgk4YJGeJYWYL/FVld3gKs0FXHhQ3KBD5yKtg7h/7IlH3o+C/kuCnyjFT8RTXTYBPl4n01scp1/LMgh8mUhY0ZxCJek48Fguig5PZVIoy7yozB+f8oROASiFrBji6u")
             let loginData = loginString.data(using: String.Encoding.utf8)!
             let base64LoginString = loginData.base64EncodedString()
             request.setValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
