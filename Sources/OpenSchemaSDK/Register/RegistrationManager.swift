@@ -65,7 +65,7 @@ public class RegistrationManager {
         guard let serviceUrl = URL(string: Url) else { return }
         let parameters: [String: Any] = [
             "uuid" : self.uuidManager.getUUID(),
-            "publicKey": self.trimPublicKeyPEMString
+            "publicKey": self.trimPublicKeyPEMString()
         ]
 
         var request = URLRequest(url: serviceUrl)
@@ -85,7 +85,7 @@ public class RegistrationManager {
         
         request.httpBody = httpBody
         request.timeoutInterval = 20
-        let session = URLSession(configuration: URLSessionConfiguration.ephemeral, delegate: NSURLSessionPinningDelegate(), delegateQueue: nil)
+        let session = URLSession(configuration: URLSessionConfiguration.ephemeral, delegate: NSURLSessionPinningDelegate(registerServerAuthCertPath: self.registerServerAuthCertPath), delegateQueue: nil)
         session.dataTask(with: request) { (data, response, error) in
             if let response = response {
                 print(response)
@@ -105,6 +105,13 @@ public class RegistrationManager {
 
 ///This class pins the server certificate to verify the server origin.
 class NSURLSessionPinningDelegate : NSObject, URLSessionDelegate {
+    
+    private var registerServerAuthCertPath : String
+    
+    init(registerServerAuthCertPath : String) {
+        self.registerServerAuthCertPath = registerServerAuthCertPath
+    }
+    
     /**
     This extends the urlSession function to verify server identity
     */
@@ -116,7 +123,7 @@ class NSURLSessionPinningDelegate : NSObject, URLSessionDelegate {
         
         var remoteCertMatchesPinnedCert = false
         
-        if let pinnedCertData = NSData(contentsOfFile: "self.registerServerAuthCertPath") {
+        if let pinnedCertData = NSData(contentsOfFile: self.registerServerAuthCertPath) {
             
             // Compare certificate data
             let remoteCertData: NSData = SecCertificateCopyData(SecTrustGetCertificateAtIndex(trust, 0)!)
