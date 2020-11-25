@@ -32,6 +32,8 @@ public class RegistrationManager {
         self.authorityRequiresAuthentication = authorityRequiresAuthentication
         self.requestAuthorityUsername = requestAuthorityUsername
         self.requestAuthorityPassword = requestAuthorityPassword
+        
+        self.registerDevice()
     }
     
     /**
