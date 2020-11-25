@@ -31,7 +31,6 @@ public class BootstrapManager {
     public init() {
         print(self.uuidManager.getUUID())
         CreateSSIDObserver()
-        //BootstrapNow()
     }
     
     private func CreateSSIDObserver() {
