@@ -72,7 +72,7 @@ public class RegistrationManager {
         request.httpMethod = "POST"
         
         if (self.authorityRequiresAuthentication) {
-            let loginString = String(format: "%@:%@", self.requestAuthorityUsername, self.requestAuthorityPassword)
+            let loginString = String(format: "%@:%@", self.requestAuthorityUsername as NSString, self.requestAuthorityPassword as NSString)
             let loginData = loginString.data(using: String.Encoding.utf8)!
             let base64LoginString = loginData.base64EncodedString()
             request.setValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
