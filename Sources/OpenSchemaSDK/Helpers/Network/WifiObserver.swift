@@ -27,6 +27,7 @@ public class WifiObserver {
         
     }
 
+    /**This function creates the observer to check for any change on SSID value. Should not happen but is a safety measure*/
     private func CreateSSIDObserver() {
         let observer : UnsafeRawPointer! = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
         let object : UnsafeRawPointer! = nil

@@ -40,6 +40,9 @@ public class CertSignRequest {
         
     }
     
+    /**
+    This function return the built CSR to as a String to be able to print is information on console.
+    */
     func getCSRString() -> String {
         let publicKeyBits = self.keyHelper.getKeyAsData(alias : "csrKeyPublic", keyType: kSecAttrKeyTypeRSA)
         let privateKey = self.keyHelper.getKeyAsSecKey(alias : "csrKeyPrivate", keyType: kSecAttrKeyTypeRSA)

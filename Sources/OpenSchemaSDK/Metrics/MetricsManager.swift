@@ -55,6 +55,7 @@ public class MetricsManager {
         //TODO: Implement a way to check Bootstrap certificate is still valid
     }
     
+    /**This function is called after a succesful bootstrap to push available metrics to server*/
     public func CollectAndPushMetrics() {
         
         do {

@@ -34,10 +34,9 @@ public class CellularNetworkInfo {
     public func getMobileNetworkCode() -> String { return firstMobileNetworkCode }
     public func getIsoCountryCode() -> String { return firstIsoCountryCode }
     
+    /**This function gets Carrier, radio and Service Identifier Information from device*/
     public func Info() -> Void {
-        
-        print(" Testing...")
-        
+
         let carrierInfo = networkInfo.serviceSubscriberCellularProviders
         dump(carrierInfo)
         
@@ -48,6 +47,7 @@ public class CellularNetworkInfo {
         print(serviceIdentifier)
     }
 
+    /**This function gets current connected carrier if none available returns "Unkonwn".*/
     public func getFirstCarrierInfo() -> Void {
         
         let serviceSubscriberCellularProviders = networkInfo.serviceSubscriberCellularProviders
@@ -60,6 +60,7 @@ public class CellularNetworkInfo {
 
     }
     
+    /**This function gets current conneted Radio Access Rechnology*/
     public func getCurrentRadioAccessTechnology() -> String {
 
         let currCarrierType: String?

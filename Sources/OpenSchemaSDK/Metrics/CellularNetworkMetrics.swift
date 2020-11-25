@@ -14,7 +14,7 @@
 
 import Foundation
 
-///This class handles the GRPC creation of cellular  bundles and metrics that will be pushed using MetricsManager.
+///This class handles the GRPC creation of cellular bundles and metrics that will be pushed using MetricsManager.
 public class CellularNetworkMetrics {
     
     private let uuidManager = UUIDManager.shared
@@ -34,6 +34,7 @@ public class CellularNetworkMetrics {
         
     }
     
+    /**This function has a template to creare a GRPC String type metric from the proto files.*/
     private func CreateGRPCStringMetric(labelName : String, labelValue : String) -> Magma_Orc8r_MetricFamily {
         let label : Magma_Orc8r_LabelPair = Magma_Orc8r_LabelPair.with {
             $0.name = labelName
@@ -65,6 +66,7 @@ public class CellularNetworkMetrics {
         return family
     }
     
+    /**Using CreateGRPCStringMetric it collects the values from cellular connection  and return a Magma_Orc8r_MetricsContainer with them*/
     public func CollectCellularNetworkInfoMetrics() -> Magma_Orc8r_MetricsContainer {
         
         var cellularNetworkInfoFamilies = [Magma_Orc8r_MetricFamily]()

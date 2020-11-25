@@ -34,6 +34,7 @@ public class ReachabilityObserver {
         
     }
     
+    /**This function monitors the connection status and updates accordingly*/
     @objc private func reachabilityChanged(note: Notification) {
         let reachability = note.object as! Reachability
         
