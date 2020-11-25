@@ -38,13 +38,16 @@ public class MetricsManager {
     
     private let signedCert : Data
     private let clientConfig = ClientConfig.shared
-    public let uuidManager = UUIDManager.shared
+    private let uuidManager = UUIDManager.shared
     private let keyHelper = KeyHelper()
     private let cellularNetworkMetrics : CellularNetworkMetrics = CellularNetworkMetrics()
     private let wifiNetworkMetrics : WifiNetworkMetrics = WifiNetworkMetrics()
+    private var certificateFilePath : String
 
-    init(signedCert : Data) {
+    init(signedCert : Data , certificateFilePath : String) {
+        
         self.signedCert = signedCert
+        self.certificateFilePath = certificateFilePath
         
     }
     
@@ -54,13 +57,10 @@ public class MetricsManager {
     
     public func CollectAndPushMetrics() {
         
-        let certificateFileName = "rootca"
-        let certificateFilePath = Bundle.main.path(forResource: certificateFileName, ofType: "pem")
-       
         do {
             
             //Step i: get certificates
-            let pemCert = try NIOSSLCertificate.fromPEMFile(certificateFilePath!) // this is ROOTCA
+            let pemCert = try NIOSSLCertificate.fromPEMFile(certificateFilePath) // this is ROOTCA
             print("Signed Cert: " + NSData(data: signedCert).base64EncodedString())
             
             let serverSignedCert = try NIOSSLCertificate(bytes: [UInt8](signedCert), format: .der ) // This is Signed Cert

@@ -25,10 +25,13 @@ public class BootstrapManager {
     private let clientConfig = ClientConfig.shared
     private let uuidManager = UUIDManager.shared
     private let wifiNetworkinfo = WifiNetworkInfo.shared
-    let keyHelper = KeyHelper()
-    let certSignRequest = CertSignRequest()
+    private let keyHelper = KeyHelper()
+    private let certSignRequest = CertSignRequest()
+    
+    private var certificateFilePath : String
 
-    public init() {
+    public init(certificateFilePath : String) {
+        self.certificateFilePath = certificateFilePath
         print(self.uuidManager.getUUID())
         CreateSSIDObserver()
     }
@@ -64,13 +67,9 @@ public class BootstrapManager {
     }
     
     private func BootstrapLogic() {
-        //Step i: get certificate; Tutorial at: https://medium.com/@ambrose12silveira/ios-swift-grpc-integration-with-tls-client-authentication-f2e2164ed125
-        let certificateFileName = "rootca"
-        
-        let certificateFilePath = Bundle.main.path(forResource: certificateFileName, ofType: "pem")
- 
+
         do {
-            let pemCert = try NIOSSLCertificate.fromPEMFile(certificateFilePath!)
+            let pemCert = try NIOSSLCertificate.fromPEMFile(certificateFilePath)
             
             //Step ii: Create an event loop group
             let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -155,7 +154,7 @@ public class BootstrapManager {
                         do {
                             let signedCertData = try result.get().certDer
                             
-                            let metricsManager = MetricsManager(signedCert: signedCertData)
+                            let metricsManager = MetricsManager(signedCert: signedCertData, certificateFilePath: self.certificateFilePath)
                             metricsManager.CollectAndPushMetrics()
                             
                             
@@ -183,13 +182,13 @@ public class BootstrapManager {
             
             do {
                 let detailsStatus = try challenge.status.wait()
-                print("Staus:::\(detailsStatus) \n \(detailsStatus.code))")
+                print("Status:::\(detailsStatus) \n \(detailsStatus.code))")
             } catch {
                 print("Error for get Request:\(error)")
             }
             
         } catch {
-            print("Error getting rootca certificate: \(error)")
+            print("Error getting certificate: \(error)")
         }
     }
 }
