@@ -20,16 +20,27 @@ import org.json.JSONObject;
 
 import okhttp3.ResponseBody;
 
+/**
+ * Base class to be extended by other response types received from the OpenSchema middle box. Every response from the OpenSchema middle box contains at least a "message" field.
+ */
 public class BaseResponse {
-    @SerializedName("message") private String mMessage;
+    private final static String MESSAGE_FIELD = "message";
+
+    @SerializedName(MESSAGE_FIELD) private String mMessage;
+
+    /**
+     * Retrieve the message from a response received from the OpenSchema middle box.
+     */
     public String getMessage() { return mMessage; }
 
-    private final static String ERROR_MESSAGE_FIELD = "message";
+    /**
+     * Helper method used to retrieve the error message from a response received from the OpenSchema middle box.
+     */
     public static String getErrorMessage(ResponseBody res) {
         String errorMessage = "";
         try {
             JSONObject jsonObject = new JSONObject(res.string());
-            errorMessage = (String) jsonObject.get(ERROR_MESSAGE_FIELD);
+            errorMessage = (String) jsonObject.get(MESSAGE_FIELD);
         } catch (Exception e) {
             e.printStackTrace();
         }

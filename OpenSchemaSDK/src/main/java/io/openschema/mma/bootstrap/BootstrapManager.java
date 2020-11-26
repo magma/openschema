@@ -42,7 +42,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import io.grpc.ManagedChannel;
-import io.openschema.mma.R;
 import io.openschema.mma.bootstrapper.BootstrapperGrpc;
 import io.openschema.mma.bootstrapper.Challenge;
 import io.openschema.mma.certifier.Certificate;
@@ -53,12 +52,11 @@ import io.openschema.mma.id.Identity;
 import io.openschema.mma.identity.AccessGatewayID;
 
 /**
- * In charge of BootStrapping flow
- *
+ * Class in charge of the Bootstrapping flow. This is required to start pushing metrics.
  */
-public class BootStrapManager {
+public class BootstrapManager {
 
-    private static final String TAG = "BootStrapManager";
+    private static final String TAG = "BootstrapManager";
 
     private static final String KEY_STORE = "AndroidKeyStore";
     private static final String HW_KEY_ALIAS = "";
@@ -71,9 +69,9 @@ public class BootStrapManager {
     private KeyStore mKeyStore;
     private SSLContext mSSLContext;
 
-    private boolean mBootStrapSuccess;
+    private boolean mBootstrapSuccess;
 
-    public BootStrapManager(Context context, int certificateResId, Identity identity) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, InvalidAlgorithmParameterException, NoSuchProviderException {
+    public BootstrapManager(Context context, int certificateResId, Identity identity) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, InvalidAlgorithmParameterException, NoSuchProviderException {
         // create new identity or load an exiting one
         // TODO: if this is a new identity it should be registered first
         mIdentity = identity;
@@ -82,6 +80,16 @@ public class BootStrapManager {
         initializeTrustManagerFactory(context, certificateResId);
     }
 
+    /**
+     * Register the supplied self-signed certificate to communicate with the Bootstrap cloud controller.
+     *
+     * @param context
+     * @param certificateResId
+     * @throws CertificateException
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
     private void initializeTrustManagerFactory(Context context, int certificateResId)
             throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         CertificateFactory cf = CertificateFactory.getInstance(CERT_TYPE);
@@ -111,6 +119,21 @@ public class BootStrapManager {
         mKeyStore.setKeyEntry(GW_KEY_ALIAS, privateKey, null, certChain );
     }
 
+    /**
+     * Execute the bootstrapping process in blocking mode. This will allow the client to collect metrics.
+     *
+     * @param controllerAddress
+     * @param controllerPort
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException
+     * @throws IOException
+     * @throws OperatorCreationException
+     * @throws UnrecoverableKeyException
+     * @throws CertificateException
+     * @throws SignatureException
+     * @throws KeyStoreException
+     * @throws InvalidKeyException
+     */
     public void bootstrapNow(String controllerAddress, int controllerPort)
             throws NoSuchAlgorithmException, KeyManagementException, IOException, OperatorCreationException, UnrecoverableKeyException, CertificateException, SignatureException, KeyStoreException, InvalidKeyException {
 
@@ -154,7 +177,7 @@ public class BootStrapManager {
         storeSignedCertificate(certificate);
 
         Log.d(TAG, "MMA: Bootstrapping was successful");
-        mBootStrapSuccess = true;
+        mBootstrapSuccess = true;
 
 //        kmf.init(keyStore, password.toCharArray());
 //        SSLContext context = SSLContext.getInstance("TLS");
@@ -169,7 +192,7 @@ public class BootStrapManager {
 //        MetricsControllerGrpc.MetricsControllerBlockingStub stub2 = MetricsControllerGrpc.newBlockingStub(bootStrapChannel);
     }
 
-    public boolean isBootStrapSuccess() {
-        return mBootStrapSuccess;
+    public boolean isBootstrapSuccess() {
+        return mBootstrapSuccess;
     }
 }

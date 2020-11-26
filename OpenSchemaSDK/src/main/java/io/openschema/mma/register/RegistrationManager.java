@@ -26,20 +26,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Client or UE need to be registered on the Cloud with their UUID and Key for the bootstrapping process.
- * Registration is manual now but should be automated.
- * <p>
- * Sample Service
- * message UeParams {
- * bytes key = 1;
- * string uuid = 2;
- * }
- * service RegisterUE {
- * rpc Register (UeParams) returns (Response) {}
- * }
- * message Response {
- * string response = 1;
- * }
+ * Class in charge of registering the UE using a generated UUID and Key.
  */
 public class RegistrationManager {
 
@@ -55,7 +42,10 @@ public class RegistrationManager {
         mBackendApi = backendApi;
     }
 
-    //Send POST request to register the UE as a gateway in magma
+    /**
+     * Sends a POST request to register the UE as a gateway in the Magma cloud. If the UE has
+     * already been registered, no request will be sent.
+     */
     public void register() {
         Log.d(TAG, "MMA: Sending registration request.");
         mBackendApi.register(new RegisterRequest(mIdentity.getUUID(), mIdentity.getPublicKey()))
@@ -87,6 +77,11 @@ public class RegistrationManager {
         mListener = listener;
     }
 
+    /**
+     * Interface with a callback to be invoked when the OpenSchema middle box responds with
+     * a successful registration. It will also be called if it detects that the UE was already
+     * registered.
+     */
     public interface OnRegisterListener {
         void OnRegister();
     }

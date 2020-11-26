@@ -23,7 +23,7 @@ import io.openschema.mma.certifier.CSR;
 import io.openschema.mma.identity.AccessGatewayID;
 import io.openschema.mma.identity.Identity;
 
-/**
+/*
  * Response to challenge including CSR include:
  * - UUID
  * - Challenge

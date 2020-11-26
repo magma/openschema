@@ -32,12 +32,20 @@ import okhttp3.Request;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+/**
+ * Helper class to setup Retrofit, either with a regular HTTP client or an unsafe client using
+ * a self-signed certificate, and to retrieve the API declared in {@link BackendApi}. This class
+ * works as a singleton and must be retrieved using {@link #getService(Context)}.
+ */
 public class RetrofitService {
     private static String TAG = "RetrofitService";
 
     //Singleton
     private static RetrofitService _instance = null;
 
+    /**
+     * Call to retrieve a {@link RetrofitService} object.
+     */
     public static RetrofitService getService(Context appContext) {
         Log.d(TAG, "UI: Fetching RetrofitService");
         if (_instance == null) {
@@ -64,8 +72,22 @@ public class RetrofitService {
     private RetrofitService(Context context) {
     }
 
+    /**
+     * Returns the instantiated interface with the previously declared HTTP calls. Requires {@link #initApi(Context, String, int, String, String) initApi()}
+     * to have been called first.
+     */
     public BackendApi getApi() { return mApi;}
 
+
+    /**
+     * Initialize the HTTP interface to be used with Retrofit. Can either use a safe HTTP client or an unsafe client
+     * using a self-signed certificate.
+     *
+     * @param baseURL          Base URL to be used to make the HTTP calls.
+     * @param certificateResId Resource ID for self-signed certificate. Use -1 to get a safe HTTP client instead.
+     * @param username         Secret username used in the server's Basic Auth.
+     * @param password         Secret password used in the server's Basic Auth.
+     */
     public void initApi(Context context, String baseURL, int certificateResId, String username, String password) {
 
         //Build credentials string for Basic Auth

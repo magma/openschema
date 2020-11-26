@@ -44,7 +44,7 @@ import java.security.cert.CertificateException;
 import io.openschema.mma.bootstrapper.Challenge;
 
 /**
- * Helper Class to generate keypairs for different stages of Bootstrapping
+ * Helper Class to generate keypairs for different stages of Bootstrapping.
  */
 public class KeyHelper {
 

@@ -25,25 +25,42 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
 /**
- *  Handles the unique ID generation and storage. Unique ID is a UUID and will be used as part of the
- *  registration and bootstrapping.
+ *  Class used by {@link io.openschema.mma.MobileMetricsAgent MobileMetricsAgent} to share the UUID and
+ *  public key values in both the registration and bootstrapping processes.
  */
 public class Identity {
 
     private String mUUID;
     private String mPublicKey;
 
+    /** Instantiate a new {@link Identity} object and generate new UUID and public key values.
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws InvalidAlgorithmParameterException
+     * @throws NoSuchProviderException
+     */
     public Identity(Context context)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, InvalidAlgorithmParameterException, NoSuchProviderException {
         mUUID = new UUID(context).getUUID();
         mPublicKey = new HardwareKey().getHwPublicKey();
+
+        //TODO: remove, used for testing purposes
         Log.d("MMA: TestIdentity", mUUID + "\n" + mPublicKey);
     }
 
+
+    /**
+     * Get the object's UUID value
+     */
     public String getUUID() {
         return mUUID;
     }
 
+    /**
+     * Get the object's public key value
+     */
     public String getPublicKey() {
         return mPublicKey;
     }

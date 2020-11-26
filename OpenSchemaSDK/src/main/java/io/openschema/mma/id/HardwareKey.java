@@ -14,7 +14,6 @@
 
 package io.openschema.mma.id;
 
-import android.content.Context;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 
@@ -26,7 +25,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.spec.ECGenParameterSpec;
@@ -34,7 +32,7 @@ import java.security.spec.ECGenParameterSpec;
 import io.openschema.mma.helpers.KeyHelper;
 
 /**
- * Generate and Store HW Key
+ * Helper class used to generate and store a hardware key.
  */
 
 public class HardwareKey {

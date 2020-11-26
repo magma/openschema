@@ -19,7 +19,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * generate and store uuid
+ * Helper class used to generate and store a UUID.
  */
 
 public class UUID {

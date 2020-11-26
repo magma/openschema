@@ -20,7 +20,13 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 
+/**
+ * Interface used by Retrofit to generate HTTP calls. Implemented in {@link RetrofitService}.
+ */
 public interface BackendApi {
+    /**
+     * Calls the registration API in OpenSchema's middle box.
+     */
     @POST("register")
     Call<BaseResponse> register(@Body RegisterRequest req);
 }

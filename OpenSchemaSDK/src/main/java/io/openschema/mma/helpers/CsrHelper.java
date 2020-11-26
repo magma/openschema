@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Helper Class to generate Certificate Signing Request
+ * Helper Class to generate Certificate Signing Request.
  */
 public class CsrHelper {
 

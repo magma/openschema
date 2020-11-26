@@ -16,6 +16,9 @@ package io.openschema.mma.networking.request;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Class with the structure expected to be received in the OpenSchema's middle box registration API.
+ */
 public class RegisterRequest {
     @SerializedName("uuid") private String mUUID;
     @SerializedName("publicKey") private String mPublicKey;

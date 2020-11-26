@@ -16,6 +16,9 @@ package io.openschema.mma.metrics;
 
 import android.content.Context;
 
+/**
+ * Class in charge of handling the metrics calls.
+ */
 public class MetricsManager {
 
     private Context mContext;
