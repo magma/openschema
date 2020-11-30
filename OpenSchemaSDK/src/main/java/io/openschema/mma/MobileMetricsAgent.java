@@ -15,6 +15,8 @@
 package io.openschema.mma;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import java.io.IOException;
@@ -29,8 +31,8 @@ import io.openschema.mma.certifier.Certificate;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.networking.BackendApi;
-import io.openschema.mma.networking.RetrofitService;
 import io.openschema.mma.networking.CertificateManager;
+import io.openschema.mma.networking.RetrofitService;
 import io.openschema.mma.register.RegistrationManager;
 
 /**
@@ -55,9 +57,9 @@ public class MobileMetricsAgent {
     private CertificateManager mCertificateManager;
     private boolean mIsReady = false;
 
-    private RegistrationManager mRegistrationManager;
-    private BootstrapManager mBootstrapManager;
-    private MetricsManager mMetricsManager;
+    private RegistrationManager mRegistrationManager = null;
+    private BootstrapManager mBootstrapManager = null;
+    private MetricsManager mMetricsManager = null;
 
     private MobileMetricsAgent(Builder mmaBuilder) {
         mControllerAddress = mmaBuilder.mControllerAddress;
@@ -79,13 +81,6 @@ public class MobileMetricsAgent {
      * This call will register the device with a unique UUID to the cloud, if it hasn't been registered yet,
      * and then proceed to execute the bootstrapping sequence. The {@link MobileMetricsAgent} needs to be
      * initialized before attempting to push information to the data lake.
-     *
-     * @throws CertificateException
-     * @throws NoSuchAlgorithmException
-     * @throws KeyStoreException
-     * @throws NoSuchProviderException
-     * @throws InvalidAlgorithmParameterException
-     * @throws IOException
      */
     public void init() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
         Log.d(TAG, "MMA: Initializing MMA...");
@@ -98,37 +93,53 @@ public class MobileMetricsAgent {
         retrofitService.initApi(mAppContext, mBackendBaseURL, mCertificateManager.getSSLContext(), mBackendUsername, mBackendPassword);
         BackendApi backendApi = retrofitService.getApi();
 
-        mRegistrationManager = new RegistrationManager(mAppContext, mIdentity, backendApi);
+        mRegistrationManager = new RegistrationManager(backendApi, mIdentity);
         mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.getSSLContext(), mIdentity);
 
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        new Thread(() -> {
+            try {
+                //Register
+                //TODO: Consider checking whether uuid is already saved in sharedprefs instead of sending a new request
+                boolean isRegistered = mRegistrationManager.registerSync();
+                Certificate certificate = null;
 
-        mRegistrationManager.setOnRegisterListener(this::onRegistrationCompleted);
+                //Bootstrap
+                if (isRegistered) {
+                    certificate = mBootstrapManager.bootstrapSync();
+                }
 
-        //TODO: Consider checking whether uuid is already saved in sharedprefs instead of sending a new request
-        mRegistrationManager.register();
+                //Store certificate & setup metrics manager
+                if (certificate != null) {
+                    mCertificateManager.addBootstrapCertificate(certificate);
+                    mMetricsManager = new MetricsManager(mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mCertificateManager.getSSLContext(), mIdentity);
+                    mainHandler.post(this::onReady);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }).start();
+
     }
 
-    //TODO: consider adding a queue to wait until MMA has finished bootstrapping and is ready to push metrics
     public void pushMetric(String metricName, String metricValue) {
-        //TODO: check for mIsReady
-        mMetricsManager.collect(metricName, metricValue);
-        mMetricsManager.push(metricName, metricValue);
-    }
-
-    private void onRegistrationCompleted() {
-        try {
-            //TODO: Send to background, bootstrapping process is currently blocking the main thread
-            Certificate certificate = mBootstrapManager.bootstrapNow();
-            onBootstrappingCompleted(certificate);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        //TODO: consider adding a queue to wait until MMA has finished bootstrapping and is ready to push metrics
+        // instead of simply losing the push.
+        if (mIsReady) {
+            new Thread(() -> {
+                mMetricsManager.collectSync(metricName, metricValue);
+                mMetricsManager.pushSync(metricName, metricValue);
+            }).start();
+        } else {
+            Log.w(TAG, "MMA: Metrics agent isn't ready yet");
         }
     }
 
-    private void onBootstrappingCompleted(Certificate certificate) {
-        mCertificateManager.addBootstrapCertificate(certificate);
-        mMetricsManager = new MetricsManager(mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mCertificateManager.getSSLContext(), mIdentity);
+    /**
+     * Method called once the whole bootstrapping sequence started with {@link #init()} is completed.
+     */
+    private void onReady() {
         mIsReady = true;
     }
 

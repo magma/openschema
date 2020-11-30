@@ -14,30 +14,18 @@
 
 package io.openschema.mma.metrics;
 
-import android.content.Context;
 import android.util.Log;
 
-import java.security.KeyFactory;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 
+import androidx.annotation.WorkerThread;
 import io.grpc.Channel;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.okhttp.OkHttpChannelBuilder;
-import io.grpc.stub.StreamObserver;
-import io.openschema.mma.bootstrap.BootstrapManager;
 import io.openschema.mma.helpers.ChannelHelper;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metricsd.MetricsContainer;
 import io.openschema.mma.metricsd.MetricsControllerGrpc;
 import io.openschema.mma.metricsd.PushedMetric;
 import io.openschema.mma.metricsd.PushedMetricsContainer;
-import io.openschema.mma.metricsd.Void;
 
 /**
  * Class in charge of handling the metrics calls.
@@ -48,7 +36,6 @@ public class MetricsManager {
 
     private Identity mIdentity;
 
-    private MetricsControllerGrpc.MetricsControllerStub mAsyncStub;
     private MetricsControllerGrpc.MetricsControllerBlockingStub mBlockingStub;
 
     public MetricsManager(String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader, SSLContext sslContext, Identity identity) {
@@ -60,11 +47,11 @@ public class MetricsManager {
                 sslContext.getSocketFactory(),
                 metricsAuthorityHeader);
 
-        mAsyncStub = MetricsControllerGrpc.newStub(channel);
         mBlockingStub = MetricsControllerGrpc.newBlockingStub(channel);
     }
 
-    public void collect(String metricName, String metricValue) {
+    @WorkerThread
+    public void collectSync(String metricName, String metricValue) {
 
         Log.d(TAG, "MMA: Sending collect request...");
         LabelPair labelPair = LabelPair.newBuilder()
@@ -137,7 +124,8 @@ public class MetricsManager {
         mBlockingStub.collect(mMetricContainer);
     }
 
-    public void push(String metricName, String metricValue) {
+    @WorkerThread
+    public void pushSync(String metricName, String metricValue) {
 
         Log.d(TAG, "MMA: Sending push request...");
         LabelPair labelPair = LabelPair.newBuilder()

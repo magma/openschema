@@ -49,6 +49,6 @@ public class MainActivity extends AppCompatActivity {
         //Bootstrapping needs to complete before any metric can be pushed
         new Handler().postDelayed(() -> {
             mma.pushMetric("testMetric", "testValue");
-        }, 3000);
+        }, 8000);
     }
 }

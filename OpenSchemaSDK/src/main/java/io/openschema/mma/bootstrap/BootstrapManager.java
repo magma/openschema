@@ -14,37 +14,22 @@
 
 package io.openschema.mma.bootstrap;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.spongycastle.operator.OperatorCreationException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 
+import androidx.annotation.WorkerThread;
 import io.grpc.Channel;
-import io.grpc.ManagedChannel;
-import io.openschema.mma.MobileMetricsAgent;
 import io.openschema.mma.bootstrapper.BootstrapperGrpc;
 import io.openschema.mma.bootstrapper.Challenge;
 import io.openschema.mma.certifier.Certificate;
@@ -53,7 +38,6 @@ import io.openschema.mma.helpers.KeyHelper;
 import io.openschema.mma.helpers.RandSByteString;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.identity.AccessGatewayID;
-import io.openschema.mma.metricsd.MetricsControllerGrpc;
 import io.openschema.mma.networking.CertificateManager;
 
 /**
@@ -65,7 +49,6 @@ public class BootstrapManager {
 
     private Identity mIdentity;
 
-    private BootstrapperGrpc.BootstrapperStub mAsyncStub;
     private BootstrapperGrpc.BootstrapperBlockingStub mBlockingStub;
 
     private boolean mBootstrapSuccess;
@@ -78,27 +61,16 @@ public class BootstrapManager {
                 controllerPort,
                 sslContext.getSocketFactory());
 
-        mAsyncStub = BootstrapperGrpc.newStub(channel);
         mBlockingStub = BootstrapperGrpc.newBlockingStub(channel);
     }
 
     /**
-     * Execute the bootstrapping process in blocking mode. This will allow the client to collect metrics.
-     *
-     * @param controllerAddress
-     * @param controllerPort
-     * @throws NoSuchAlgorithmException
-     * @throws KeyManagementException
-     * @throws IOException
-     * @throws OperatorCreationException
-     * @throws UnrecoverableKeyException
-     * @throws CertificateException
-     * @throws SignatureException
-     * @throws KeyStoreException
-     * @throws InvalidKeyException
+     * Execute the bootstrapping process in blocking mode. This will allow the client to collect metrics. This
+     * operation can't be called from the main thread.
      */
-    public Certificate bootstrapNow()
-            throws NoSuchAlgorithmException, KeyManagementException, IOException, OperatorCreationException, UnrecoverableKeyException, CertificateException, SignatureException, KeyStoreException, InvalidKeyException {
+    @WorkerThread
+    public Certificate bootstrapSync()
+            throws NoSuchAlgorithmException, IOException, OperatorCreationException, UnrecoverableKeyException, CertificateException, SignatureException, KeyStoreException, InvalidKeyException {
 
         Log.d(TAG, "MMA: Starting bootstrap process");
 

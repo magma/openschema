@@ -42,6 +42,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 import io.openschema.mma.bootstrapper.Challenge;
+import io.openschema.mma.id.HardwareKey;
 
 /**
  * Helper Class to generate keypairs for different stages of Bootstrapping.
@@ -49,7 +50,6 @@ import io.openschema.mma.bootstrapper.Challenge;
 public class KeyHelper {
 
     private static final String KEY_STORE = "AndroidKeyStore";
-    private static final String HW_KEY_ALIAS = "hw_key_alias";
 
     public static KeyPair generateRSAKeyPairForAlias(String alias) {
         try {
@@ -95,7 +95,7 @@ public class KeyHelper {
         RandSByteString rands = new RandSByteString();
         KeyStore ks = KeyStore.getInstance(KEY_STORE);
         ks.load(null);
-        PrivateKey testPriKey = (PrivateKey) ks.getKey(HW_KEY_ALIAS, null);
+        PrivateKey testPriKey = (PrivateKey) ks.getKey(HardwareKey.HW_KEY_ALIAS, null);
         Signature s = Signature.getInstance("SHA256withECDSA");
         s.initSign(testPriKey);
         s.update(challenge.getChallenge().toByteArray());

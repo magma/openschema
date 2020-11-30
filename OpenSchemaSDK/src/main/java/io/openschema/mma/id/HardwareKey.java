@@ -37,7 +37,7 @@ import io.openschema.mma.helpers.KeyHelper;
 
 public class HardwareKey {
 
-    private static final String HW_KEY_ALIAS = "hw_key_alias";
+    public static final String HW_KEY_ALIAS = "hw_key_alias";
     private static final String KEY_STORE = "AndroidKeyStore";
     private static final int KEY_SIZE = 256;
 
