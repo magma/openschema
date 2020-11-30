@@ -15,6 +15,7 @@
 package io.openschema.mma.example;
 
 import android.os.Bundle;
+import android.os.Handler;
 
 import androidx.appcompat.app.AppCompatActivity;
 import io.openschema.mma.MobileMetricsAgent;
@@ -31,10 +32,10 @@ public class MainActivity extends AppCompatActivity {
                 .setControllerAddress(getString(R.string.controller_address))
                 .setControllerPort(getResources().getInteger(R.integer.controller_port))
                 .setBootstrapperAddress(getString(R.string.bootstrapper_address))
-                .setBootstrapperCertificateResId(R.raw.bootstrap)
+                .setControllerCertificateResId(R.raw.controller)
                 .setAuthorityHeader(getString(R.string.metrics_authority_header))
                 .setBackendBaseURL(getString(R.string.backend_base_url))
-                .setBackendCertificateResId(R.raw.server)
+                .setBackendCertificateResId(R.raw.backend)
                 .setBackendUsername(getString(R.string.backend_username))
                 .setBackendPassword(getString(R.string.backend_password))
                 .build();
@@ -44,5 +45,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        //Bootstrapping needs to complete before any metric can be pushed
+        new Handler().postDelayed(() -> {
+            mma.pushMetric("testMetric", "testValue");
+        }, 3000);
     }
 }

@@ -25,9 +25,12 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
 import io.openschema.mma.bootstrap.BootstrapManager;
+import io.openschema.mma.certifier.Certificate;
 import io.openschema.mma.id.Identity;
+import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.networking.BackendApi;
 import io.openschema.mma.networking.RetrofitService;
+import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.register.RegistrationManager;
 
 /**
@@ -39,26 +42,29 @@ public class MobileMetricsAgent {
 
     private String mControllerAddress;
     private String mBootstrapperAddress;
-    private int mBootstrapperCertificateResId;
+    private int mControllerCertificateResId;
     private String mMetricsAuthorityHeader;
     private int mControllerPort;
-
     private String mBackendBaseURL;
     private int mBackendCertificateResId;
     private String mBackendUsername;
     private String mBackendPassword;
 
     private Context mAppContext;
+    private Identity mIdentity;
+    private CertificateManager mCertificateManager;
+    private boolean mIsReady = false;
+
     private RegistrationManager mRegistrationManager;
     private BootstrapManager mBootstrapManager;
+    private MetricsManager mMetricsManager;
 
     private MobileMetricsAgent(Builder mmaBuilder) {
         mControllerAddress = mmaBuilder.mControllerAddress;
         mBootstrapperAddress = mmaBuilder.mBootstrapperAddress;
-        mBootstrapperCertificateResId = mmaBuilder.mBootstrapperCertificateResId;
+        mControllerCertificateResId = mmaBuilder.mControllerCertificateResId;
         mMetricsAuthorityHeader = mmaBuilder.mMetricsAuthorityHeader;
         mControllerPort = mmaBuilder.mControllerPort;
-
         mBackendBaseURL = mmaBuilder.mBackendBaseURL;
         mBackendCertificateResId = mmaBuilder.mBackendCertificateResId;
         mBackendUsername = mmaBuilder.mBackendUsername;
@@ -83,35 +89,55 @@ public class MobileMetricsAgent {
      */
     public void init() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
         Log.d(TAG, "MMA: Initializing MMA...");
-        Identity identity = new Identity(mAppContext);
+        mIdentity = new Identity(mAppContext);
+        mCertificateManager = new CertificateManager();
+        mCertificateManager.addBackendCertificate(mAppContext, mBackendCertificateResId);
+        mCertificateManager.addControllerCertificate(mAppContext, mControllerCertificateResId);
 
-        RetrofitService mRetrofitService = RetrofitService.getService(mAppContext);
-        mRetrofitService.initApi(mAppContext, mBackendBaseURL, mBackendCertificateResId, mBackendUsername, mBackendPassword);
-        BackendApi mBackendApi = mRetrofitService.getApi();
+        RetrofitService retrofitService = RetrofitService.getService(mAppContext);
+        retrofitService.initApi(mAppContext, mBackendBaseURL, mCertificateManager.getSSLContext(), mBackendUsername, mBackendPassword);
+        BackendApi backendApi = retrofitService.getApi();
 
-        mRegistrationManager = new RegistrationManager(mAppContext, identity, mBackendApi);
-        mBootstrapManager = new BootstrapManager(mAppContext, mBootstrapperCertificateResId, identity);
+        mRegistrationManager = new RegistrationManager(mAppContext, mIdentity, backendApi);
+        mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.getSSLContext(), mIdentity);
 
-        //TODO: spawn a background thread instead? Bootstrapping process is currently blocking the main thread
-        mRegistrationManager.setOnRegisterListener(() -> {
-            try {
-                mBootstrapManager.bootstrapNow(mBootstrapperAddress, mControllerPort);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+
+        mRegistrationManager.setOnRegisterListener(this::onRegistrationCompleted);
 
         //TODO: Consider checking whether uuid is already saved in sharedprefs instead of sending a new request
         mRegistrationManager.register();
     }
 
+    //TODO: consider adding a queue to wait until MMA has finished bootstrapping and is ready to push metrics
+    public void pushMetric(String metricName, String metricValue) {
+        //TODO: check for mIsReady
+        mMetricsManager.collect(metricName, metricValue);
+        mMetricsManager.push(metricName, metricValue);
+    }
+
+    private void onRegistrationCompleted() {
+        try {
+            //TODO: Send to background, bootstrapping process is currently blocking the main thread
+            Certificate certificate = mBootstrapManager.bootstrapNow();
+            onBootstrappingCompleted(certificate);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void onBootstrappingCompleted(Certificate certificate) {
+        mCertificateManager.addBootstrapCertificate(certificate);
+        mMetricsManager = new MetricsManager(mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mCertificateManager.getSSLContext(), mIdentity);
+        mIsReady = true;
+    }
 
     /**
      * Builder class for {@link MobileMetricsAgent} objects.
      *
      * <p>Example:
      *
-     *     <pre>
+     * <pre>
      *     MobileMetricsAgent mma = new MobileMetricsAgent.Builder()
      *             .setAppContext(getApplicationContext())
      *             .setControllerAddress(getString(R.string.controller_address))
@@ -129,10 +155,9 @@ public class MobileMetricsAgent {
     public static class Builder {
         private String mControllerAddress;
         private String mBootstrapperAddress;
-        private int mBootstrapperCertificateResId;
+        private int mControllerCertificateResId;
         private String mMetricsAuthorityHeader;
         private int mControllerPort;
-
         private String mBackendBaseURL;
         private int mBackendCertificateResId;
         private String mBackendUsername;
@@ -160,11 +185,11 @@ public class MobileMetricsAgent {
         }
 
         /**
-         * @param certificateResId Resource ID of the bootstrapper's controller raw certificate
+         * @param certificateResId Resource ID of the magma controller's raw certificate
          * @return
          */
-        public Builder setBootstrapperCertificateResId(int certificateResId) {
-            mBootstrapperCertificateResId = certificateResId;
+        public Builder setControllerCertificateResId(int certificateResId) {
+            mControllerCertificateResId = certificateResId;
             return this;
         }
 

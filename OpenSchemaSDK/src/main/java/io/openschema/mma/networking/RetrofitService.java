@@ -78,7 +78,6 @@ public class RetrofitService {
      */
     public BackendApi getApi() { return mApi;}
 
-
     /**
      * Initialize the HTTP interface to be used with Retrofit. Can either use a safe HTTP client or an unsafe client
      * using a self-signed certificate.
@@ -88,14 +87,14 @@ public class RetrofitService {
      * @param username         Secret username used in the server's Basic Auth.
      * @param password         Secret password used in the server's Basic Auth.
      */
-    public void initApi(Context context, String baseURL, int certificateResId, String username, String password) {
+    public void initApi(Context context, String baseURL, SSLContext sslContext, String username, String password) {
 
         //Build credentials string for Basic Auth
         String basicCredentials = "Basic " + Base64.encodeToString((username + ":" + password).getBytes(), Base64.NO_WRAP);
 
-        OkHttpClient httpClient = certificateResId == -1 ?
+        OkHttpClient httpClient = sslContext == null ?
                 getSafeHttpClient(context, basicCredentials) :
-                getUnsafeHttpClient(context, certificateResId, basicCredentials);
+                getUnsafeHttpClient(sslContext, basicCredentials);
 
         mApi = new Retrofit.Builder()
                 .baseUrl(baseURL)
@@ -106,6 +105,7 @@ public class RetrofitService {
     }
 
     private OkHttpClient getSafeHttpClient(Context context, String credentials) {
+        //Interceptor for including Basic Auth header in every request
         return new OkHttpClient.Builder()
                 .addInterceptor(chain -> {
                     Request req = chain.request().newBuilder().addHeader("Authorization", credentials).build();
@@ -115,28 +115,8 @@ public class RetrofitService {
     }
 
     //Unsafe httpclient that accepts a server using a self-signed certificate
-    private OkHttpClient getUnsafeHttpClient(Context context, int certificateResId, String credentials) {
-        //Load our self-signed certificate
-        SSLContext sslContext = null;
-        try {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            InputStream certificate = context.getResources().openRawResource(certificateResId);
-            Certificate cert = cf.generateCertificate(certificate);
-            certificate.close();
-
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(null, null);
-            keyStore.setCertificateEntry("backend", cert);
-
-            sslContext = SSLContext.getInstance("TLS");
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(keyStore);
-            sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //Interceptor for including JWT token in every request
+    private OkHttpClient getUnsafeHttpClient(SSLContext sslContext, String credentials) {
+        //Interceptor for including Basic Auth header in every request
         return new OkHttpClient.Builder()
                 .addInterceptor(chain -> {
                     Request req = chain.request().newBuilder().addHeader("Authorization", credentials).build();
