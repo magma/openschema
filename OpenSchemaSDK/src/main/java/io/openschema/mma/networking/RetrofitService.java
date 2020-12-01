@@ -19,13 +19,7 @@ import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -73,7 +67,7 @@ public class RetrofitService {
     }
 
     /**
-     * Returns the instantiated interface with the previously declared HTTP calls. Requires {@link #initApi(Context, String, int, String, String) initApi()}
+     * Returns the instantiated interface with the previously declared HTTP calls. Requires {@link #initApi(String, SSLContext, String, String) initApi()}
      * to have been called first.
      */
     public BackendApi getApi() { return mApi;}
@@ -82,18 +76,18 @@ public class RetrofitService {
      * Initialize the HTTP interface to be used with Retrofit. Can either use a safe HTTP client or an unsafe client
      * using a self-signed certificate.
      *
-     * @param baseURL          Base URL to be used to make the HTTP calls.
-     * @param certificateResId Resource ID for self-signed certificate. Use -1 to get a safe HTTP client instead.
-     * @param username         Secret username used in the server's Basic Auth.
-     * @param password         Secret password used in the server's Basic Auth.
+     * @param baseURL    Base URL to be used to make the HTTP calls.
+     * @param sslContext SSLContext created using a KeyStore that includes a self-signed certificate. Send null to ge¶t a safe HTTP client instead.
+     * @param username   Secret username used in the server's Basic Auth.
+     * @param password   Secret password used in the server's Basic Auth.
      */
-    public void initApi(Context context, String baseURL, SSLContext sslContext, String username, String password) {
+    public void initApi(String baseURL, SSLContext sslContext, String username, String password) {
 
         //Build credentials string for Basic Auth
         String basicCredentials = "Basic " + Base64.encodeToString((username + ":" + password).getBytes(), Base64.NO_WRAP);
 
         OkHttpClient httpClient = sslContext == null ?
-                getSafeHttpClient(context, basicCredentials) :
+                getSafeHttpClient(basicCredentials) :
                 getUnsafeHttpClient(sslContext, basicCredentials);
 
         mApi = new Retrofit.Builder()
@@ -104,7 +98,7 @@ public class RetrofitService {
                 .create(BackendApi.class);
     }
 
-    private OkHttpClient getSafeHttpClient(Context context, String credentials) {
+    private OkHttpClient getSafeHttpClient(String credentials) {
         //Interceptor for including Basic Auth header in every request
         return new OkHttpClient.Builder()
                 .addInterceptor(chain -> {

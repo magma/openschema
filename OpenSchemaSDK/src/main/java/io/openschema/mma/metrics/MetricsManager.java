@@ -14,11 +14,15 @@
 
 package io.openschema.mma.metrics;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
+
+import java.util.List;
 
 import javax.net.ssl.SSLContext;
 
 import androidx.annotation.WorkerThread;
+import androidx.core.util.Pair;
 import io.grpc.Channel;
 import io.openschema.mma.helpers.ChannelHelper;
 import io.openschema.mma.id.Identity;
@@ -35,7 +39,6 @@ public class MetricsManager {
     private static final String TAG = "MetricsManager";
 
     private Identity mIdentity;
-
     private MetricsControllerGrpc.MetricsControllerBlockingStub mBlockingStub;
 
     public MetricsManager(String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader, SSLContext sslContext, Identity identity) {
@@ -50,115 +53,85 @@ public class MetricsManager {
         mBlockingStub = MetricsControllerGrpc.newBlockingStub(channel);
     }
 
+    /**
+     * Send metrics to prometheus through GRPC using the Collect method in metricsd.proto
+     *
+     * @param metricName   Root name for the group of collected metrics
+     * @param metricValues List of metrics to collect with the <name, value> structure
+     */
+    @SuppressLint("CheckResult")
     @WorkerThread
-    public void collectSync(String metricName, String metricValue) {
+    public void collectSync(String metricName, List<Pair<String, String>> metricValues) {
 
         Log.d(TAG, "MMA: Sending collect request...");
-        LabelPair labelPair = LabelPair.newBuilder()
-                .setName(metricName)
-                .setValue(metricValue)
-                .build();
 
-        Metric metric = Metric.newBuilder()
-                .addLabel(labelPair)
-                .setTimestampMs(System.currentTimeMillis())
-                .build();
+        long timestamp = System.currentTimeMillis();
 
-        MetricFamily metricFamily = MetricFamily.newBuilder()
-                .addMetric(metric)
-                .build();
+        //Create metrics base
+        Metric.Builder metricBuilder = Metric.newBuilder()
+//                .setTimestampMs(timestamp) //Not sure where this is used
+                .addLabel(LabelPair.newBuilder()
+                        .setName("uuid")
+                        .setValue(mIdentity.getUUID())
+                        .build())
+                .addLabel(LabelPair.newBuilder()
+                        .setName("timestamp")
+                        .setValue(Long.toString(timestamp))
+                        .build())
+                .setUntyped(Untyped.newBuilder()
+                        .setValue(0)
+                        .build());
 
-        MetricsContainer payload = MetricsContainer.newBuilder()
-                .setGatewayId(mIdentity.getUUID())
-                .addFamily(metricFamily)
-                .build();
+        //Add custom list of metrics
+        for (Pair<String, String> metricValue : metricValues) {
+            metricBuilder.addLabel(LabelPair.newBuilder()
+                    .setName(metricValue.first)
+                    .setValue(metricValue.second)
+                    .build());
+        }
 
-
-//        mAsyncStub.collect(payload, new StreamObserver<Void>() {
-//            @Override
-//            public void onNext(Void value) {
-//                Log.d(TAG, "MMA: COLLECT onNext: ");
-//            }
-//            @Override
-//            public void onError(Throwable t) {
-//                Log.d(TAG, "MMA: COLLECT onError: ");
-//                t.printStackTrace();
-//            }
-//            @Override
-//            public void onCompleted() {
-//                Log.d(TAG, "MMA: COLLECT onCompleted: ");
-//            }
-//        });
-//        mBlockingStub.collect(payload);
-
-        //TODO: Remove test metric and allow for custom ones to be sent
-        MetricsContainer mMetricContainer = MetricsContainer.newBuilder()
+        //Create magma wrapper
+        MetricsContainer metricsContainer = MetricsContainer.newBuilder()
                 .setGatewayId(mIdentity.getUUID())
                 .addFamily(MetricFamily.newBuilder()
-                        .setName("location")
-                        .addMetric(Metric.newBuilder()
-                                .addLabel(LabelPair.newBuilder()
-                                        .setName("lat")
-                                        .setValue("0.1")
-                                        .build())
-                                .addLabel(LabelPair.newBuilder()
-                                        .setName("long")
-                                        .setValue("0.2")
-                                        .build())
-                                .addLabel(LabelPair.newBuilder()
-                                        .setName("timestamp")
-                                        .setValue(Long.toString(System.currentTimeMillis()))
-                                        .build())
-                                .addLabel(LabelPair.newBuilder()
-                                        .setName("uuid")
-                                        .setValue(mIdentity.getUUID())
-                                        .build())
-                                .setUntyped(Untyped.newBuilder()
-                                        .setValue(0)
-                                        .build())
-                                .build())
+                        .setName(metricName)
                         .setType(MetricType.UNTYPED)
+                        .addMetric(metricBuilder.build())
                         .build())
                 .build();
 
-        mBlockingStub.collect(mMetricContainer);
+        //Send metric through grpc
+        mBlockingStub.collect(metricsContainer);
     }
 
+    /**
+     * Send metrics to prometheus through GRPC using the Push method in metricsd.proto
+     *
+     * @param metricName   Root name for the group of collected metrics
+     * @param metricValues List of metrics to collect with the <name, value> structure
+     */
+    @SuppressLint("CheckResult")
     @WorkerThread
-    public void pushSync(String metricName, String metricValue) {
+    public void pushSync(String metricName, List<Pair<String, String>> metricValues) {
 
         Log.d(TAG, "MMA: Sending push request...");
-        LabelPair labelPair = LabelPair.newBuilder()
-                .setName(metricName)
-                .setValue(metricValue)
-                .build();
 
-        PushedMetric metric = PushedMetric.newBuilder()
+        PushedMetric.Builder metricBuilder = PushedMetric.newBuilder()
                 .setMetricName(metricName)
-                .addLabels(labelPair)
-                .setTimestampMS(System.currentTimeMillis())
-                .build();
+                .setTimestampMS(System.currentTimeMillis());
+
+        for (Pair<String, String> metricValue : metricValues) {
+            metricBuilder.addLabels(LabelPair.newBuilder()
+                    .setName(metricValue.first)
+                    .setValue(metricValue.second)
+                    .build());
+        }
 
         PushedMetricsContainer payload = PushedMetricsContainer.newBuilder()
                 .setNetworkId(mIdentity.getUUID())
-                .addMetrics(metric)
+                .addMetrics(metricBuilder.build())
                 .build();
 
-//        mAsyncStub.push(payload, new StreamObserver<Void>() {
-//            @Override
-//            public void onNext(Void value) {
-//                Log.d(TAG, "MMA: PUSH onNext: ");
-//            }
-//            @Override
-//            public void onError(Throwable t) {
-//                Log.d(TAG, "MMA: PUSH onError: ");
-//                t.printStackTrace();
-//            }
-//            @Override
-//            public void onCompleted() {
-//                Log.d(TAG, "MMA: PUSH onCompleted: ");
-//            }
-//        });
         mBlockingStub.push(payload);
     }
 }

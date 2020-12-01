@@ -48,10 +48,7 @@ public class BootstrapManager {
     private static final String TAG = "BootstrapManager";
 
     private Identity mIdentity;
-
     private BootstrapperGrpc.BootstrapperBlockingStub mBlockingStub;
-
-    private boolean mBootstrapSuccess;
 
     public BootstrapManager(String controllerAddress, int controllerPort, SSLContext sslContext, Identity identity) {
         mIdentity = identity;
@@ -98,14 +95,9 @@ public class BootstrapManager {
         Certificate certificate = mBlockingStub.requestSign(response.getResponse());
 
         Log.d(TAG, "MMA: Bootstrapping was successful");
-        mBootstrapSuccess = true;
 
         // 3) Add cert to keystore for mutual TLS and use for calling Collect() and Push()
 //        storeSignedCertificate(certificate);
         return certificate;
-    }
-
-    public boolean wasBootstrapSuccessful() {
-        return mBootstrapSuccess;
     }
 }

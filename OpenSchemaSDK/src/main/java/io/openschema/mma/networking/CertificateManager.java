@@ -26,6 +26,11 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
+import io.openschema.mma.bootstrap.BootstrapManager;
+
+/**
+ * Class in charge of handling all the custom self-signed certificates used in the metrics agent flow.
+ */
 //TODO: Fix all the KeyStore exceptions that are being generated
 public class CertificateManager {
 
@@ -47,14 +52,29 @@ public class CertificateManager {
         }
     }
 
+    /**
+     * Add the custom certificate used by the Magma controller to the KeyStore.
+     *
+     * @param certificateResId Resource ID of the raw certificate file.
+     */
     public void addControllerCertificate(Context context, int certificateResId) {
         addCertificate(context, CONTROLLER_CERTIFICATE_ALIAS, certificateResId);
     }
 
+    /**
+     * Add the custom certificate used by the middle box to the KeyStore.
+     *
+     * @param certificateResId Resource ID of the raw certificate file.
+     */
     public void addBackendCertificate(Context context, int certificateResId) {
         addCertificate(context, BACKEND_CERTIFICATE_ALIAS, certificateResId);
     }
 
+    /**
+     * Add the custom certificate received after completing the bootstrapping process to the KeyStore.
+     *
+     * @param certificate Certificate received from calling {@link BootstrapManager#bootstrapSync()}
+     */
     public void addBootstrapCertificate(io.openschema.mma.certifier.Certificate certificate) {
         try {
             CertificateFactory cf = CertificateFactory.getInstance(CERT_TYPE);
@@ -83,7 +103,10 @@ public class CertificateManager {
         }
     }
 
-    public SSLContext getSSLContext() {
+    /**
+     * Generate an SSLContext that contains all the previously added certificates.
+     */
+    public SSLContext generateSSLContext() {
         try {
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(mKeyStore);

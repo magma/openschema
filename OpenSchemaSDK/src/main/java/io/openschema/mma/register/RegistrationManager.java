@@ -41,9 +41,9 @@ public class RegistrationManager {
     }
 
     /**
-     * Sends a POST request to register the UE as a gateway in the Magma cloud. If the UE has
-     * already been registered, no request will be sent. This operation can't be called from the
-     * main thread.
+     * Sends a request to register the UE as a gateway in the Magma cloud. If the UE has
+     * already been registered, the server will respond with 409. This operation can't be
+     * called from the main thread.
      */
     @WorkerThread
     public boolean registerSync() {

@@ -25,7 +25,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
+import java.util.List;
 
+import androidx.core.util.Pair;
 import io.openschema.mma.bootstrap.BootstrapManager;
 import io.openschema.mma.certifier.Certificate;
 import io.openschema.mma.id.Identity;
@@ -90,11 +92,11 @@ public class MobileMetricsAgent {
         mCertificateManager.addControllerCertificate(mAppContext, mControllerCertificateResId);
 
         RetrofitService retrofitService = RetrofitService.getService(mAppContext);
-        retrofitService.initApi(mAppContext, mBackendBaseURL, mCertificateManager.getSSLContext(), mBackendUsername, mBackendPassword);
+        retrofitService.initApi(mBackendBaseURL, mCertificateManager.generateSSLContext(), mBackendUsername, mBackendPassword);
         BackendApi backendApi = retrofitService.getApi();
 
         mRegistrationManager = new RegistrationManager(backendApi, mIdentity);
-        mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.getSSLContext(), mIdentity);
+        mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.generateSSLContext(), mIdentity);
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
@@ -112,7 +114,7 @@ public class MobileMetricsAgent {
                 //Store certificate & setup metrics manager
                 if (certificate != null) {
                     mCertificateManager.addBootstrapCertificate(certificate);
-                    mMetricsManager = new MetricsManager(mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mCertificateManager.getSSLContext(), mIdentity);
+                    mMetricsManager = new MetricsManager(mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mCertificateManager.generateSSLContext(), mIdentity);
                     mainHandler.post(this::onReady);
                 }
             } catch (Exception e) {
@@ -123,13 +125,36 @@ public class MobileMetricsAgent {
 
     }
 
-    public void pushMetric(String metricName, String metricValue) {
+    /**
+     * Push a custom metric using Prometheus' {@link io.openschema.mma.metrics.Untyped Untyped} data. Will automatically use the registered
+     * UUID & timestamp values. This method required the agent to have completed the bootstrapping process by calling {@link #init()}.
+     *
+     * <p>Example:
+     * <pre>
+     *     List<Pair<String, String>> metricValues = new ArrayList<>();
+     *     metricValues.add(new Pair<>("lat", "25.761681"));
+     *     metricValues.add(new Pair<>("long", "-80.191788"));
+     *
+     *     mma.pushUntypedMetric("location", metricValues);
+     * </pre>
+     *
+     * <p>Generates:
+     * <pre>
+     *     "location" : {
+     *         "lat" : "25.761681",
+     *         "long" : "-80.191788"
+     *     }
+     * </pre>
+     *
+     * @param metricName   Root name for the group of collected metrics
+     * @param metricValues List of metrics to collect with the <name, value> structure
+     */
+    public void pushUntypedMetric(String metricName, List<Pair<String, String>> metricValues) {
         //TODO: consider adding a queue to wait until MMA has finished bootstrapping and is ready to push metrics
         // instead of simply losing the push.
         if (mIsReady) {
             new Thread(() -> {
-                mMetricsManager.collectSync(metricName, metricValue);
-                mMetricsManager.pushSync(metricName, metricValue);
+                mMetricsManager.collectSync(metricName, metricValues);
             }).start();
         } else {
             Log.w(TAG, "MMA: Metrics agent isn't ready yet");

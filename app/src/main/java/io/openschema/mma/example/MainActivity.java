@@ -17,7 +17,11 @@ package io.openschema.mma.example;
 import android.os.Bundle;
 import android.os.Handler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.util.Pair;
 import io.openschema.mma.MobileMetricsAgent;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Build agent with required data
         MobileMetricsAgent mma = new MobileMetricsAgent.Builder()
                 .setAppContext(getApplicationContext())
                 .setControllerAddress(getString(R.string.controller_address))
@@ -40,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
                 .setBackendPassword(getString(R.string.backend_password))
                 .build();
 
+        //Initialize agent
         try {
             mma.init();
         } catch (Exception e) {
@@ -48,7 +54,17 @@ public class MainActivity extends AppCompatActivity {
 
         //Bootstrapping needs to complete before any metric can be pushed
         new Handler().postDelayed(() -> {
-            mma.pushMetric("testMetric", "testValue");
+            List<Pair<String, String>> metricValues = new ArrayList<>();
+            metricValues.add(new Pair<>("lat", "25.761681"));
+            metricValues.add(new Pair<>("long", "-80.191788"));
+
+            mma.pushUntypedMetric("location", metricValues);
+
+//            List<Pair<String, String>> metricValues = new ArrayList<>();
+//            metricValues.add(new Pair<>("customValue1", "value1"));
+//            metricValues.add(new Pair<>("customValue2", "2"));
+//
+//            mma.pushUntypedMetric("customMetric", metricValues);
         }, 8000);
     }
 }
