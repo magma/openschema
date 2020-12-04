@@ -35,7 +35,7 @@ public class ChannelHelper {
                 .build();
     }
 
-    public static ManagedChannel getSecureManagedChannelwithAuthorityHeader(
+    public static ManagedChannel getSecureManagedChannelWithAuthorityHeader(
             String host,
             int port,
             SSLSocketFactory factory,

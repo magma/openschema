@@ -14,6 +14,7 @@
 
 package io.openschema.mma;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -114,7 +115,7 @@ public class MobileMetricsAgent {
                 //Store certificate & setup metrics manager
                 if (certificate != null) {
                     mCertificateManager.addBootstrapCertificate(certificate);
-                    mMetricsManager = new MetricsManager(mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mCertificateManager.generateSSLContext(), mIdentity);
+                    mMetricsManager = new MetricsManager(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mCertificateManager.generateSSLContext(), mIdentity);
                     mainHandler.post(this::onReady);
                 }
             } catch (Exception e) {
@@ -150,15 +151,7 @@ public class MobileMetricsAgent {
      * @param metricValues List of metrics to collect with the <name, value> structure
      */
     public void pushUntypedMetric(String metricName, List<Pair<String, String>> metricValues) {
-        //TODO: consider adding a queue to wait until MMA has finished bootstrapping and is ready to push metrics
-        // instead of simply losing the push.
-        if (mIsReady) {
-            new Thread(() -> {
-                mMetricsManager.collectSync(metricName, metricValues);
-            }).start();
-        } else {
-            Log.w(TAG, "MMA: Metrics agent isn't ready yet");
-        }
+        mMetricsManager.collect(metricName, metricValues);
     }
 
     /**
@@ -284,11 +277,14 @@ public class MobileMetricsAgent {
         }
 
         /**
-         * @param context Application context
+         * @param appContext Application context
          * @return
          */
-        public Builder setAppContext(Context context) {
-            mAppContext = context;
+        public Builder setAppContext(Context appContext) {
+            if (!(appContext instanceof Application)) {
+                appContext = appContext.getApplicationContext();
+            }
+            mAppContext = appContext;
             return this;
         }
 

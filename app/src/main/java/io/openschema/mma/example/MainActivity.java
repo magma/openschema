@@ -55,16 +55,16 @@ public class MainActivity extends AppCompatActivity {
         //Bootstrapping needs to complete before any metric can be pushed
         new Handler().postDelayed(() -> {
             List<Pair<String, String>> metricValues = new ArrayList<>();
-            metricValues.add(new Pair<>("lat", "25.761681"));
-            metricValues.add(new Pair<>("long", "-80.191788"));
+            metricValues.add(new Pair<>("customValue1", "value1"));
+            metricValues.add(new Pair<>("customValue2", "2"));
 
-            mma.pushUntypedMetric("location", metricValues);
+            mma.pushUntypedMetric("customMetric_example1", metricValues);
 
-//            List<Pair<String, String>> metricValues = new ArrayList<>();
-//            metricValues.add(new Pair<>("customValue1", "value1"));
-//            metricValues.add(new Pair<>("customValue2", "2"));
-//
-//            mma.pushUntypedMetric("customMetric", metricValues);
+            List<Pair<String, String>> metricValues2 = new ArrayList<>();
+            metricValues.add(new Pair<>("customValue3", "value3"));
+            metricValues.add(new Pair<>("customValue4", "4"));
+
+            mma.pushUntypedMetric("customMetric_example2", metricValues2);
         }, 8000);
     }
 }

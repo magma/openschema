@@ -29,7 +29,7 @@ import java.security.cert.CertificateException;
 import javax.net.ssl.SSLContext;
 
 import androidx.annotation.WorkerThread;
-import io.grpc.Channel;
+import io.grpc.ManagedChannel;
 import io.openschema.mma.bootstrapper.BootstrapperGrpc;
 import io.openschema.mma.bootstrapper.Challenge;
 import io.openschema.mma.certifier.Certificate;
@@ -48,17 +48,18 @@ public class BootstrapManager {
     private static final String TAG = "BootstrapManager";
 
     private Identity mIdentity;
+    private ManagedChannel mChannel;
     private BootstrapperGrpc.BootstrapperBlockingStub mBlockingStub;
 
     public BootstrapManager(String controllerAddress, int controllerPort, SSLContext sslContext, Identity identity) {
         mIdentity = identity;
 
-        Channel channel = ChannelHelper.getSecureManagedChannel(
+        mChannel = ChannelHelper.getSecureManagedChannel(
                 controllerAddress,
                 controllerPort,
                 sslContext.getSocketFactory());
 
-        mBlockingStub = BootstrapperGrpc.newBlockingStub(channel);
+        mBlockingStub = BootstrapperGrpc.newBlockingStub(mChannel);
     }
 
     /**
@@ -75,7 +76,7 @@ public class BootstrapManager {
                 .setId(mIdentity.getUUID())
                 .build();
 
-        // 1) get challenge
+        // Get challenge
         Log.d(TAG, "MMA: Requesting challenge...");
         Challenge challenge = mBlockingStub.getChallenge(hw_id);
         RandSByteString rands = KeyHelper.getRandS(challenge);
@@ -90,14 +91,16 @@ public class BootstrapManager {
                 rands.getR(),
                 rands.getS());
 
-        // 2) send CSR to sign
+        // Send CSR to sign
         Log.d(TAG, "MMA: Sending csr...");
         Certificate certificate = mBlockingStub.requestSign(response.getResponse());
 
         Log.d(TAG, "MMA: Bootstrapping was successful");
 
-        // 3) Add cert to keystore for mutual TLS and use for calling Collect() and Push()
-//        storeSignedCertificate(certificate);
+        // Close bootstrapping grpc channel
+        mChannel.shutdown();
+
+        // Return certificate to be stored in the keystore for mutual TLS and use for calling Collect() and Push()
         return certificate;
     }
 }

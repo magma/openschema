@@ -43,17 +43,8 @@ public class RetrofitService {
     public static RetrofitService getService(Context appContext) {
         Log.d(TAG, "UI: Fetching RetrofitService");
         if (_instance == null) {
-            synchronized (BackendApi.class) {
+            synchronized (RetrofitService.class) {
                 if (_instance == null) {
-                    if (appContext == null) {
-                        Log.e(TAG, "UI: RetrofitService can't be instantiated with a null context");
-                        return _instance;
-                    }
-
-                    if (!(appContext instanceof Application)) {
-                        appContext = appContext.getApplicationContext();
-                    }
-
                     _instance = new RetrofitService(appContext);
                 }
             }
