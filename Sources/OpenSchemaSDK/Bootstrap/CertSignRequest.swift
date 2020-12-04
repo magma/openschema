@@ -13,3 +13,38 @@
  */
 
 import Foundation
+
+import CertificateSigningRequest
+
+///This class handles  creating the CSR for bootstrap class. It uses <https://github.com/cbaker6/CertificateSigningRequest> to create the properly format of the CSR.
+public class CertSignRequest {
+    
+    ///Variable containing the algorithm to use for CSR. It only supports RSA with signature type sha256 for now.
+    private let keyAlgorithm = KeyAlgorithm.rsa(signatureType: .sha256)
+    private let uuidManager = UUIDManager.shared
+    private let keyHelper = KeyHelper()
+    private var csr : CertificateSigningRequest? = nil
+    
+    ///Initialize CertSignRequest Class
+    init(){
+        self.csr = CertificateSigningRequest(commonName: self.uuidManager.getUUID(), organizationName: nil, organizationUnitName: nil, countryName: nil, stateOrProvinceName: nil, localityName: nil, keyAlgorithm: keyAlgorithm)
+    }
+    
+
+    ///This function return the built CSR to send on bootstrap manager to magma.
+    func getBuiltCSR() -> Data {
+        let publicKeyBits = self.keyHelper.getKeyAsData(alias : "csrKeyPublic", keyType: kSecAttrKeyTypeRSA)
+        let privateKey = self.keyHelper.getKeyAsSecKey(alias : "csrKeyPrivate", keyType: kSecAttrKeyTypeRSA)
+        return csr!.build(publicKeyBits, privateKey: privateKey)!
+        
+    }
+    
+    ///This function return the built CSR to as a String to be able to print is information on console.
+    func getCSRString() -> String {
+        let publicKeyBits = self.keyHelper.getKeyAsData(alias : "csrKeyPublic", keyType: kSecAttrKeyTypeRSA)
+        let privateKey = self.keyHelper.getKeyAsSecKey(alias : "csrKeyPrivate", keyType: kSecAttrKeyTypeRSA)
+
+        return csr!.buildCSRAndReturnString(publicKeyBits, privateKey: privateKey)!
+    }
+    
+}

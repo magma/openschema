@@ -5,5 +5,6 @@ DerivedData/
 .build
 .swiftpm
 build
+docs
 /*.xcodeproj
 Package.resolved

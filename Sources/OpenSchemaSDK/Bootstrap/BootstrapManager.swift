@@ -16,7 +16,6 @@ import Foundation
 import GRPC
 import NIO
 import NIOSSL
-import SwiftProtobuf
 import Logging
 
 /// This class handles the bootstrap process to create a GRPC connection to Magma server and get a Signed certificate from it to be able to strat pushing metrics to Magma.
@@ -28,10 +27,6 @@ public class BootstrapManager {
     private let uuidManager = UUIDManager.shared
     ///Shared wifiNetworkInfo singleton instance.
     private let wifiNetworkinfo = WifiNetworkInfo.shared
-    ///KeyHelper class instance.
-    private let keyHelper = KeyHelper()
-    ///CertSignRequest class instance.
-    private let certSignRequest = CertSignRequest()
     ///String that contains the path to the certificate to be used for connecting to the server on Bootstrap.
     private var certificateFilePath : String
     
@@ -42,8 +37,8 @@ public class BootstrapManager {
         CreateSSIDObserver()
     }
     
-    ///This function creates an observer that detects if the Wi-Fi changed since last time app using the framework was on foregorund.
-     if the Wi-Fi information is different BootstrapNow function is called */
+    /**This function creates an observer that detects if the Wi-Fi changed since last time app using the framework was on foregorund.
+     if the Wi-Fi information is different BootstrapNow function is called*/
     private func CreateSSIDObserver() {
         let observer : UnsafeRawPointer! = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
         let object : UnsafeRawPointer! = nil
@@ -99,15 +94,10 @@ public class BootstrapManager {
             //use appropriate service client from .grpc server to replace the xxx call : <your .grpc.swift ServiceClient> = <XXX>ServiceClient
             let client: Magma_Orc8r_BootstrapperClient = Magma_Orc8r_BootstrapperClient(channel: connection)
             
-            //Step vi: Call specific service request
+            // Make the RPC call to the server.
             let accessGateWayID = Magma_Orc8r_AccessGatewayID.with {
                 $0.id = uuidManager.getUUID()
             }
-
-            // Make the RPC call to the server.
-            let hardwareKey = HardwareKEY()
-            print("Private ECDSA Key: " + hardwareKey.getHwPrivateKeyPEMString())
-            print("Public ECDSA Key: " + hardwareKey.getHwPublicKeyPEMString())
             
             let challenge = client.getChallenge(accessGateWayID)
 
@@ -115,76 +105,25 @@ public class BootstrapManager {
                 
                 print("Output for get request: \(result)")
                 
-                do {
+                let response = ChallengeResponse(bootstrapChallengeResult: result)
+                let challengeResponse = client.requestSign(response.getResponse())
                     
-                    let challengeResult = try result.get()
-                    
-                    let signature = try challengeResult.challenge.sign(with: hardwareKey.getHwPrivateKey())
-                    
-                    let ecdsaResponse = Magma_Orc8r_Response.ECDSA.with {
-                        $0.r = signature.r
-                        $0.s = signature.s
-                    }
-
-                    self.keyHelper.DeleteKeyFromKeyChain(alias: "csrKeyPrivate", keyType: kSecAttrKeyTypeRSA)
-                    self.keyHelper.DeleteKeyFromKeyChain(alias: "csrKeyPublic", keyType: kSecAttrKeyTypeRSA)
-                    self.keyHelper.generateRSAKeyPairForAlias(alias: "csrKey")
-                    
-                    print("Private RSA Key: " + self.keyHelper.getKeyAsBase64String(alias: "csrKeyPrivate", keyType: kSecAttrKeyTypeRSA))
-                    print("Public RSA Key: " + self.keyHelper.getKeyAsBase64String(alias: "csrKeyPublic", keyType: kSecAttrKeyTypeRSA))
-                    
-                    print("RSA private Key for CSR: " + NSData(data: self.keyHelper.getKeyAsData(alias : "csrKeyPrivate", keyType: kSecAttrKeyTypeRSA)).base64EncodedString())
-                    print("csr: " + self.certSignRequest.getCSRString())
- 
-                    let csrMagma = Magma_Orc8r_CSR.with {
-                        $0.certType = Magma_Orc8r_CertType(rawValue: 0)!
-                        $0.id = Magma_Orc8r_Identity.with {
-                            $0.gateway = Magma_Orc8r_Identity.Gateway.with {
-                                $0.hardwareID = self.uuidManager.getUUID()
-                            }
-                        }
-                        $0.validTime = SwiftProtobuf.Google_Protobuf_Duration.init(seconds: 10000, nanos: 10000)
-                        $0.csrDer = self.certSignRequest.getBuiltCSR()
-                    }
-                    
-                    let response = Magma_Orc8r_Response.with {
-                        $0.hwID = accessGateWayID
-                        $0.challenge = challengeResult.challenge
-                        $0.ecdsaResponse = ecdsaResponse
-                        $0.csr = csrMagma
-                    }
-                    
-                    let challengeResponse = client.requestSign(response)
-                    
-                    challengeResponse.response.whenComplete { result in
+                challengeResponse.response.whenComplete { result in
                         
-                        print("Output for Challenge Response request: \(result)")
+                    print("Output for Challenge Response request: \(result)")
                         
-                        do {
-                            let signedCertData = try result.get().certDer
+                    do {
+                        let signedCertData = try result.get().certDer
                             
-                            let metricsManager = MetricsManager(signedCert: signedCertData, certificateFilePath: self.certificateFilePath)
-                            metricsManager.CollectAndPushMetrics()
-                            
-                            
-                        } catch {
-
-                            print("Error retrieving Signed Cert Data: \(error)")
-                        }
-                        
-
+                        let metricsManager = MetricsManager(signedCert: signedCertData, certificateFilePath: self.certificateFilePath)
+                        metricsManager.CollectAndPushMetrics()
+   
+                    } catch {
+                        print("Error retrieving Signed Cert Data: \(error)")
                     }
-                    
-                    challengeResponse.response.whenFailure { error in
-                        print("Output for Challenge Response failed request: \(error)")
-                    }
-                    
-                } catch {
-                    print("Error for get Request:\(error)")
                 }
-    
             }
-            
+                    
             challenge.response.whenFailure { error in
                 print("Output for failed request: \(error)")
             }
