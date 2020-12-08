@@ -43,6 +43,8 @@ public class MetricsManager {
     private let cellularNetworkMetrics : CellularNetworkMetrics = CellularNetworkMetrics()
     private let wifiNetworkMetrics : WifiNetworkMetrics = WifiNetworkMetrics()
     private var certificateFilePath : String
+    ///CustomMetrics class object.
+    private let customMetrics = CustomMetrics()
 
     init(signedCert : Data , certificateFilePath : String) {
         
@@ -101,7 +103,10 @@ public class MetricsManager {
             let client: Magma_Orc8r_MetricsControllerClient = Magma_Orc8r_MetricsControllerClient(channel: connection)
             
             // Make the RPC call to the server.
-            let collect = client.collect(cellularNetworkMetrics.CollectCellularNetworkInfoMetrics())
+            var metricFamilyContainer : MetricFamilyContainer = MetricFamilyContainer()
+            metricFamilyContainer.append(wifiNetworkMetrics.CollectWifiNetworkInfoMetrics())
+            metricFamilyContainer.append(cellularNetworkMetrics.CollectCellularNetworkInfoMetrics())
+            let collect = client.collect(customMetrics.CreateMetricsContainer(metricFamilyContainer: metricFamilyContainer, gatewayID: self.uuidManager.getUUID()))
             print("Succesfully called Collect")
             
             collect.response.whenComplete { result in
