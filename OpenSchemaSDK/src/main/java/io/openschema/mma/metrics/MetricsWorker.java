@@ -34,7 +34,10 @@ import io.openschema.mma.metricsd.MetricsContainer;
 import io.openschema.mma.metricsd.MetricsControllerGrpc;
 import io.openschema.mma.networking.CertificateManager;
 
-//TODO: add javadocs
+/**
+ * Background worker that flushes the metrics queue and sends all
+ * saved metrics to the controller.
+ */
 public class MetricsWorker extends Worker {
 
     private static final String TAG = "MetricsWorker";
@@ -75,6 +78,9 @@ public class MetricsWorker extends Worker {
         mBlockingStub = MetricsControllerGrpc.newBlockingStub(mChannel);
     }
 
+    /**
+     * Uses the GRPC stub to connect to the controller and send the data.
+     */
     @SuppressLint("CheckResult")
     private void pushMetric(MetricsContainer metricsContainer) {
         //TODO: Use Async method instead and wait for all to complete at the end
@@ -86,6 +92,7 @@ public class MetricsWorker extends Worker {
     public Result doWork() {
         Log.d(TAG, "MMA: Iterating through " + mMetricsQueue.size() + " metrics...");
 
+        //TODO: Change the queue to hold MetricFamily objects instead for optimization.
         //Iterate through every available metric in the queue
         while (!mMetricsQueue.isEmpty()) {
             MetricsContainer currentMetric = mMetricsQueue.poll();
@@ -99,6 +106,14 @@ public class MetricsWorker extends Worker {
         return Result.success();
     }
 
+    /**
+     * Static utility method to enqueue this worker to run every 4 hours. Calling this method
+     * will cause the worker to run immediately and restart the periodic calls.
+     *
+     * @param metricsControllerAddress Address of the magma controller.
+     * @param metricsControllerPort    Port used by the magma controller.
+     * @param metricsAuthorityHeader   Header used to override the TLS/HTTP authority.
+     */
     public static void enqueuePeriodicWorker(Context context, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader) {
         PeriodicWorkRequest.Builder workBuilder = new PeriodicWorkRequest.Builder(MetricsWorker.class, 4, TimeUnit.HOURS)
                 .addTag(WORKER_TAG)

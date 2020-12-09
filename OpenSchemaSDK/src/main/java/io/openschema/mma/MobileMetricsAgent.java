@@ -32,7 +32,9 @@ import androidx.core.util.Pair;
 import io.openschema.mma.bootstrap.BootstrapManager;
 import io.openschema.mma.certifier.Certificate;
 import io.openschema.mma.id.Identity;
+import io.openschema.mma.metrics.CellularNetworkMetrics;
 import io.openschema.mma.metrics.MetricsManager;
+import io.openschema.mma.metrics.WifiNetworkMetrics;
 import io.openschema.mma.networking.BackendApi;
 import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.networking.RetrofitService;
@@ -54,6 +56,7 @@ public class MobileMetricsAgent {
     private int mBackendCertificateResId;
     private String mBackendUsername;
     private String mBackendPassword;
+    private boolean mEnableNetworkMetrics;
 
     private Context mAppContext;
     private Identity mIdentity;
@@ -74,6 +77,7 @@ public class MobileMetricsAgent {
         mBackendCertificateResId = mmaBuilder.mBackendCertificateResId;
         mBackendUsername = mmaBuilder.mBackendUsername;
         mBackendPassword = mmaBuilder.mBackendPassword;
+        mEnableNetworkMetrics = mmaBuilder.mEnableNetworkMetrics;
 
         mAppContext = mmaBuilder.mAppContext;
     }
@@ -115,7 +119,7 @@ public class MobileMetricsAgent {
                 //Store certificate & setup metrics manager
                 if (certificate != null) {
                     mCertificateManager.addBootstrapCertificate(certificate);
-                    mMetricsManager = new MetricsManager(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mCertificateManager.generateSSLContext(), mIdentity);
+                    mMetricsManager = new MetricsManager(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mIdentity);
                     mainHandler.post(this::onReady);
                 }
             } catch (Exception e) {
@@ -123,7 +127,6 @@ public class MobileMetricsAgent {
             }
 
         }).start();
-
     }
 
     /**
@@ -159,6 +162,16 @@ public class MobileMetricsAgent {
      */
     private void onReady() {
         mIsReady = true;
+
+        // Check if the static network and device metrics should be pushed
+        if (mEnableNetworkMetrics) {
+            CellularNetworkMetrics cellularNetworkMetrics = new CellularNetworkMetrics(mAppContext);
+            WifiNetworkMetrics wifiNetworkMetrics = new WifiNetworkMetrics(mAppContext);
+            //TODO: add device metrics
+
+            mMetricsManager.collect(CellularNetworkMetrics.METRIC_FAMILY_NAME, cellularNetworkMetrics.retrieveNetworkMetrics());
+            mMetricsManager.collect(WifiNetworkMetrics.METRIC_FAMILY_NAME, wifiNetworkMetrics.retrieveNetworkMetrics());
+        }
     }
 
     /**
@@ -191,13 +204,13 @@ public class MobileMetricsAgent {
         private int mBackendCertificateResId;
         private String mBackendUsername;
         private String mBackendPassword;
+        private boolean mEnableNetworkMetrics = true;
 
         private Context mAppContext;
 
 
         /**
          * @param address URL of Magma's controller
-         * @return
          */
         public Builder setControllerAddress(String address) {
             mControllerAddress = address;
@@ -206,7 +219,6 @@ public class MobileMetricsAgent {
 
         /**
          * @param address URL of the bootstrapper's controller
-         * @return
          */
         public Builder setBootstrapperAddress(String address) {
             mBootstrapperAddress = address;
@@ -215,7 +227,6 @@ public class MobileMetricsAgent {
 
         /**
          * @param certificateResId Resource ID of the magma controller's raw certificate
-         * @return
          */
         public Builder setControllerCertificateResId(int certificateResId) {
             mControllerCertificateResId = certificateResId;
@@ -224,7 +235,6 @@ public class MobileMetricsAgent {
 
         /**
          * @param address URL of the metrics' controller
-         * @return
          */
         public Builder setAuthorityHeader(String address) {
             mMetricsAuthorityHeader = address;
@@ -233,7 +243,6 @@ public class MobileMetricsAgent {
 
         /**
          * @param port Port used by the bootstrapper's controller
-         * @return
          */
         public Builder setControllerPort(int port) {
             mControllerPort = port;
@@ -242,7 +251,6 @@ public class MobileMetricsAgent {
 
         /**
          * @param baseURL Base URL of OpenSchema's middle box
-         * @return
          */
         public Builder setBackendBaseURL(String baseURL) {
             mBackendBaseURL = baseURL;
@@ -251,7 +259,6 @@ public class MobileMetricsAgent {
 
         /**
          * @param certificateResId Resource ID of the OpenSchema's middle box raw certificate
-         * @return
          */
         public Builder setBackendCertificateResId(int certificateResId) {
             mBackendCertificateResId = certificateResId;
@@ -260,7 +267,6 @@ public class MobileMetricsAgent {
 
         /**
          * @param backendUsername Secret username to access OpenSchema's middle box Basic Auth
-         * @return
          */
         public Builder setBackendUsername(String backendUsername) {
             mBackendUsername = backendUsername;
@@ -269,7 +275,6 @@ public class MobileMetricsAgent {
 
         /**
          * @param backendPassword Secret password to access OpenSchema's middle box Basic Auth
-         * @return
          */
         public Builder setBackendPassword(String backendPassword) {
             mBackendPassword = backendPassword;
@@ -277,8 +282,16 @@ public class MobileMetricsAgent {
         }
 
         /**
+         * @param enabled Boolean flag to determine if the static Wi-Fi and Cellular network
+         * metrics will be collected.
+         */
+        public Builder setEnabledNetworkMetrics(boolean enabled) {
+            mEnableNetworkMetrics = enabled;
+            return this;
+        }
+
+        /**
          * @param appContext Application context
-         * @return
          */
         public Builder setAppContext(Context appContext) {
             if (!(appContext instanceof Application)) {

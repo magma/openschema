@@ -19,30 +19,30 @@ import android.util.Log;
 
 import java.util.List;
 
-import javax.net.ssl.SSLContext;
-
 import androidx.core.util.Pair;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metricsd.MetricsContainer;
 
 /**
- * Class in charge of handling the metrics calls.
+ * Class in charge of handling pushing metrics to the controller.
  */
 public class MetricsManager {
 
     private static final String TAG = "MetricsManager";
 
+    private static final String METRIC_UUID = "uuid";
+    private static final String METRIC_TIMESTAMP = "timestamp";
+
     private MetricsRepository mMetricsRepository;
     private Identity mIdentity;
 
-    public MetricsManager(Context appContext, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader, SSLContext sslContext, Identity identity) {
+    public MetricsManager(Context appContext, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader, Identity identity) {
         mMetricsRepository = MetricsRepository.getRepository(appContext);
         mIdentity = identity;
 
         MetricsWorker.enqueuePeriodicWorker(appContext, metricsControllerAddress, metricsControllerPort, metricsAuthorityHeader);
     }
 
-    //TODO: update javadoc
     /**
      * Send metrics to prometheus through GRPC using the Collect method in metricsd.proto
      *
@@ -52,22 +52,8 @@ public class MetricsManager {
     public void collect(String metricName, List<Pair<String, String>> metricValues) {
         Log.d(TAG, "MMA: Collecting metric \"" + metricName + "\"");
 
-        long timestamp = System.currentTimeMillis();
-
         //Create metrics base
-        Metric.Builder metricBuilder = Metric.newBuilder()
-//                .setTimestampMs(timestamp) //Not sure where this is used
-                .addLabel(LabelPair.newBuilder()
-                        .setName("uuid")
-                        .setValue(mIdentity.getUUID())
-                        .build())
-                .addLabel(LabelPair.newBuilder()
-                        .setName("timestamp")
-                        .setValue(Long.toString(timestamp))
-                        .build())
-                .setUntyped(Untyped.newBuilder()
-                        .setValue(0)
-                        .build());
+        Metric.Builder metricBuilder = Metric.newBuilder();
 
         //Add custom list of metrics
         for (Pair<String, String> metricValue : metricValues) {
@@ -77,8 +63,32 @@ public class MetricsManager {
                     .build());
         }
 
+        //Send metric to be handled
+        collect(buildMMAContainer(metricName, metricBuilder));
+    }
+
+    /**
+     * Generates a {@link MetricsContainer} object and adds information
+     * required by the Magma controller.
+     */
+    private MetricsContainer buildMMAContainer(String metricName, Metric.Builder metricBuilder) {
+        long timestamp = System.currentTimeMillis();
+
+        metricBuilder
+                .addLabel(LabelPair.newBuilder()
+                        .setName(METRIC_UUID)
+                        .setValue(mIdentity.getUUID())
+                        .build())
+                .addLabel(LabelPair.newBuilder()
+                        .setName(METRIC_TIMESTAMP)
+                        .setValue(Long.toString(timestamp))
+                        .build())
+                .setUntyped(Untyped.newBuilder()
+                        .setValue(0)
+                        .build());
+
         //Create magma wrapper
-        MetricsContainer metricsContainer = MetricsContainer.newBuilder()
+        return MetricsContainer.newBuilder()
                 .setGatewayId(mIdentity.getUUID())
                 .addFamily(MetricFamily.newBuilder()
                         .setName(metricName)
@@ -86,12 +96,11 @@ public class MetricsManager {
                         .addMetric(metricBuilder.build())
                         .build())
                 .build();
-
-        //Send metric to be handled
-        collect(metricsContainer);
     }
 
-    //TODO: add javadoc
+    /**
+     * Sends the metrics object to the repository to be stored in a queue for batching.
+     */
     private void collect(MetricsContainer metricsContainer) {
         mMetricsRepository.queueMetric(metricsContainer);
     }

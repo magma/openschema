@@ -23,7 +23,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import io.openschema.mma.metricsd.MetricsContainer;
 import io.openschema.mma.networking.BackendApi;
 
-//TODO: add javadocs
+/**
+ * Repository class to manage the metrics data.
+ */
 class MetricsRepository {
 
     private static final String TAG = "MetricsRepository";
@@ -46,16 +48,27 @@ class MetricsRepository {
         return _instance;
     }
 
+    /**
+     * Queue that holds the metrics pending to be sent to the controller.
+     */
+    //TODO: Change the queue to hold MetricFamily objects instead for optimization.
     private final Queue<MetricsContainer> mMetricsQueue = new ConcurrentLinkedQueue<>();
 
     private MetricsRepository(Context appContext) {
     }
 
-    //TODO: consider adding data persistence
+    /**
+     * Adds a metrics object to the queue. This queue gets flushed periodically through {@link MetricsWorker}.
+     */
+    //TODO: Add data persistence. Currently the data is held in memory and killing the app
+    // would cause unsent metrics to be lost.
     public void queueMetric(MetricsContainer metricsContainer) {
         mMetricsQueue.add(metricsContainer);
     }
 
+    /**
+     * Retrieves the current metrics queue.
+     */
     public Queue<MetricsContainer> getQueue() {
         return mMetricsQueue;
     }
