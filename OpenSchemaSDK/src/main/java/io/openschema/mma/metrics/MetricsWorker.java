@@ -30,6 +30,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import io.grpc.ManagedChannel;
 import io.openschema.mma.helpers.ChannelHelper;
+import io.openschema.mma.id.Identity;
 import io.openschema.mma.metricsd.MetricsContainer;
 import io.openschema.mma.metricsd.MetricsControllerGrpc;
 import io.openschema.mma.networking.CertificateManager;
@@ -49,9 +50,9 @@ public class MetricsWorker extends Worker {
     private static final String DATA_CONTROLLER_PORT = "CONTROLLER_PORT";
     private static final String DATA_AUTHORITY_HEADER = "AUTHORITY_HEADER";
 
-    private Queue<MetricsContainer> mMetricsQueue;
+    private Queue<MetricFamily> mMetricsQueue;
+    private Identity mIdentity;
     private ManagedChannel mChannel;
-    private MetricsControllerGrpc.MetricsControllerStub mAsyncStub;
     private MetricsControllerGrpc.MetricsControllerBlockingStub mBlockingStub;
 
     public MetricsWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -59,9 +60,17 @@ public class MetricsWorker extends Worker {
 
         Log.d(TAG, "MMA: Initializing MetricsWorker");
 
+        //Load queue from repository
         mMetricsQueue = MetricsRepository
                 .getRepository(context.getApplicationContext())
                 .getQueue();
+
+        //Identity must have been previously generated during initialization
+        try {
+            mIdentity = new Identity(context);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //Certificates must have been previously loaded into the KeyStore
         CertificateManager certificateManager = new CertificateManager();
@@ -74,16 +83,15 @@ public class MetricsWorker extends Worker {
                 certificateManager.generateSSLContext().getSocketFactory(),
                 data.getString(DATA_AUTHORITY_HEADER));
 
-        mAsyncStub = MetricsControllerGrpc.newStub(mChannel);
         mBlockingStub = MetricsControllerGrpc.newBlockingStub(mChannel);
     }
 
     /**
      * Uses the GRPC stub to connect to the controller and send the data.
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @SuppressLint("CheckResult")
     private void pushMetric(MetricsContainer metricsContainer) {
-        //TODO: Use Async method instead and wait for all to complete at the end
         mBlockingStub.collect(metricsContainer);
     }
 
@@ -92,12 +100,16 @@ public class MetricsWorker extends Worker {
     public Result doWork() {
         Log.d(TAG, "MMA: Iterating through " + mMetricsQueue.size() + " metrics...");
 
-        //TODO: Change the queue to hold MetricFamily objects instead for optimization.
-        //Iterate through every available metric in the queue
+        MetricsContainer.Builder metricsContainerBuilder = MetricsContainer.newBuilder()
+                .setGatewayId(mIdentity.getUUID());
+
+        //Iterate through every available metric in the queue and add it to the container
         while (!mMetricsQueue.isEmpty()) {
-            MetricsContainer currentMetric = mMetricsQueue.poll();
-            pushMetric(currentMetric);
+            metricsContainerBuilder.addFamily(mMetricsQueue.poll());
         }
+
+        //Send all the metrics batched into a single container
+        pushMetric(metricsContainerBuilder.build());
 
         Log.d(TAG, "MMA: Finished pushing all metrics");
 

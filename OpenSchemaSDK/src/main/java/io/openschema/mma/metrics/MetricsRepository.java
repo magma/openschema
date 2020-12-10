@@ -20,7 +20,6 @@ import android.util.Log;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import io.openschema.mma.metricsd.MetricsContainer;
 import io.openschema.mma.networking.BackendApi;
 
 /**
@@ -51,8 +50,7 @@ class MetricsRepository {
     /**
      * Queue that holds the metrics pending to be sent to the controller.
      */
-    //TODO: Change the queue to hold MetricFamily objects instead for optimization.
-    private final Queue<MetricsContainer> mMetricsQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<MetricFamily> mMetricsQueue = new ConcurrentLinkedQueue<>();
 
     private MetricsRepository(Context appContext) {
     }
@@ -62,14 +60,14 @@ class MetricsRepository {
      */
     //TODO: Add data persistence. Currently the data is held in memory and killing the app
     // would cause unsent metrics to be lost.
-    public void queueMetric(MetricsContainer metricsContainer) {
-        mMetricsQueue.add(metricsContainer);
+    public void queueMetric(MetricFamily metricsFamily) {
+        mMetricsQueue.add(metricsFamily);
     }
 
     /**
      * Retrieves the current metrics queue.
      */
-    public Queue<MetricsContainer> getQueue() {
+    public Queue<MetricFamily> getQueue() {
         return mMetricsQueue;
     }
 }

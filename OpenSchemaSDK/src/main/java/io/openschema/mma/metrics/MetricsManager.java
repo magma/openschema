@@ -21,7 +21,6 @@ import java.util.List;
 
 import androidx.core.util.Pair;
 import io.openschema.mma.id.Identity;
-import io.openschema.mma.metricsd.MetricsContainer;
 
 /**
  * Class in charge of handling pushing metrics to the controller.
@@ -64,14 +63,14 @@ public class MetricsManager {
         }
 
         //Send metric to be handled
-        collect(buildMMAContainer(metricName, metricBuilder));
+        collect(buildMetricsFamily(metricName, metricBuilder));
     }
 
     /**
-     * Generates a {@link MetricsContainer} object and adds information
+     * Generates a {@link MetricFamily} object and adds information
      * required by the Magma controller.
      */
-    private MetricsContainer buildMMAContainer(String metricName, Metric.Builder metricBuilder) {
+    private MetricFamily buildMetricsFamily(String metricName, Metric.Builder metricBuilder) {
         long timestamp = System.currentTimeMillis();
 
         metricBuilder
@@ -87,22 +86,18 @@ public class MetricsManager {
                         .setValue(0)
                         .build());
 
-        //Create magma wrapper
-        return MetricsContainer.newBuilder()
-                .setGatewayId(mIdentity.getUUID())
-                .addFamily(MetricFamily.newBuilder()
-                        .setName(metricName)
-                        .setType(MetricType.UNTYPED)
-                        .addMetric(metricBuilder.build())
-                        .build())
+        return MetricFamily.newBuilder()
+                .setName(metricName)
+                .setType(MetricType.UNTYPED)
+                .addMetric(metricBuilder.build())
                 .build();
     }
 
     /**
-     * Sends the metrics object to the repository to be stored in a queue for batching.
+     * Sends the {@link MetricFamily} object to the repository to be stored in a queue for batching.
      */
-    private void collect(MetricsContainer metricsContainer) {
-        mMetricsRepository.queueMetric(metricsContainer);
+    private void collect(MetricFamily metricsFamily) {
+        mMetricsRepository.queueMetric(metricsFamily);
     }
 
 //    /**
