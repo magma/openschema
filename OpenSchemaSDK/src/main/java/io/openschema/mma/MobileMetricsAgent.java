@@ -100,14 +100,13 @@ public class MobileMetricsAgent {
         retrofitService.initApi(mBackendBaseURL, mCertificateManager.generateSSLContext(), mBackendUsername, mBackendPassword);
         BackendApi backendApi = retrofitService.getApi();
 
-        mRegistrationManager = new RegistrationManager(backendApi, mIdentity);
+        mRegistrationManager = new RegistrationManager(mAppContext, backendApi, mIdentity);
         mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.generateSSLContext(), mIdentity);
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             try {
                 //Register
-                //TODO: Consider checking whether uuid is already saved in sharedprefs instead of sending a new request
                 boolean isRegistered = mRegistrationManager.registerSync();
                 Certificate certificate = null;
 

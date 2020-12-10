@@ -14,11 +14,14 @@
 
 package io.openschema.mma.register;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import java.io.IOException;
 
 import androidx.annotation.WorkerThread;
+import io.openschema.mma.helpers.SharedPreferencesHelper;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.networking.BackendApi;
 import io.openschema.mma.networking.request.RegisterRequest;
@@ -34,8 +37,10 @@ public class RegistrationManager {
 
     private Identity mIdentity;
     private BackendApi mBackendApi;
+    private SharedPreferences mSharedPreferences;
 
-    public RegistrationManager(BackendApi backendApi, Identity identity) {
+    public RegistrationManager(Context context, BackendApi backendApi, Identity identity) {
+        mSharedPreferences = SharedPreferencesHelper.getInstance(context);
         mBackendApi = backendApi;
         mIdentity = identity;
     }
@@ -44,9 +49,18 @@ public class RegistrationManager {
      * Sends a request to register the UE as a gateway in the Magma cloud. If the UE has
      * already been registered, the server will respond with 409. This operation can't be
      * called from the main thread.
+     * @return Returns true if the UE was registered successfully.
      */
     @WorkerThread
     public boolean registerSync() {
+
+        boolean isRegistered = mSharedPreferences.getBoolean(SharedPreferencesHelper.KEY_UE_REGISTERED, false);
+
+        if (isRegistered) {
+            Log.d(TAG, "MMA: UE has already been registered, no request will be sent.");
+            return true;
+        }
+
         Log.d(TAG, "MMA: Sending registration request.");
         try {
             Response<BaseResponse> res = mBackendApi.register(new RegisterRequest(mIdentity.getUUID(), mIdentity.getPublicKey()))
@@ -55,6 +69,7 @@ public class RegistrationManager {
             if (res.isSuccessful()) {
                 Log.d(TAG, "MMA: onResponse success: " + res.body().getMessage());
                 Log.d(TAG, "MMA: UE registration was successful.");
+                saveRegistration();
                 return true;
             } else {
                 String errorMessage = BaseResponse.getErrorMessage(res.errorBody());
@@ -62,6 +77,7 @@ public class RegistrationManager {
 
                 //If the user is already registered, proceed to bootstrapping as normal
                 if (res.code() == 409) {
+                    saveRegistration();
                     return true;
                 }
             }
@@ -71,5 +87,14 @@ public class RegistrationManager {
         }
 
         return false;
+    }
+
+    /**
+     * Set the registration flag to true in SharedPreferences to avoid further requests in the future.
+     */
+    private void saveRegistration() {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(SharedPreferencesHelper.KEY_UE_REGISTERED, true);
+        editor.apply();
     }
 }

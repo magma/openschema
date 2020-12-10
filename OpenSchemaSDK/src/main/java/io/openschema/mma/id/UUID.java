@@ -18,13 +18,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import io.openschema.mma.helpers.SharedPreferencesHelper;
+
 /**
  * Helper class used to generate and store a UUID.
  */
 
 public class UUID {
-
-    private static final String KEY_UUID = "key_uuid";
 
     private String mUUID;
 
@@ -37,16 +37,15 @@ public class UUID {
         String uuid;
 
         //Load saved value from shared preferences
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                KEY_UUID, Context.MODE_PRIVATE);
-        uuid = sharedPref.getString(KEY_UUID, null);
+        SharedPreferences sharedPref = SharedPreferencesHelper.getInstance(context);
+        uuid = sharedPref.getString(SharedPreferencesHelper.KEY_UUID, null);
 
         //Generate new UUID if none was found
         if (uuid == null) {
             uuid = java.util.UUID.randomUUID().toString();
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(KEY_UUID, uuid);
-            editor.commit();
+            editor.putString(SharedPreferencesHelper.KEY_UUID, uuid);
+            editor.apply();
         }
 
         return uuid;
