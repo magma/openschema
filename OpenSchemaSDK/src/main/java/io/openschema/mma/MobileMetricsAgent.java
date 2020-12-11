@@ -33,6 +33,7 @@ import io.openschema.mma.bootstrap.BootstrapManager;
 import io.openschema.mma.certifier.Certificate;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metrics.CellularNetworkMetrics;
+import io.openschema.mma.metrics.DeviceMetrics;
 import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.metrics.WifiNetworkMetrics;
 import io.openschema.mma.networking.BackendApi;
@@ -56,7 +57,7 @@ public class MobileMetricsAgent {
     private int mBackendCertificateResId;
     private String mBackendUsername;
     private String mBackendPassword;
-    private boolean mEnableNetworkMetrics;
+    private boolean mEnableLibraryMetrics;
 
     private Context mAppContext;
     private Identity mIdentity;
@@ -77,7 +78,7 @@ public class MobileMetricsAgent {
         mBackendCertificateResId = mmaBuilder.mBackendCertificateResId;
         mBackendUsername = mmaBuilder.mBackendUsername;
         mBackendPassword = mmaBuilder.mBackendPassword;
-        mEnableNetworkMetrics = mmaBuilder.mEnableNetworkMetrics;
+        mEnableLibraryMetrics = mmaBuilder.mEnableLibraryMetrics;
 
         mAppContext = mmaBuilder.mAppContext;
     }
@@ -163,13 +164,14 @@ public class MobileMetricsAgent {
         mIsReady = true;
 
         // Check if the static network and device metrics should be pushed
-        if (mEnableNetworkMetrics) {
+        if (mEnableLibraryMetrics) {
             CellularNetworkMetrics cellularNetworkMetrics = new CellularNetworkMetrics(mAppContext);
             WifiNetworkMetrics wifiNetworkMetrics = new WifiNetworkMetrics(mAppContext);
-            //TODO: add device metrics
+            DeviceMetrics deviceMetrics = new DeviceMetrics(mAppContext);
 
             mMetricsManager.collect(CellularNetworkMetrics.METRIC_FAMILY_NAME, cellularNetworkMetrics.retrieveNetworkMetrics());
             mMetricsManager.collect(WifiNetworkMetrics.METRIC_FAMILY_NAME, wifiNetworkMetrics.retrieveNetworkMetrics());
+            mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, deviceMetrics.retrieveDeviceMetrics());
         }
     }
 
@@ -203,7 +205,7 @@ public class MobileMetricsAgent {
         private int mBackendCertificateResId;
         private String mBackendUsername;
         private String mBackendPassword;
-        private boolean mEnableNetworkMetrics = true;
+        private boolean mEnableLibraryMetrics = true;
 
         private Context mAppContext;
 
@@ -281,11 +283,11 @@ public class MobileMetricsAgent {
         }
 
         /**
-         * @param enabled Boolean flag to determine if the static Wi-Fi and Cellular network
-         * metrics will be collected.
+         * @param enabled Boolean flag to determine if the static library metrics
+         *                will be collected.
          */
-        public Builder setEnabledNetworkMetrics(boolean enabled) {
-            mEnableNetworkMetrics = enabled;
+        public Builder setEnabledLibraryMetrics(boolean enabled) {
+            mEnableLibraryMetrics = enabled;
             return this;
         }
 
