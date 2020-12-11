@@ -42,6 +42,7 @@ public class MetricsManager {
     private let keyHelper = KeyHelper()
     private let cellularNetworkMetrics : CellularNetworkMetrics = CellularNetworkMetrics()
     private let wifiNetworkMetrics : WifiNetworkMetrics = WifiNetworkMetrics()
+    private let deviceMetrics : DeviceMetrics = DeviceMetrics()
     private var certificateFilePath : String
     ///CustomMetrics class object.
     private let customMetrics = CustomMetrics()
@@ -106,6 +107,7 @@ public class MetricsManager {
             var metricFamilyContainer : MetricFamilyContainer = MetricFamilyContainer()
             metricFamilyContainer.append(wifiNetworkMetrics.CollectWifiNetworkInfoMetrics())
             metricFamilyContainer.append(cellularNetworkMetrics.CollectCellularNetworkInfoMetrics())
+            metricFamilyContainer.append(deviceMetrics.CollectDeviceInfoMetrics())
             let collect = client.collect(customMetrics.CreateMetricsContainer(metricFamilyContainer: metricFamilyContainer, gatewayID: self.uuidManager.getUUID()))
             print("Succesfully called Collect")
             

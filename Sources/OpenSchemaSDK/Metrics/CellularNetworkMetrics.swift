@@ -17,8 +17,6 @@ import Foundation
 ///This class handles the GRPC creation of cellular bundles and metrics that will be pushed using MetricsManager.
 public class CellularNetworkMetrics {
     
-    ///Shared UUIDManager.
-    private let uuidManager = UUIDManager.shared
     ///CellularNetworkInfo class object.
     private let cellularNetworkInfo : CellularNetworkInfo = CellularNetworkInfo()
     ///CustomMetrics class object.
@@ -36,9 +34,9 @@ public class CellularNetworkMetrics {
     ///Radio Technology Label Name
     private let radioTechnologyLabelName : String = "radio_technology_code"
     
-    //Family Names
+    //Family Name
     ///Cellular Network Info Family Name
-    private let cellularNetworkInfoFamilyName = "ios_cellular_network_info"
+    private let cellularNetworkInfoFamilyName = "openschema_ios_cellular_network_info"
     
     public init(){
         
