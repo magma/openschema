@@ -92,16 +92,17 @@ public class MobileMetricsAgent {
      */
     public void init() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
         Log.d(TAG, "MMA: Initializing MMA...");
+
+        //Initialize identity & certificates
         mIdentity = new Identity(mAppContext);
         mCertificateManager = new CertificateManager();
         mCertificateManager.addBackendCertificate(mAppContext, mBackendCertificateResId);
         mCertificateManager.addControllerCertificate(mAppContext, mControllerCertificateResId);
-
         RetrofitService retrofitService = RetrofitService.getService(mAppContext);
         retrofitService.initApi(mBackendBaseURL, mCertificateManager.generateSSLContext(), mBackendUsername, mBackendPassword);
-        BackendApi backendApi = retrofitService.getApi();
 
-        mRegistrationManager = new RegistrationManager(mAppContext, backendApi, mIdentity);
+        //Initialize managers
+        mRegistrationManager = new RegistrationManager(mAppContext, retrofitService.getApi(), mIdentity);
         mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.generateSSLContext(), mIdentity);
         mMetricsManager = new MetricsManager(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader);
 
@@ -165,13 +166,9 @@ public class MobileMetricsAgent {
 
         // Check if the static network and device metrics should be pushed
         if (mEnableLibraryMetrics) {
-            CellularNetworkMetrics cellularNetworkMetrics = new CellularNetworkMetrics(mAppContext);
-            WifiNetworkMetrics wifiNetworkMetrics = new WifiNetworkMetrics(mAppContext);
-            DeviceMetrics deviceMetrics = new DeviceMetrics(mAppContext);
-
-            mMetricsManager.collect(CellularNetworkMetrics.METRIC_FAMILY_NAME, cellularNetworkMetrics.retrieveNetworkMetrics());
-            mMetricsManager.collect(WifiNetworkMetrics.METRIC_FAMILY_NAME, wifiNetworkMetrics.retrieveNetworkMetrics());
-            mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, deviceMetrics.retrieveDeviceMetrics());
+            mMetricsManager.collect(CellularNetworkMetrics.METRIC_FAMILY_NAME, new CellularNetworkMetrics(mAppContext).retrieveNetworkMetrics());
+            mMetricsManager.collect(WifiNetworkMetrics.METRIC_FAMILY_NAME, new WifiNetworkMetrics(mAppContext).retrieveNetworkMetrics());
+            mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, new DeviceMetrics(mAppContext).retrieveDeviceMetrics());
         }
     }
 

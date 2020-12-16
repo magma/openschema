@@ -29,6 +29,7 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 import io.openschema.mma.data.MetricsEntity;
 import io.openschema.mma.helpers.ChannelHelper;
 import io.openschema.mma.id.Identity;
@@ -68,8 +69,6 @@ public class MetricsWorker extends Worker {
         //Load queue from repository
         mMetricsList = mMetricsRepository.getEnqueuedMetrics();
 
-        //TODO: Consider adding a SharedPreference to check if bootstrapping has been completed yet,
-        // otherwise retry later.
         //Identity must have been previously generated during initialization
         try {
             mIdentity = new Identity(context);
@@ -91,12 +90,14 @@ public class MetricsWorker extends Worker {
         mBlockingStub = MetricsControllerGrpc.newBlockingStub(mChannel);
     }
 
+
     /**
      * Uses the GRPC stub to connect to the controller and send the data.
+     * @throws StatusRuntimeException Exception thrown by failed GRPC connection.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @SuppressLint("CheckResult")
-    private void pushMetric(MetricsContainer metricsContainer) {
+    private void pushMetric(MetricsContainer metricsContainer) throws StatusRuntimeException {
         mBlockingStub.collect(metricsContainer);
     }
 
@@ -153,11 +154,16 @@ public class MetricsWorker extends Worker {
 
         Log.d(TAG, "MMA: Starting background job to push queued metrics");
 
-        //TODO: Catch an ExecutionException or IOException and retry later.
-        // If the metric worker starts before bootstrapping has been completed
-        // it might throw an exception.
         //Send all the metrics batched into a single container
-        pushMetric(buildMetricsContainer());
+        try {
+            pushMetric(buildMetricsContainer());
+        } catch (StatusRuntimeException e) {
+            Log.d(TAG, "MMA: GRPC connection failed, bootstrapping might have not been completed.");
+            e.printStackTrace();
+            Log.d(TAG, "MMA: Sending signal to retry worker later.");
+            mChannel.shutdown();
+            return Result.retry();
+        }
 
         Log.d(TAG, "MMA: Finished pushing all metrics");
 
