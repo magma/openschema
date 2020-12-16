@@ -18,7 +18,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
-import java.util.Queue;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
@@ -29,6 +29,7 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import io.grpc.ManagedChannel;
+import io.openschema.mma.data.MetricsEntity;
 import io.openschema.mma.helpers.ChannelHelper;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metricsd.MetricsContainer;
@@ -50,21 +51,25 @@ public class MetricsWorker extends Worker {
     private static final String DATA_CONTROLLER_PORT = "CONTROLLER_PORT";
     private static final String DATA_AUTHORITY_HEADER = "AUTHORITY_HEADER";
 
-    private Queue<MetricFamily> mMetricsQueue;
+    private final MetricsRepository mMetricsRepository;
+
+    private final List<MetricsEntity> mMetricsList;
     private Identity mIdentity;
-    private ManagedChannel mChannel;
-    private MetricsControllerGrpc.MetricsControllerBlockingStub mBlockingStub;
+    private final ManagedChannel mChannel;
+    private final MetricsControllerGrpc.MetricsControllerBlockingStub mBlockingStub;
 
     public MetricsWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
 
         Log.d(TAG, "MMA: Initializing MetricsWorker");
 
-        //Load queue from repository
-        mMetricsQueue = MetricsRepository
-                .getRepository(context.getApplicationContext())
-                .getQueue();
+        mMetricsRepository = MetricsRepository.getRepository(context.getApplicationContext());
 
+        //Load queue from repository
+        mMetricsList = mMetricsRepository.getEnqueuedMetrics();
+
+        //TODO: Consider adding a SharedPreference to check if bootstrapping has been completed yet,
+        // otherwise retry later.
         //Identity must have been previously generated during initialization
         try {
             mIdentity = new Identity(context);
@@ -95,32 +100,79 @@ public class MetricsWorker extends Worker {
         mBlockingStub.collect(metricsContainer);
     }
 
-    @NonNull
-    @Override
-    public Result doWork() {
-        Log.d(TAG, "MMA: Iterating through " + mMetricsQueue.size() + " metrics...");
-
+    /**
+     * Iterate through all the metrics saved to the database & batch them
+     * together in a single container for pushing to the cloud.
+     */
+    private MetricsContainer buildMetricsContainer() {
         MetricsContainer.Builder metricsContainerBuilder = MetricsContainer.newBuilder()
                 .setGatewayId(mIdentity.getUUID());
 
-        //Iterate through every available metric in the queue and add it to the container
-        while (!mMetricsQueue.isEmpty()) {
-            metricsContainerBuilder.addFamily(mMetricsQueue.poll());
+        //Iterate through every metric family in the database
+        Log.d(TAG, "MMA: Iterating through " + mMetricsList.size() + " metrics...");
+        for (MetricsEntity currentMetric : mMetricsList) {
+            Metric.Builder metricBuilder = Metric.newBuilder();
+
+            //Iterate through every metric pair in the family
+            for (int i = 0; i < currentMetric.mMetrics.size(); i++) {
+                metricBuilder.addLabel(LabelPair.newBuilder()
+                        .setName(currentMetric.mMetrics.get(i).first)
+                        .setValue(currentMetric.mMetrics.get(i).second)
+                        .build());
+            }
+
+            //Initialize fields used by Magma
+            metricBuilder
+                    .addLabel(LabelPair.newBuilder()
+                            .setName(MetricsManager.METRIC_UUID)
+                            .setValue(mIdentity.getUUID())
+                            .build())
+                    .addLabel(LabelPair.newBuilder()
+                            .setName(MetricsManager.METRIC_TIMESTAMP)
+                            .setValue(currentMetric.mTimeStamp)
+                            .build())
+                    .setUntyped(Untyped.newBuilder()
+                            .setValue(0)
+                            .build());
+
+            //Build the metric family and add it to the container
+            metricsContainerBuilder.addFamily(MetricFamily.newBuilder()
+                    .setName(currentMetric.mFamilyName)
+                    .setType(MetricType.UNTYPED)
+                    .addMetric(metricBuilder.build())
+                    .build()
+            );
         }
 
+        return metricsContainerBuilder.build();
+    }
+
+    @NonNull
+    @Override
+    public Result doWork() {
+
+        Log.d(TAG, "MMA: Starting background job to push queued metrics");
+
+        //TODO: Catch an ExecutionException or IOException and retry later.
+        // If the metric worker starts before bootstrapping has been completed
+        // it might throw an exception.
         //Send all the metrics batched into a single container
-        pushMetric(metricsContainerBuilder.build());
+        pushMetric(buildMetricsContainer());
 
         Log.d(TAG, "MMA: Finished pushing all metrics");
 
-        //Close channel
+        //Close GRPC channel
         mChannel.shutdown();
+
+        //Clear the pushed metrics from the database
+        mMetricsRepository.clearMetrics(mMetricsList);
+
         return Result.success();
     }
 
     /**
-     * Static utility method to enqueue this worker to run every 4 hours. Calling this method
-     * will cause the worker to run immediately and restart the periodic calls.
+     * Static utility method to enqueue this worker to run periodically. Calling this method
+     * will cause the worker to run immediately and restart the periodic calls delay counter.
      *
      * @param metricsControllerAddress Address of the magma controller.
      * @param metricsControllerPort    Port used by the magma controller.

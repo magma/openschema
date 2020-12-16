@@ -20,7 +20,7 @@ import android.util.Log;
 import java.util.List;
 
 import androidx.core.util.Pair;
-import io.openschema.mma.id.Identity;
+import io.openschema.mma.data.MetricsEntity;
 
 /**
  * Class in charge of handling pushing metrics to the controller.
@@ -29,75 +29,38 @@ public class MetricsManager {
 
     private static final String TAG = "MetricsManager";
 
-    private static final String METRIC_UUID = "uuid";
-    private static final String METRIC_TIMESTAMP = "timestamp";
+    public static final String METRIC_UUID = "uuid";
+    public static final String METRIC_TIMESTAMP = "timestamp";
 
-    private MetricsRepository mMetricsRepository;
-    private Identity mIdentity;
+    private final MetricsRepository mMetricsRepository;
 
-    public MetricsManager(Context appContext, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader, Identity identity) {
+    /**
+     * Constructs the manager class and initializes {@link MetricsWorker} to run periodically.
+     */
+    public MetricsManager(Context appContext, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader) {
         mMetricsRepository = MetricsRepository.getRepository(appContext);
-        mIdentity = identity;
 
+        //Start the background worker to periodically push saved metrics.
         MetricsWorker.enqueuePeriodicWorker(appContext, metricsControllerAddress, metricsControllerPort, metricsAuthorityHeader);
     }
 
     /**
      * Send metrics to prometheus through GRPC using the Collect method in metricsd.proto
      *
-     * @param metricName   Root name for the group of collected metrics
-     * @param metricValues List of metrics to collect with the <name, value> structure
+     * @param metricName Root name for the group of collected metrics
+     * @param metrics    List of metrics to collect with the <name, value> structure
      */
-    public void collect(String metricName, List<Pair<String, String>> metricValues) {
+    public void collect(String metricName, List<Pair<String, String>> metrics) {
         Log.d(TAG, "MMA: Collecting metric \"" + metricName + "\"");
 
-        //Create metrics base
-        Metric.Builder metricBuilder = Metric.newBuilder();
-
-        //Add custom list of metrics
-        for (Pair<String, String> metricValue : metricValues) {
-            metricBuilder.addLabel(LabelPair.newBuilder()
-                    .setName(metricValue.first)
-                    .setValue(metricValue.second)
-                    .build());
-        }
-
-        //Send metric to be handled
-        collect(buildMetricsFamily(metricName, metricBuilder));
+        collect(new MetricsEntity(metricName, Long.toString(System.currentTimeMillis()), metrics));
     }
 
     /**
-     * Generates a {@link MetricFamily} object and adds information
-     * required by the Magma controller.
+     * Sends the metrics object to the repository to be stored for batching.
      */
-    private MetricFamily buildMetricsFamily(String metricName, Metric.Builder metricBuilder) {
-        long timestamp = System.currentTimeMillis();
-
-        metricBuilder
-                .addLabel(LabelPair.newBuilder()
-                        .setName(METRIC_UUID)
-                        .setValue(mIdentity.getUUID())
-                        .build())
-                .addLabel(LabelPair.newBuilder()
-                        .setName(METRIC_TIMESTAMP)
-                        .setValue(Long.toString(timestamp))
-                        .build())
-                .setUntyped(Untyped.newBuilder()
-                        .setValue(0)
-                        .build());
-
-        return MetricFamily.newBuilder()
-                .setName(metricName)
-                .setType(MetricType.UNTYPED)
-                .addMetric(metricBuilder.build())
-                .build();
-    }
-
-    /**
-     * Sends the {@link MetricFamily} object to the repository to be stored in a queue for batching.
-     */
-    private void collect(MetricFamily metricsFamily) {
-        mMetricsRepository.queueMetric(metricsFamily);
+    private void collect(MetricsEntity metricsEntity) {
+        mMetricsRepository.queueMetric(metricsEntity);
     }
 
 //    /**

@@ -17,9 +17,13 @@ package io.openschema.mma.metrics;
 import android.content.Context;
 import android.util.Log;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
+import io.openschema.mma.data.MMADatabase;
+import io.openschema.mma.data.MetricsDAO;
+import io.openschema.mma.data.MetricsEntity;
 import io.openschema.mma.networking.BackendApi;
 
 /**
@@ -48,26 +52,41 @@ class MetricsRepository {
     }
 
     /**
-     * Queue that holds the metrics pending to be sent to the controller.
+     * Thread pool used to handle multiple metrics being pushed to the database simultaneously.
      */
-    private final Queue<MetricFamily> mMetricsQueue = new ConcurrentLinkedQueue<>();
+    private final ThreadPoolExecutor mExecutor;
+
+    /**
+     * Data access object used to interact with the Metrics' table in the database.
+     */
+    private final MetricsDAO mMetricsDAO;
 
     private MetricsRepository(Context appContext) {
+        MMADatabase db = MMADatabase.getDatabase(appContext);
+        mMetricsDAO = db.metricsDAO();
+        mExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
     /**
-     * Adds a metrics object to the queue. This queue gets flushed periodically through {@link MetricsWorker}.
+     * Writes a metrics object to the database. Queued metrics will get flushed periodically through {@link MetricsWorker}.
      */
-    //TODO: Add data persistence. Currently the data is held in memory and killing the app
-    // would cause unsent metrics to be lost.
-    public void queueMetric(MetricFamily metricsFamily) {
-        mMetricsQueue.add(metricsFamily);
+    public void queueMetric(MetricsEntity metricsEntity) {
+        mExecutor.execute(() -> mMetricsDAO.insert(metricsEntity));
     }
 
     /**
-     * Retrieves the current metrics queue.
+     * Retrieves a list of all currently queued metrics.
      */
-    public Queue<MetricFamily> getQueue() {
-        return mMetricsQueue;
+    public List<MetricsEntity> getEnqueuedMetrics() {
+        return mMetricsDAO.getAll();
+    }
+
+    /**
+     * Deletes metrics that have been recently pushed by the {@link MetricsWorker}.
+     *
+     * @param metrics List of metrics to delete from the database
+     */
+    public void clearMetrics(List<MetricsEntity> metrics) {
+        mMetricsDAO.delete(metrics.toArray(new MetricsEntity[0]));
     }
 }

@@ -103,6 +103,7 @@ public class MobileMetricsAgent {
 
         mRegistrationManager = new RegistrationManager(mAppContext, backendApi, mIdentity);
         mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.generateSSLContext(), mIdentity);
+        mMetricsManager = new MetricsManager(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader);
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
@@ -119,7 +120,6 @@ public class MobileMetricsAgent {
                 //Store certificate & setup metrics manager
                 if (certificate != null) {
                     mCertificateManager.addBootstrapCertificate(certificate);
-                    mMetricsManager = new MetricsManager(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader, mIdentity);
                     mainHandler.post(this::onReady);
                 }
             } catch (Exception e) {

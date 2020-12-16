@@ -15,7 +15,6 @@
 package io.openschema.mma.example;
 
 import android.os.Bundle;
-import android.os.Handler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,19 +51,15 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //Bootstrapping needs to complete before any metric can be pushed
-        new Handler().postDelayed(() -> {
-            List<Pair<String, String>> metricValues = new ArrayList<>();
-            metricValues.add(new Pair<>("customValue1", "value1"));
-            metricValues.add(new Pair<>("customValue2", "2"));
+        //Queue metrics
+        List<Pair<String, String>> metricValues = new ArrayList<>();
+        metricValues.add(new Pair<>("customValue1", "value1"));
+        metricValues.add(new Pair<>("customValue2", "2"));
+        mma.pushUntypedMetric("customMetric_example1", metricValues);
 
-            mma.pushUntypedMetric("customMetric_example1", metricValues);
-
-            List<Pair<String, String>> metricValues2 = new ArrayList<>();
-            metricValues.add(new Pair<>("customValue3", "value3"));
-            metricValues.add(new Pair<>("customValue4", "4"));
-
-            mma.pushUntypedMetric("customMetric_example2", metricValues2);
-        }, 8000);
+        List<Pair<String, String>> metricValues2 = new ArrayList<>();
+        metricValues2.add(new Pair<>("customValue3", "value3"));
+        metricValues2.add(new Pair<>("customValue4", "4"));
+        mma.pushUntypedMetric("customMetric_example2", metricValues2);
     }
 }
