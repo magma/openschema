@@ -13,7 +13,9 @@
  */
 
 import Foundation
-import UIKit
+#if os(iOS) || os(watchOS) || os(tvOS)
+    import UIKit
+#endif
 
 public class DeviceMetrics {
 
@@ -35,13 +37,14 @@ public class DeviceMetrics {
         
         let deviceModelLabel = customMetrics.CreateLabelPair(labelName: self.deviceModel, labelValue: UIDevice.current.systemVersion)
         let iosVersionLabel = customMetrics.CreateLabelPair(labelName: self.IOSVersion, labelValue: UIDevice.current.model)
-        var labelContainer : LabelContainer = LabelContainer()
+
+        var labelContainer : MagmaLabelContainer = MagmaLabelContainer()
         labelContainer.append(deviceModelLabel)
         labelContainer.append(iosVersionLabel)
         
         let deviceMetrics = customMetrics.CreateSimpleMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
         
-        var metricContainer : MetricContainer = MetricContainer()
+        var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
         metricContainer.append(deviceMetrics)
         
         return customMetrics.CreateFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.familyName)

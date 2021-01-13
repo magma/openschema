@@ -51,7 +51,7 @@ public class CellularNetworkMetrics {
         let isoCountryCodeLabel = customMetrics.CreateLabelPair(labelName: self.isoCountryCodeLabelName, labelValue: self.cellularNetworkInfo.getIsoCountryCode())
         let radioTechnologyLabel = customMetrics.CreateLabelPair(labelName: self.radioTechnologyLabelName, labelValue: self.cellularNetworkInfo.getCurrentRadioAccessTechnology())
 
-        var labelContainer : LabelContainer = LabelContainer()
+        var labelContainer : MagmaLabelContainer = MagmaLabelContainer()
         labelContainer.append(carrierLabel)
         labelContainer.append(mobileNetworkCodeLabel)
         labelContainer.append(mobileCountryCodeLabel)
@@ -60,7 +60,7 @@ public class CellularNetworkMetrics {
         
         let cellularMetrics = customMetrics.CreateSimpleMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
         
-        var metricContainer : MetricContainer = MetricContainer()
+        var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
         metricContainer.append(cellularMetrics)
         
         return customMetrics.CreateFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.cellularNetworkInfoFamilyName)

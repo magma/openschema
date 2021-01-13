@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17709" systemVersion="20C69" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CustomMetric" representedClassName="CustomMetric" syncable="YES" codeGenerationType="class">
+        <attribute name="familyName" optional="YES" attributeType="String"/>
+        <attribute name="timestamp" optional="YES" attributeType="String"/>
+        <attribute name="value" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="labels" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="LabelContainer" inverseName="customMetric" inverseEntity="LabelContainer"/>
+    </entity>
+    <entity name="LabelContainer" representedClassName="LabelContainer" syncable="YES" codeGenerationType="class">
+        <attribute name="labelName" optional="YES" attributeType="String"/>
+        <attribute name="labelValue" optional="YES" attributeType="String"/>
+        <relationship name="customMetric" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CustomMetric" inverseName="labels" inverseEntity="CustomMetric"/>
+    </entity>
+    <elements>
+        <element name="CustomMetric" positionX="-63" positionY="-18" width="128" height="89"/>
+        <element name="LabelContainer" positionX="-45" positionY="27" width="128" height="74"/>
+    </elements>
+</model>

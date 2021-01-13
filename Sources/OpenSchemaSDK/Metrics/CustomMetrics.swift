@@ -13,10 +13,11 @@
  */
 
 import Foundation
+import CoreData
 
-public typealias LabelContainer = [Magma_Orc8r_LabelPair]
-public typealias MetricContainer = [Magma_Orc8r_Metric]
-public typealias MetricFamilyContainer = [Magma_Orc8r_MetricFamily]
+public typealias MagmaLabelContainer = [Magma_Orc8r_LabelPair]
+public typealias MagmaMetricContainer = [Magma_Orc8r_Metric]
+public typealias MagmaMetricFamilyContainer = [Magma_Orc8r_MetricFamily]
 
 public class CustomMetrics {
     
@@ -25,6 +26,8 @@ public class CustomMetrics {
         case gauge
         case counter
     }
+    
+    private let coreDataController = PackageDataStackController.shared
     
     public init() {
         
@@ -39,7 +42,31 @@ public class CustomMetrics {
         return label
     }
     
-    public func CreateSimpleMetric(simpleMetricType : SimpleMetricType, labelContainer : LabelContainer, value : Double) -> Magma_Orc8r_Metric {
+    public func CreateSimpleMetric(familyName : String, LabelContainer : [(labelName: String, labelValue: String)], metricValue: Double) -> Bool {
+        
+        let customMetric = NSEntityDescription.insertNewObject(forEntityName: "CustomMetric", into: coreDataController.managedObjectContext) as! CustomMetric
+        customMetric.familyName = familyName
+        customMetric.timestamp = String(Date().millisecondsSince1970)
+        customMetric.value = metricValue
+        
+        for labelPair in LabelContainer {
+            let labelContainer = NSEntityDescription.insertNewObject(forEntityName: "LabelContainer", into: coreDataController.managedObjectContext) as! LabelContainer
+            labelContainer.customMetric = customMetric
+            labelContainer.labelName = labelPair.labelName
+            labelContainer.labelValue = labelPair.labelValue
+        }
+        
+        do {
+            try coreDataController.managedObjectContext.save()
+            
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+        
+        return true
+    }
+    
+    public func CreateSimpleMetric(simpleMetricType : SimpleMetricType, labelContainer : MagmaLabelContainer, value : Double) -> Magma_Orc8r_Metric {
         
         switch simpleMetricType {
         case .counter:
@@ -80,7 +107,7 @@ public class CustomMetrics {
         
     }
     
-    public func CreateFamilyForSimpleMetric(simpleMetricType: SimpleMetricType, metrics : MetricContainer, familyName: String) -> Magma_Orc8r_MetricFamily {
+    public func CreateFamilyForSimpleMetric(simpleMetricType: SimpleMetricType, metrics : MagmaMetricContainer, familyName: String) -> Magma_Orc8r_MetricFamily {
         
         switch simpleMetricType {
         case .counter:
@@ -114,7 +141,7 @@ public class CustomMetrics {
         
     }
     
-    public func CreateMetricsContainer(metricFamilyContainer : MetricFamilyContainer, gatewayID : String) -> Magma_Orc8r_MetricsContainer {
+    public func CreateMetricsContainer(metricFamilyContainer : MagmaMetricFamilyContainer, gatewayID : String) -> Magma_Orc8r_MetricsContainer {
         let customMetricsContainer = Magma_Orc8r_MetricsContainer.with {
             $0.gatewayID = gatewayID
             $0.family = metricFamilyContainer

@@ -104,7 +104,7 @@ public class MetricsManager {
             let client: Magma_Orc8r_MetricsControllerClient = Magma_Orc8r_MetricsControllerClient(channel: connection)
             
             // Make the RPC call to the server.
-            var metricFamilyContainer : MetricFamilyContainer = MetricFamilyContainer()
+            var metricFamilyContainer : MagmaMetricFamilyContainer = MagmaMetricFamilyContainer()
             metricFamilyContainer.append(wifiNetworkMetrics.CollectWifiNetworkInfoMetrics())
             metricFamilyContainer.append(cellularNetworkMetrics.CollectCellularNetworkInfoMetrics())
             metricFamilyContainer.append(deviceMetrics.CollectDeviceInfoMetrics())
