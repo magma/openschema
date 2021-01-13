@@ -63,6 +63,7 @@ public class CustomMetrics {
             fatalError("Failure to save context: \(error)")
         }
         
+        print("Data Saved")
         return true
     }
     

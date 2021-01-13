@@ -15,7 +15,8 @@
 import UIKit
 import CoreData
 
-class PackageDataStackController : NSObject {
+//Should make private maybe
+public class PackageDataStackController : NSObject {
     
     public static let shared = PackageDataStackController()
 
