@@ -21,20 +21,25 @@ class PackageDataStackController : NSObject {
 
     private override init() {}
     
-    public lazy var persistentContainer: NSPersistentContainer = {
-            let container = NSPersistentContainer(name: "AnalyticsModel")
-            
+    // Create a subclass of NSPersistentStore Coordinator
+    open class PersistentContainer: NSPersistentContainer {
+    }
+    
+    lazy public var persistentContainer: PersistentContainer? = {
+            guard let modelURL = Bundle.module.url(forResource:"AnalyticsModel", withExtension: "momd") else { return  nil }
+            guard let model = NSManagedObjectModel(contentsOf: modelURL) else { return nil }
+            let container = PersistentContainer(name:"AnalyticsModel",managedObjectModel:model)
             container.loadPersistentStores(completionHandler: { (storeDescription, error) in
                 if let error = error as NSError? {
-                    fatalError("Unresolved error \(error), \(error.userInfo)")
+                    print("Unresolved error \(error), \(error.userInfo)")
                 }
             })
             return container
         }()
-    
-        /// The managed object context associated with the main queue. (read-only)
+
+    /// The managed object context associated with the main queue. (read-only)
         public var managedObjectContext : NSManagedObjectContext {
-            return self.persistentContainer.viewContext
+            return self.persistentContainer!.viewContext
         }
     
         public func saveContext () {
