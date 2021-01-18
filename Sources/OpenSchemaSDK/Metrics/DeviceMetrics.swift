@@ -33,21 +33,17 @@ public class DeviceMetrics {
         
     }
     
-    public func CollectDeviceInfoMetrics() -> Magma_Orc8r_MetricFamily {
-        
-        let deviceModelLabel = customMetrics.CreateLabelPair(labelName: self.deviceModel, labelValue: UIDevice.current.systemVersion)
-        let iosVersionLabel = customMetrics.CreateLabelPair(labelName: self.IOSVersion, labelValue: UIDevice.current.model)
+    public func CollectDeviceInfoMetrics() {
 
-        var labelContainer : MagmaLabelContainer = MagmaLabelContainer()
-        labelContainer.append(deviceModelLabel)
-        labelContainer.append(iosVersionLabel)
+        var labelContainer : [(String, String)] = [(String, String)]()
+        labelContainer.append((self.deviceModel, UIDevice.current.systemVersion))
+        labelContainer.append((self.IOSVersion, UIDevice.current.model))
         
-        let deviceMetrics = customMetrics.CreateMagmaMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
-        
-        var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
-        metricContainer.append(deviceMetrics)
-        
-        return customMetrics.CreateMagmaFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.familyName)
+        if(customMetrics.CreateSimpleMetric(familyName: self.familyName, LabelContainer: labelContainer, metricValue: 0)) {
+            print("Device Metrics Stored")
+        } else {
+            print("Failed to Store Device Metrics")
+        }
     }
     
 }

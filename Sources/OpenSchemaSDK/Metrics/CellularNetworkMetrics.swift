@@ -43,26 +43,20 @@ public class CellularNetworkMetrics {
     }
     
     ///Using CreateGRPCStringMetric it collects the values from cellular connection  and return a Magma_Orc8r_MetricsContainer with them
-    public func CollectCellularNetworkInfoMetrics() -> Magma_Orc8r_MetricFamily {
+    public func CollectCellularNetworkInfoMetrics() {
+        
+        var labelContainer : [(String, String)] = [(String, String)]()
+        labelContainer.append((self.carrierNameLabelName, self.cellularNetworkInfo.getCarrierName()))
+        labelContainer.append((self.mobileNetworkCodeLabelName, self.cellularNetworkInfo.getMobileNetworkCode()))
+        labelContainer.append((self.mobileCountryCodeLabelName, self.cellularNetworkInfo.getMobileCountryCode()))
+        labelContainer.append((self.isoCountryCodeLabelName, self.cellularNetworkInfo.getIsoCountryCode()))
+        labelContainer.append((self.radioTechnologyLabelName, self.cellularNetworkInfo.getCurrentRadioAccessTechnology()))
+        
+        if (customMetrics.CreateSimpleMetric(familyName: self.cellularNetworkInfoFamilyName, LabelContainer: labelContainer, metricValue: 0.0)) {
+            print("Cellular Metrics Data Stored Succesfully")
+        } else {
+            print("Cellular Metrics was not stored")
+        }
 
-        let carrierLabel = customMetrics.CreateLabelPair(labelName: self.carrierNameLabelName, labelValue: self.cellularNetworkInfo.getCarrierName())
-        let mobileNetworkCodeLabel = customMetrics.CreateLabelPair(labelName: self.mobileNetworkCodeLabelName, labelValue: self.cellularNetworkInfo.getMobileNetworkCode())
-        let mobileCountryCodeLabel = customMetrics.CreateLabelPair(labelName: self.mobileCountryCodeLabelName, labelValue: self.cellularNetworkInfo.getMobileCountryCode())
-        let isoCountryCodeLabel = customMetrics.CreateLabelPair(labelName: self.isoCountryCodeLabelName, labelValue: self.cellularNetworkInfo.getIsoCountryCode())
-        let radioTechnologyLabel = customMetrics.CreateLabelPair(labelName: self.radioTechnologyLabelName, labelValue: self.cellularNetworkInfo.getCurrentRadioAccessTechnology())
-
-        var labelContainer : MagmaLabelContainer = MagmaLabelContainer()
-        labelContainer.append(carrierLabel)
-        labelContainer.append(mobileNetworkCodeLabel)
-        labelContainer.append(mobileCountryCodeLabel)
-        labelContainer.append(isoCountryCodeLabel)
-        labelContainer.append(radioTechnologyLabel)
-        
-        let cellularMetrics = customMetrics.CreateMagmaMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
-        
-        var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
-        metricContainer.append(cellularMetrics)
-        
-        return customMetrics.CreateMagmaFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.cellularNetworkInfoFamilyName)
     }
 }

@@ -32,21 +32,17 @@ public class WifiNetworkMetrics {
     }
 
     ///Using CreateGRPCStringMetric it collects the values from Wi-Fi connection  and return a Magma_Orc8r_MetricsContainer with them.
-    public func CollectWifiNetworkInfoMetrics() -> Magma_Orc8r_MetricFamily {
+    public func CollectWifiNetworkInfoMetrics() {
         
-        let ssidLabel = customMetrics.CreateLabelPair(labelName: self.ssidLabelName, labelValue: self.wifiNetworkinfo.getSSID())
-        let bssidLabel = customMetrics.CreateLabelPair(labelName: self.bssidLabelName, labelValue: self.wifiNetworkinfo.getBSSID())
-        var labelContainer : MagmaLabelContainer = MagmaLabelContainer()
+        var labelContainer : [(String, String)] = [(String, String)]()
+        labelContainer.append((self.ssidLabelName, self.wifiNetworkinfo.getSSID()))
+        labelContainer.append((self.bssidLabelName, self.wifiNetworkinfo.getBSSID()))
         
-        labelContainer.append(ssidLabel)
-        labelContainer.append(bssidLabel)
-        
-        let wifiMetrics = customMetrics.CreateMagmaMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
-        
-        var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
-        metricContainer.append(wifiMetrics)
-        
-        return customMetrics.CreateMagmaFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.wifiNetworkInfoFamilyName)
+        if(customMetrics.CreateSimpleMetric(familyName: wifiNetworkInfoFamilyName, LabelContainer: labelContainer, metricValue: 0)) {
+            print("Wi-fi Metrics Stored")
+        } else {
+            print("Failed to Store Wi-Fi Metrics")
+        }
     }
     
 }

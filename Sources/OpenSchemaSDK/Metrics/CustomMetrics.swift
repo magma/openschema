@@ -28,12 +28,13 @@ public class CustomMetrics {
     }
     
     private let coreDataController = PackageDataStackController.shared
+    private let uuidManager = UUIDManager.shared
     
     public init() {
         
     }
     
-    public func CreateLabelPair(labelName : String, labelValue : String) -> Magma_Orc8r_LabelPair {
+    private func CreateLabelPair(labelName : String, labelValue : String) -> Magma_Orc8r_LabelPair {
         let label : Magma_Orc8r_LabelPair = Magma_Orc8r_LabelPair.with {
             $0.name = labelName
             $0.value = labelValue
@@ -120,7 +121,7 @@ public class CustomMetrics {
     }
     
     //TODO: Do not delete Coredata if metrics for some reason fail to be pushed
-    public func FetchMetricsFromCoreData() -> MagmaMetricFamilyContainer {
+    public func FetchMetricsFromCoreData() -> Magma_Orc8r_MetricsContainer {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MetricFamily")
         var metricFamilyContainer : MagmaMetricFamilyContainer = MagmaMetricFamilyContainer()
         
@@ -155,12 +156,13 @@ public class CustomMetrics {
             print(error)
             
         }
-        
+  
         clearAllCoreData()
-        return metricFamilyContainer
+        
+        return CreateMetricsContainer(metricFamilyContainer: metricFamilyContainer, gatewayID: uuidManager.getUUID())
     }
     
-    public func CreateMagmaMetric(simpleMetricType : SimpleMetricType, labelContainer : MagmaLabelContainer, value : Double) -> Magma_Orc8r_Metric {
+    private func CreateMagmaMetric(simpleMetricType : SimpleMetricType, labelContainer : MagmaLabelContainer, value : Double) -> Magma_Orc8r_Metric {
         
         switch simpleMetricType {
         case .counter:
@@ -201,7 +203,7 @@ public class CustomMetrics {
         
     }
     
-    public func CreateMagmaFamilyForSimpleMetric(simpleMetricType: SimpleMetricType, metrics : MagmaMetricContainer, familyName: String) -> Magma_Orc8r_MetricFamily {
+    private func CreateMagmaFamilyForSimpleMetric(simpleMetricType: SimpleMetricType, metrics : MagmaMetricContainer, familyName: String) -> Magma_Orc8r_MetricFamily {
         
         switch simpleMetricType {
         case .counter:
@@ -235,7 +237,7 @@ public class CustomMetrics {
         
     }
     
-    public func CreateMetricsContainer(metricFamilyContainer : MagmaMetricFamilyContainer, gatewayID : String) -> Magma_Orc8r_MetricsContainer {
+    private func CreateMetricsContainer(metricFamilyContainer : MagmaMetricFamilyContainer, gatewayID : String) -> Magma_Orc8r_MetricsContainer {
         let customMetricsContainer = Magma_Orc8r_MetricsContainer.with {
             $0.gatewayID = gatewayID
             $0.family = metricFamilyContainer

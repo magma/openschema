@@ -126,11 +126,8 @@ public class MetricsManager {
                 let client: Magma_Orc8r_MetricsControllerClient = Magma_Orc8r_MetricsControllerClient(channel: connection)
                 
                 // Make the RPC call to the server.
-                var metricFamilyContainer : MagmaMetricFamilyContainer = MagmaMetricFamilyContainer()
-                metricFamilyContainer.append(wifiNetworkMetrics.CollectWifiNetworkInfoMetrics())
-                metricFamilyContainer.append(cellularNetworkMetrics.CollectCellularNetworkInfoMetrics())
-                metricFamilyContainer.append(deviceMetrics.CollectDeviceInfoMetrics())
-                let collect = client.collect(customMetrics.CreateMetricsContainer(metricFamilyContainer: metricFamilyContainer, gatewayID: self.uuidManager.getUUID()))
+                
+                let collect = client.collect(customMetrics.FetchMetricsFromCoreData())
                 print("Succesfully called Collect")
                 
                 collect.response.whenComplete { result in
