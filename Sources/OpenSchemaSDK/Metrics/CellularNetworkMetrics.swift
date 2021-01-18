@@ -58,11 +58,11 @@ public class CellularNetworkMetrics {
         labelContainer.append(isoCountryCodeLabel)
         labelContainer.append(radioTechnologyLabel)
         
-        let cellularMetrics = customMetrics.CreateSimpleMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
+        let cellularMetrics = customMetrics.CreateMagmaMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
         
         var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
         metricContainer.append(cellularMetrics)
         
-        return customMetrics.CreateFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.cellularNetworkInfoFamilyName)
+        return customMetrics.CreateMagmaFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.cellularNetworkInfoFamilyName)
     }
 }

@@ -37,15 +37,16 @@ public class WifiNetworkMetrics {
         let ssidLabel = customMetrics.CreateLabelPair(labelName: self.ssidLabelName, labelValue: self.wifiNetworkinfo.getSSID())
         let bssidLabel = customMetrics.CreateLabelPair(labelName: self.bssidLabelName, labelValue: self.wifiNetworkinfo.getBSSID())
         var labelContainer : MagmaLabelContainer = MagmaLabelContainer()
+        
         labelContainer.append(ssidLabel)
         labelContainer.append(bssidLabel)
         
-        let wifiMetrics = customMetrics.CreateSimpleMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
+        let wifiMetrics = customMetrics.CreateMagmaMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
         
         var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
         metricContainer.append(wifiMetrics)
         
-        return customMetrics.CreateFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.wifiNetworkInfoFamilyName)
+        return customMetrics.CreateMagmaFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.wifiNetworkInfoFamilyName)
     }
     
 }

@@ -42,12 +42,12 @@ public class DeviceMetrics {
         labelContainer.append(deviceModelLabel)
         labelContainer.append(iosVersionLabel)
         
-        let deviceMetrics = customMetrics.CreateSimpleMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
+        let deviceMetrics = customMetrics.CreateMagmaMetric(simpleMetricType: .gauge, labelContainer: labelContainer, value: 1)
         
         var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
         metricContainer.append(deviceMetrics)
         
-        return customMetrics.CreateFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.familyName)
+        return customMetrics.CreateMagmaFamilyForSimpleMetric(simpleMetricType: .gauge, metrics: metricContainer, familyName: self.familyName)
     }
     
 }

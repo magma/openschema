@@ -42,12 +42,64 @@ public class CustomMetrics {
         return label
     }
     
+    private func FetchFamilyOrCreate(familyName: String) -> MetricFamily {
+        
+        //TODO add safe measeure to prevent returning empty family object
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MetricFamily")
+        fetchRequest.predicate = NSPredicate(format: "familyName == %@", familyName)
+        
+        var family : MetricFamily = MetricFamily()
+        
+        do {
+            //TODO: Find a way to ensure only one object is saved efficiently
+            let families = try coreDataController.managedObjectContext.fetch(fetchRequest) as! [MetricFamily]
+            
+            if (families.count == 0) {
+                family = NSEntityDescription.insertNewObject(forEntityName: "MetricFamily", into: coreDataController.managedObjectContext) as! MetricFamily
+                family.familyName = familyName
+            } else if (families.count == 1) {
+                family = families[0]
+            } else {
+                print("Multiple of the same family are stored ERROR?, This should not happen")
+            }
+
+        } catch {
+            print(error)
+        }
+        
+        return family
+        
+    }
+    
+    private func clearAllCoreData() {
+        let entities = coreDataController.persistentContainer?.managedObjectModel.entities
+        
+        if entities != nil {
+            for entity in entities! {
+                clearDeepObjectEntity(entity: entity.name!)
+            }
+        }
+    }
+
+    private func clearDeepObjectEntity(entity: String) {
+
+        let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: entity)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
+
+        do {
+            try coreDataController.managedObjectContext.execute(deleteRequest)
+            try coreDataController.managedObjectContext.save()
+        } catch {
+            print ("There was an error")
+        }
+    }
+    
     public func CreateSimpleMetric(familyName : String, LabelContainer : [(labelName: String, labelValue: String)], metricValue: Double) -> Bool {
         
         let customMetric = NSEntityDescription.insertNewObject(forEntityName: "CustomMetric", into: coreDataController.managedObjectContext) as! CustomMetric
-        customMetric.familyName = familyName
         customMetric.timestamp = String(Date().millisecondsSince1970)
         customMetric.value = metricValue
+        customMetric.family = FetchFamilyOrCreate(familyName: familyName)
         
         for labelPair in LabelContainer {
             let labelContainer = NSEntityDescription.insertNewObject(forEntityName: "LabelContainer", into: coreDataController.managedObjectContext) as! LabelContainer
@@ -67,7 +119,48 @@ public class CustomMetrics {
         return true
     }
     
-    public func CreateSimpleMetric(simpleMetricType : SimpleMetricType, labelContainer : MagmaLabelContainer, value : Double) -> Magma_Orc8r_Metric {
+    //TODO: Do not delete Coredata if metrics for some reason fail to be pushed
+    public func FetchMetricsFromCoreData() -> MagmaMetricFamilyContainer {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MetricFamily")
+        var metricFamilyContainer : MagmaMetricFamilyContainer = MagmaMetricFamilyContainer()
+        
+        do {
+            
+            let families = try coreDataController.managedObjectContext.fetch(fetchRequest) as! [MetricFamily]
+            
+            for family in families {
+                
+                var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
+                let metrics = family.metrics!.allObjects as! [CustomMetric]
+                
+                for metric in metrics {
+
+                    var labelContainer : MagmaLabelContainer = MagmaLabelContainer()
+                    let labels = metric.labels!.allObjects as! [LabelContainer]
+                    
+                    for label in labels {
+                        labelContainer.append(CreateLabelPair(labelName: label.labelName!, labelValue: label.labelValue!))
+                    }
+                    
+                    metricContainer.append(CreateMagmaMetric(simpleMetricType: .untyped, labelContainer: labelContainer, value: metric.value))
+                }
+                
+                metricFamilyContainer.append(CreateMagmaFamilyForSimpleMetric(simpleMetricType: .untyped, metrics : metricContainer, familyName: family.familyName!))
+                
+            }
+   
+        }
+        catch  {
+            
+            print(error)
+            
+        }
+        
+        clearAllCoreData()
+        return metricFamilyContainer
+    }
+    
+    public func CreateMagmaMetric(simpleMetricType : SimpleMetricType, labelContainer : MagmaLabelContainer, value : Double) -> Magma_Orc8r_Metric {
         
         switch simpleMetricType {
         case .counter:
@@ -108,7 +201,7 @@ public class CustomMetrics {
         
     }
     
-    public func CreateFamilyForSimpleMetric(simpleMetricType: SimpleMetricType, metrics : MagmaMetricContainer, familyName: String) -> Magma_Orc8r_MetricFamily {
+    public func CreateMagmaFamilyForSimpleMetric(simpleMetricType: SimpleMetricType, metrics : MagmaMetricContainer, familyName: String) -> Magma_Orc8r_MetricFamily {
         
         switch simpleMetricType {
         case .counter:
