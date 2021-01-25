@@ -128,11 +128,14 @@ public class CustomMetrics {
         do {
             
             let families = try coreDataController.managedObjectContext.fetch(fetchRequest) as! [MetricFamily]
+            print("\nRetrieved \(families.count) families from core data")
             
             for family in families {
                 
                 var metricContainer : MagmaMetricContainer = MagmaMetricContainer()
                 let metrics = family.metrics!.allObjects as! [CustomMetric]
+                
+                print("Retrieved Family Name: \(family.familyName!) with \(metrics.count) metrics stored")
                 
                 for metric in metrics {
 
@@ -140,9 +143,11 @@ public class CustomMetrics {
                     let labels = metric.labels!.allObjects as! [LabelContainer]
                     
                     for label in labels {
+                        print("Retrieved Label Name: \(label.labelName!), Label Value: \(label.labelValue!) with \(labels.count) labels")
                         labelContainer.append(CreateLabelPair(labelName: label.labelName!, labelValue: label.labelValue!))
                     }
                     
+                    print("Retrieved Metric value: \(metric.value), timestamp: \(metric.timestamp)\n")
                     metricContainer.append(CreateMagmaMetric(simpleMetricType: .untyped, labelContainer: labelContainer, value: metric.value, timestampMs: metric.timestamp))
                 }
                 
