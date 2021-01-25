@@ -25,8 +25,6 @@ public class BootstrapManager {
     private let clientConfig = ClientConfig.shared
     ///Shared UUIDManager class singleton instance.
     private let uuidManager = UUIDManager.shared
-    ///Shared wifiNetworkInfo singleton instance.
-    private let wifiNetworkinfo = WifiNetworkInfo.shared
     ///String that contains the path to the certificate to be used for connecting to the server on Bootstrap.
     private var certificateFilePath : String
     
@@ -34,33 +32,8 @@ public class BootstrapManager {
     public init(certificateFilePath : String) {
         self.certificateFilePath = certificateFilePath
         print(self.uuidManager.getUUID())
-        CreateSSIDObserver()
     }
-    
-    /**This function creates an observer that detects if the Wi-Fi changed since last time app using the framework was on foregorund.
-     if the Wi-Fi information is different BootstrapNow function is called*/
-    private func CreateSSIDObserver() {
-        let observer : UnsafeRawPointer! = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
-        let object : UnsafeRawPointer! = nil
-        
-        let callback: CFNotificationCallback = { center, observer, name, object, info in
-            print("Wi-Fi SSID name changed")
-            
-            let mySelf = Unmanaged<BootstrapManager>.fromOpaque(UnsafeRawPointer(observer!)).takeUnretainedValue()
-            // Call instance method:
-            mySelf.wifiNetworkinfo.updateWifiNetworkInfo()
-            mySelf.BootstrapNow()
 
-        }
-
-        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
-                                        observer,
-                                        callback,
-                                        "com.apple.system.config.network_change" as CFString,
-                                        object,
-                                        .deliverImmediately)
-    }
-    
     ///This function calls BootstrapLogic and sends it to a background thread to prevent locking the UI during its execution.
     public func BootstrapNow(){
         let dispatchQueue = DispatchQueue(label: "QueueIdentification", qos: .background)

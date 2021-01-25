@@ -39,7 +39,7 @@ public class WifiNetworkMetrics {
         labelContainer.append((self.bssidLabelName, self.wifiNetworkinfo.BSSID))
         
         if(customMetrics.CreateSimpleMetric(familyName: wifiNetworkInfoFamilyName, LabelContainer: labelContainer, metricValue: 0)) {
-            print("Wi-fi Metrics Stored")
+            print("Wi-fi Metrics Stored which SSID is: \(self.wifiNetworkinfo.SSID)")
         } else {
             print("Failed to Store Wi-Fi Metrics")
         }

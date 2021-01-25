@@ -21,8 +21,7 @@ public class WifiObserver {
     public static let shared = WifiObserver()
     ///WifiNetworkInfo shared Singleton
     private let wifiNetworkInfo = WifiNetworkInfo.shared
-    ///Bool that tracks if SSID changes
-    //private var SSIDChanged : Bool = false
+    private let wifiNetworkMetrics = WifiNetworkMetrics()
     
     ///Initialize class and call CreateSSIDObserver
     private init() {
@@ -42,6 +41,7 @@ public class WifiObserver {
             let mySelf = Unmanaged<WifiObserver>.fromOpaque(UnsafeRawPointer(observer!)).takeUnretainedValue()
             // Call instance method:
             mySelf.wifiNetworkInfo.updateWifiNetworkInfo()
+            mySelf.wifiNetworkMetrics.CollectWifiNetworkInfoMetrics()
 
         }
 
