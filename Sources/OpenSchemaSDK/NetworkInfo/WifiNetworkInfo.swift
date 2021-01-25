@@ -17,21 +17,18 @@ import NetworkExtension
 import SystemConfiguration.CaptiveNetwork
 
 ///This class retrieves currently connected Wi-Fi information.
-public class WifiNetworkInfo {
+public class WifiNetworkInfo : ObservableObject {
     
     public static let shared = WifiNetworkInfo()
-    private var SSID = "Unable to get value"
-    private var BSSID = "Unable to get value"
+    @Published private(set) var SSID = "Unable to get value"
+    @Published private(set) var BSSID = "Unable to get value"
     
     private init(){
       fetchSSIDInfo()
     }
     
-    public func getSSID() -> String { return self.SSID }
-    public func getBSSID() -> String { return self.BSSID }
-    
     ///This function returns current SSID and BSSID info from the connnected Wi-Fi.
-    public func fetchSSIDInfo() -> Void {
+    private func fetchSSIDInfo() -> Void {
         if let interfaces = CNCopySupportedInterfaces() {
             for i in 0..<CFArrayGetCount(interfaces) {
                 let interfaceName: UnsafeRawPointer = CFArrayGetValueAtIndex(interfaces, i)

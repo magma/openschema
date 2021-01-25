@@ -48,7 +48,7 @@ public class BootstrapManager {
             
             let mySelf = Unmanaged<BootstrapManager>.fromOpaque(UnsafeRawPointer(observer!)).takeUnretainedValue()
             // Call instance method:
-            mySelf.wifiNetworkinfo.fetchSSIDInfo()
+            mySelf.wifiNetworkinfo.updateWifiNetworkInfo()
             mySelf.BootstrapNow()
 
         }

@@ -22,7 +22,7 @@ public class WifiObserver {
     ///WifiNetworkInfo shared Singleton
     private let wifiNetworkInfo = WifiNetworkInfo.shared
     ///Bool that tracks if SSID changes
-    private var SSIDChanged : Bool = false
+    //private var SSIDChanged : Bool = false
     
     ///Initialize class and call CreateSSIDObserver
     private init() {
@@ -31,7 +31,7 @@ public class WifiObserver {
         
     }
 
-    ///This function creates the observer to check for any change on SSID value. Should not happen but is a safety measure.
+    ///This function creates the observer to check for any change on SSID value.
     private func CreateSSIDObserver() {
         let observer : UnsafeRawPointer! = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
         let object : UnsafeRawPointer! = nil
@@ -41,7 +41,7 @@ public class WifiObserver {
             
             let mySelf = Unmanaged<WifiObserver>.fromOpaque(UnsafeRawPointer(observer!)).takeUnretainedValue()
             // Call instance method:
-            mySelf.SSIDChanged = true
+            mySelf.wifiNetworkInfo.updateWifiNetworkInfo()
 
         }
 

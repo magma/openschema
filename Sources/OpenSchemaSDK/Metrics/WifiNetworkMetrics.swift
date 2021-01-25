@@ -35,8 +35,8 @@ public class WifiNetworkMetrics {
     public func CollectWifiNetworkInfoMetrics() {
         
         var labelContainer : [(String, String)] = [(String, String)]()
-        labelContainer.append((self.ssidLabelName, self.wifiNetworkinfo.getSSID()))
-        labelContainer.append((self.bssidLabelName, self.wifiNetworkinfo.getBSSID()))
+        labelContainer.append((self.ssidLabelName, self.wifiNetworkinfo.SSID))
+        labelContainer.append((self.bssidLabelName, self.wifiNetworkinfo.BSSID))
         
         if(customMetrics.CreateSimpleMetric(familyName: wifiNetworkInfoFamilyName, LabelContainer: labelContainer, metricValue: 0)) {
             print("Wi-fi Metrics Stored")
