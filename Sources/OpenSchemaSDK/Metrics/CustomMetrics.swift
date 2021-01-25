@@ -164,6 +164,15 @@ public class CustomMetrics {
   
         clearAllCoreData()
         
+        for family in metricFamilyContainer {
+            
+            for metric in family.metric {
+                
+                print(metric.untyped.value)
+            }
+            
+        }
+        
         return CreateMetricsContainer(metricFamilyContainer: metricFamilyContainer, gatewayID: uuidManager.getUUID())
     }
     
