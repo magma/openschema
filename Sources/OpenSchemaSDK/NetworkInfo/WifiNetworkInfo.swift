@@ -20,8 +20,8 @@ import SystemConfiguration.CaptiveNetwork
 public class WifiNetworkInfo : ObservableObject {
     
     public static let shared = WifiNetworkInfo()
-    @Published private(set) var SSID = "Unable to get value"
-    @Published private(set) var BSSID = "Unable to get value"
+    @Published public private(set) var SSID = "Unable to get value"
+    @Published public private(set) var BSSID = "Unable to get value"
     
     private init(){
       fetchSSIDInfo()
