@@ -173,6 +173,7 @@ public class CustomMetrics {
             let metric = Magma_Orc8r_Metric.with {
                 $0.label = labelContainer
                 $0.counter = counter
+                $0.timestampMs = Date().millisecondsSince1970
             }
             
             return metric
@@ -184,6 +185,7 @@ public class CustomMetrics {
             let metric = Magma_Orc8r_Metric.with {
                 $0.label = labelContainer
                 $0.gauge = gauge
+                $0.timestampMs = Date().millisecondsSince1970
             }
             
             return metric
@@ -196,6 +198,7 @@ public class CustomMetrics {
             let metric = Magma_Orc8r_Metric.with {
                 $0.label = labelContainer
                 $0.untyped = untyped
+                $0.timestampMs = Date().millisecondsSince1970
             }
             
             return metric

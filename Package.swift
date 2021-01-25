@@ -31,7 +31,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(name: "grpc-swift", url: "https://github.com/grpc/grpc-swift.git", from: "1.0.0-alpha.21"),
+        .package(name: "grpc-swift", url: "https://github.com/grpc/grpc-swift.git", from: "1.0.0-alpha.22"),
         .package(name: "CryptorECC", url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
         .package(name: "CertificateSigningRequest", url: "https://github.com/cbaker6/CertificateSigningRequest.git", from: "1.26.1"),
         .package(name: "Reachability", url: "https://github.com/ashleymills/Reachability.swift.git", from: "5.1.0")        
