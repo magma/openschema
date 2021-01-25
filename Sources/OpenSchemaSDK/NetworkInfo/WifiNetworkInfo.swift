@@ -24,11 +24,11 @@ public class WifiNetworkInfo : ObservableObject {
     @Published public private(set) var BSSID = "Unable to get value"
     
     private init(){
-      fetchSSIDInfo()
+        self.getWiFiInfo()
     }
     
-    ///This function returns current SSID and BSSID info from the connnected Wi-Fi.
-    private func fetchSSIDInfo() -> Void {
+    /*///This function returns current SSID and BSSID info from the connnected Wi-Fi.
+    private func fetchSSIDInfo() {
         if let interfaces = CNCopySupportedInterfaces() {
             for i in 0..<CFArrayGetCount(interfaces) {
                 let interfaceName: UnsafeRawPointer = CFArrayGetValueAtIndex(interfaces, i)
@@ -42,11 +42,38 @@ public class WifiNetworkInfo : ObservableObject {
                 }
             }
         }
+    }*/
+    
+    ///This function returns current SSID and BSSID info from the connnected Wi-Fi.
+    private func getWiFiInfo() {
+        guard let interfaces = CNCopySupportedInterfaces() as? [String] else {
+            print("No Wi-Fi interfaces found!")
+            return
+        }
+        
+        for interface in interfaces {
+            guard let interfaceInfo = CNCopyCurrentNetworkInfo(interface as CFString) as NSDictionary? else {
+                print("Wi-Fi Interface info Failed!")
+                return
+            }
+            guard let ssid = interfaceInfo[kCNNetworkInfoKeySSID as String] as? String else {
+                print("Wi-Fi SSID could not be retrieved")
+                return
+            }
+            guard let bssid = interfaceInfo[kCNNetworkInfoKeyBSSID as String] as? String else {
+                print("Wi-Fi BSSID could not be retrieved")
+                return
+            }
+            
+            self.SSID = ssid
+            self.BSSID = bssid
+            break
+        }
     }
     
     ///Calls fetchSSIDInfo used to update values on Wi-Fi change. For example to refresh UI.
     public func updateWifiNetworkInfo() -> Void {
-        self.fetchSSIDInfo()
+        self.getWiFiInfo()
     }
     
 }
