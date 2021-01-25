@@ -35,7 +35,8 @@ public class WifiNetworkInfo : ObservableObject {
                 let rec = unsafeBitCast(interfaceName, to: AnyObject.self)
                 let unsafeInterfaceData = CNCopyCurrentNetworkInfo("\(rec)" as CFString)
                 if let interfaceData = unsafeInterfaceData as? [String: AnyObject] {
-                    self.SSID = interfaceData["SSID"] as! String
+                    self.SSID = interfaceData[kCNNetworkInfoKeySSID as String] as! String
+                    print("fetched ssid: " + (interfaceData[kCNNetworkInfoKeySSID as String] as! String))
                     self.BSSID = interfaceData["BSSID"] as! String
                     //let SSIDDATA = interfaceData["SSIDDATA"] as! String
                 }
