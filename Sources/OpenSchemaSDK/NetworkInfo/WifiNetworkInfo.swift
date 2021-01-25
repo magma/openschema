@@ -52,6 +52,9 @@ public class WifiNetworkInfo : ObservableObject {
         }
         
         for interface in interfaces {
+            
+            print("Number of Wi-Fi interfaces: \(interfaces.count)")
+            
             guard let interfaceInfo = CNCopyCurrentNetworkInfo(interface as CFString) as NSDictionary? else {
                 print("Wi-Fi Interface info Failed!")
                 return

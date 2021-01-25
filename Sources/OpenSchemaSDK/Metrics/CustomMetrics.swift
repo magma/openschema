@@ -98,7 +98,7 @@ public class CustomMetrics {
     public func CreateSimpleMetric(familyName : String, LabelContainer : [(labelName: String, labelValue: String)], metricValue: Double) -> Bool {
         
         let customMetric = NSEntityDescription.insertNewObject(forEntityName: "CustomMetric", into: coreDataController.managedObjectContext) as! CustomMetric
-        customMetric.timestamp = String(Date().millisecondsSince1970)
+        customMetric.timestamp = Date().millisecondsSince1970
         customMetric.value = metricValue
         customMetric.family = FetchFamilyOrCreate(familyName: familyName)
         
@@ -143,7 +143,7 @@ public class CustomMetrics {
                         labelContainer.append(CreateLabelPair(labelName: label.labelName!, labelValue: label.labelValue!))
                     }
                     
-                    metricContainer.append(CreateMagmaMetric(simpleMetricType: .untyped, labelContainer: labelContainer, value: metric.value))
+                    metricContainer.append(CreateMagmaMetric(simpleMetricType: .untyped, labelContainer: labelContainer, value: metric.value, timestampMs: metric.timestamp))
                 }
                 
                 metricFamilyContainer.append(CreateMagmaFamilyForSimpleMetric(simpleMetricType: .untyped, metrics : metricContainer, familyName: family.familyName!))
@@ -162,7 +162,7 @@ public class CustomMetrics {
         return CreateMetricsContainer(metricFamilyContainer: metricFamilyContainer, gatewayID: uuidManager.getUUID())
     }
     
-    private func CreateMagmaMetric(simpleMetricType : SimpleMetricType, labelContainer : MagmaLabelContainer, value : Double) -> Magma_Orc8r_Metric {
+    private func CreateMagmaMetric(simpleMetricType : SimpleMetricType, labelContainer : MagmaLabelContainer, value : Double, timestampMs: Int64) -> Magma_Orc8r_Metric {
         
         switch simpleMetricType {
         case .counter:
@@ -173,7 +173,7 @@ public class CustomMetrics {
             let metric = Magma_Orc8r_Metric.with {
                 $0.label = labelContainer
                 $0.counter = counter
-                $0.timestampMs = Date().millisecondsSince1970
+                $0.timestampMs = timestampMs
             }
             
             return metric
@@ -185,7 +185,7 @@ public class CustomMetrics {
             let metric = Magma_Orc8r_Metric.with {
                 $0.label = labelContainer
                 $0.gauge = gauge
-                $0.timestampMs = Date().millisecondsSince1970
+                $0.timestampMs = timestampMs
             }
             
             return metric
@@ -198,7 +198,7 @@ public class CustomMetrics {
             let metric = Magma_Orc8r_Metric.with {
                 $0.label = labelContainer
                 $0.untyped = untyped
-                $0.timestampMs = Date().millisecondsSince1970
+                $0.timestampMs = timestampMs
             }
             
             return metric
