@@ -27,8 +27,9 @@ public class WifiNetworkInfo : ObservableObject {
         self.getWiFiInfo()
     }
     
-    /*///This function returns current SSID and BSSID info from the connnected Wi-Fi.
-    private func fetchSSIDInfo() {
+    //TODO: Implement beter version with as this is deprecated for iOS 14 onwards
+    ///This function returns current SSID and BSSID info from the connnected Wi-Fi.
+    private func getWiFiInfo() {
         if let interfaces = CNCopySupportedInterfaces() {
             for i in 0..<CFArrayGetCount(interfaces) {
                 let interfaceName: UnsafeRawPointer = CFArrayGetValueAtIndex(interfaces, i)
@@ -42,9 +43,9 @@ public class WifiNetworkInfo : ObservableObject {
                 }
             }
         }
-    }*/
+    }
     
-    ///This function returns current SSID and BSSID info from the connnected Wi-Fi.
+    /*///This function returns current SSID and BSSID info from the connnected Wi-Fi.
     private func getWiFiInfo() {
         guard let interfaces = CNCopySupportedInterfaces() as? [String] else {
             print("No Wi-Fi interfaces found!")
@@ -72,7 +73,7 @@ public class WifiNetworkInfo : ObservableObject {
             self.BSSID = bssid
             break
         }
-    }
+    }*/
     
     ///Calls fetchSSIDInfo used to update values on Wi-Fi change. For example to refresh UI.
     public func updateWifiNetworkInfo() -> Void {
