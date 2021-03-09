@@ -38,10 +38,11 @@ public class MainActivity extends AppCompatActivity {
                 .setBootstrapperAddress(getString(R.string.bootstrapper_address))
                 .setControllerCertificateResId(R.raw.controller)
                 .setAuthorityHeader(getString(R.string.metrics_authority_header))
-                .setBackendBaseURL(getString(R.string.backend_base_url))
-                .setBackendCertificateResId(R.raw.backend)
-                .setBackendUsername(getString(R.string.backend_username))
-                .setBackendPassword(getString(R.string.backend_password))
+                .setUseAutomaticRegistration(false)
+//                .setBackendBaseURL(getString(R.string.backend_base_url))
+//                .setBackendCertificateResId(R.raw.backend)
+//                .setBackendUsername(getString(R.string.backend_username))
+//                .setBackendPassword(getString(R.string.backend_password))
                 .build();
 
         //Initialize agent

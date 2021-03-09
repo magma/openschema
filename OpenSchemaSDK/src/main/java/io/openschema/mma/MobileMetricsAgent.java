@@ -53,6 +53,7 @@ public class MobileMetricsAgent {
     private int mControllerCertificateResId;
     private String mMetricsAuthorityHeader;
     private int mControllerPort;
+    private boolean mUseAutomaticRegistration;
     private String mBackendBaseURL;
     private int mBackendCertificateResId;
     private String mBackendUsername;
@@ -74,6 +75,7 @@ public class MobileMetricsAgent {
         mControllerCertificateResId = mmaBuilder.mControllerCertificateResId;
         mMetricsAuthorityHeader = mmaBuilder.mMetricsAuthorityHeader;
         mControllerPort = mmaBuilder.mControllerPort;
+        mUseAutomaticRegistration = mmaBuilder.mUseAutomaticRegistration;
         mBackendBaseURL = mmaBuilder.mBackendBaseURL;
         mBackendCertificateResId = mmaBuilder.mBackendCertificateResId;
         mBackendUsername = mmaBuilder.mBackendUsername;
@@ -98,21 +100,27 @@ public class MobileMetricsAgent {
         mCertificateManager = new CertificateManager();
         mCertificateManager.addBackendCertificate(mAppContext, mBackendCertificateResId);
         mCertificateManager.addControllerCertificate(mAppContext, mControllerCertificateResId);
-        RetrofitService retrofitService = RetrofitService.getService(mAppContext);
-        retrofitService.initApi(mBackendBaseURL, mCertificateManager.generateSSLContext(), mBackendUsername, mBackendPassword);
+
+        //Initialize automatic registration managers if enabled
+        if (mUseAutomaticRegistration) {
+            RetrofitService retrofitService = RetrofitService.getService(mAppContext);
+            retrofitService.initApi(mBackendBaseURL, mCertificateManager.generateSSLContext(), mBackendUsername, mBackendPassword);
+            mRegistrationManager = new RegistrationManager(mAppContext, retrofitService.getApi(), mIdentity);
+        }
 
         //Initialize managers
-        mRegistrationManager = new RegistrationManager(mAppContext, retrofitService.getApi(), mIdentity);
         mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.generateSSLContext(), mIdentity);
         mMetricsManager = new MetricsManager(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader);
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             try {
-                //Register
-                boolean isRegistered = mRegistrationManager.registerSync();
-                Certificate certificate = null;
+                // Register
+                // If automatic registration is disabled, we will assume that the UE has already been registered manually into the orc8r.
+                // Bootstrapping will fail if the registered UE can't be found.
+                boolean isRegistered = !mUseAutomaticRegistration || mRegistrationManager.registerSync();
 
+                Certificate certificate = null;
                 //Bootstrap
                 if (isRegistered) {
                     certificate = mBootstrapManager.bootstrapSync();
@@ -198,6 +206,7 @@ public class MobileMetricsAgent {
         private int mControllerCertificateResId;
         private String mMetricsAuthorityHeader;
         private int mControllerPort;
+        private boolean mUseAutomaticRegistration = true;
         private String mBackendBaseURL;
         private int mBackendCertificateResId;
         private String mBackendUsername;
@@ -244,6 +253,14 @@ public class MobileMetricsAgent {
          */
         public Builder setControllerPort(int port) {
             mControllerPort = port;
+            return this;
+        }
+
+        /**
+         * @param enabled Flag to enable or disable automatic registration using OpenSchema's backend
+         */
+        public Builder setUseAutomaticRegistration(boolean enabled) {
+            mUseAutomaticRegistration = enabled;
             return this;
         }
 
