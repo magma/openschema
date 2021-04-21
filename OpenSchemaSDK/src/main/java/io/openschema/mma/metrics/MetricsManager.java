@@ -37,11 +37,8 @@ public class MetricsManager {
     /**
      * Constructs the manager class and initializes {@link MetricsWorker} to run periodically.
      */
-    public MetricsManager(Context appContext, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader) {
+    public MetricsManager(Context appContext) {
         mMetricsRepository = MetricsRepository.getRepository(appContext);
-
-        //Start the background worker to periodically push saved metrics.
-        MetricsWorker.enqueuePeriodicWorker(appContext, metricsControllerAddress, metricsControllerPort, metricsAuthorityHeader);
     }
 
     /**
@@ -63,6 +60,13 @@ public class MetricsManager {
         mMetricsRepository.queueMetric(metricsEntity);
     }
 
+    //TODO: javadoc
+    public void startWorker(Context appContext, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader) {
+        //Start the background worker to periodically push saved metrics.
+        MetricsWorker.enqueuePeriodicWorker(appContext, metricsControllerAddress, metricsControllerPort, metricsAuthorityHeader);
+    }
+
+    //TODO: remove
 //    /**
 //     * Send metrics to prometheus through GRPC using the Push method in metricsd.proto
 //     *

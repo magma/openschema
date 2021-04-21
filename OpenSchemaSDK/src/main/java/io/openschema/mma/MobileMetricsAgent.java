@@ -35,8 +35,8 @@ import io.openschema.mma.id.Identity;
 import io.openschema.mma.metrics.CellularNetworkMetrics;
 import io.openschema.mma.metrics.DeviceMetrics;
 import io.openschema.mma.metrics.MetricsManager;
+import io.openschema.mma.metrics.UsageDataWorker;
 import io.openschema.mma.metrics.WifiNetworkMetrics;
-import io.openschema.mma.networking.BackendApi;
 import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.networking.RetrofitService;
 import io.openschema.mma.register.RegistrationManager;
@@ -110,7 +110,7 @@ public class MobileMetricsAgent {
 
         //Initialize managers
         mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.generateSSLContext(), mIdentity);
-        mMetricsManager = new MetricsManager(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader);
+        mMetricsManager = new MetricsManager(mAppContext);
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
@@ -177,7 +177,11 @@ public class MobileMetricsAgent {
             mMetricsManager.collect(CellularNetworkMetrics.METRIC_FAMILY_NAME, new CellularNetworkMetrics(mAppContext).retrieveNetworkMetrics());
             mMetricsManager.collect(WifiNetworkMetrics.METRIC_FAMILY_NAME, new WifiNetworkMetrics(mAppContext).retrieveNetworkMetrics());
             mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, new DeviceMetrics(mAppContext).retrieveDeviceMetrics());
+
+            UsageDataWorker.enqueuePeriodicWorker(mAppContext);
         }
+
+        mMetricsManager.startWorker(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader);
     }
 
     /**

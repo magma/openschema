@@ -38,11 +38,11 @@ public class MainActivity extends AppCompatActivity {
                 .setBootstrapperAddress(getString(R.string.bootstrapper_address))
                 .setControllerCertificateResId(R.raw.controller)
                 .setAuthorityHeader(getString(R.string.metrics_authority_header))
-                .setUseAutomaticRegistration(false)
-//                .setBackendBaseURL(getString(R.string.backend_base_url))
-//                .setBackendCertificateResId(R.raw.backend)
-//                .setBackendUsername(getString(R.string.backend_username))
-//                .setBackendPassword(getString(R.string.backend_password))
+//                .setUseAutomaticRegistration(false)
+                .setBackendBaseURL(getString(R.string.backend_base_url))
+                .setBackendCertificateResId(R.raw.backend)
+                .setBackendUsername(getString(R.string.backend_username))
+                .setBackendPassword(getString(R.string.backend_password))
                 .build();
 
         //Initialize agent
@@ -53,14 +53,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Queue metrics
-        List<Pair<String, String>> metricValues = new ArrayList<>();
-        metricValues.add(new Pair<>("customValue1", "value1"));
-        metricValues.add(new Pair<>("customValue2", "2"));
-        mma.pushUntypedMetric("customMetric_example1", metricValues);
+//        List<Pair<String, String>> metricValues = new ArrayList<>();
+//        metricValues.add(new Pair<>("customValue1", "value1"));
+//        metricValues.add(new Pair<>("customValue2", "2"));
+//        mma.pushUntypedMetric("customMetric_example1", metricValues);
 
-        List<Pair<String, String>> metricValues2 = new ArrayList<>();
-        metricValues2.add(new Pair<>("customValue3", "value3"));
-        metricValues2.add(new Pair<>("customValue4", "4"));
-        mma.pushUntypedMetric("customMetric_example2", metricValues2);
+//        List<Pair<String, String>> metricValues2 = new ArrayList<>();
+//        metricValues2.add(new Pair<>("customValue3", "value3"));
+//        metricValues2.add(new Pair<>("customValue4", "4"));
+//        mma.pushUntypedMetric("customMetric_example2", metricValues2);
     }
 }

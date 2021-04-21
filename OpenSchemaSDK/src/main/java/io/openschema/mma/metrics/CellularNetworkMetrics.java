@@ -81,26 +81,30 @@ public class CellularNetworkMetrics {
             metricsList.add(new Pair<>(METRIC_RADIO_TECHNOLOGY_CODE, getRadioTechnologyString(mTelephonyManager.getDataNetworkType())));
         }
 
+        //TODO: Also check if location services are enabled?
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Requires location services to be enabled, otherwise returned list will be empty
             List<CellInfo> allCellInfo = mTelephonyManager.getAllCellInfo();
 
-            for (CellInfo cellInfo : allCellInfo) {
+            if (allCellInfo != null) {
+                for (int i = 0; i < allCellInfo.size(); i++) {
+                    CellInfo cellInfo = allCellInfo.get(i);
 
-                if (cellInfo == null || !cellInfo.isRegistered()) continue;
-                //TODO: Can there be more than 1 registered network?
+                    if (cellInfo == null || !cellInfo.isRegistered()) continue;
+                    //TODO: Can there be more than 1 registered network?
 
-                if (cellInfo instanceof CellInfoCdma) {
-                    getInfoCDMA(metricsList);
-                } else if (cellInfo instanceof CellInfoGsm) {
-                    getInfoGSM(metricsList, cellInfo);
-                } else if (cellInfo instanceof CellInfoLte) {
-                    getInfoLTE(metricsList, cellInfo);
-                } else if (cellInfo instanceof CellInfoWcdma) {
-                    getInfoWCDMA(metricsList, cellInfo);
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-                        cellInfo instanceof CellInfoNr) {
-                    getInfoNR(metricsList, cellInfo);
+                    if (cellInfo instanceof CellInfoCdma) {
+                        getInfoCDMA(metricsList);
+                    } else if (cellInfo instanceof CellInfoGsm) {
+                        getInfoGSM(metricsList, cellInfo);
+                    } else if (cellInfo instanceof CellInfoLte) {
+                        getInfoLTE(metricsList, cellInfo);
+                    } else if (cellInfo instanceof CellInfoWcdma) {
+                        getInfoWCDMA(metricsList, cellInfo);
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                            cellInfo instanceof CellInfoNr) {
+                        getInfoNR(metricsList, cellInfo);
+                    }
                 }
             }
         }

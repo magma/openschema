@@ -57,6 +57,7 @@ public class WifiNetworkMetrics {
         List<Pair<String, String>> metricsList = new ArrayList<>();
         WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
 
+        //TODO: check for location permission & service enabled
         metricsList.add(new Pair<>(METRIC_SSID, wifiInfo.getSSID()));
         metricsList.add(new Pair<>(METRIC_BSSID, wifiInfo.getBSSID()));
 

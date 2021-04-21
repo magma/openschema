@@ -154,6 +154,9 @@ public class MetricsWorker extends Worker {
 
         Log.d(TAG, "MMA: Starting background job to push queued metrics");
 
+        //TODO: It seems that we need to bootstrap again for future worker iterations
+        //TODO: Check what is the expiration time for the mTLS cert
+
         //Send all the metrics batched into a single container
         try {
             pushMetric(buildMetricsContainer());
