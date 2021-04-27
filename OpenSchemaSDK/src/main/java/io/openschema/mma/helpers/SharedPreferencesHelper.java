@@ -38,6 +38,11 @@ public class SharedPreferencesHelper {
     public static final String KEY_UE_REGISTERED = "key_ue_registered";
 
     /**
+     * Key used to keep track whether this is the first time the app has been opened.
+     */
+    public static final String KEY_FIRST_TIME_SETUP = "key_first_time_setup";
+
+    /**
      * Get a SharedPreferences instance using the library's file key.
      */
     public static SharedPreferences getInstance(Context context) {

@@ -55,8 +55,9 @@ public class UUID {
         return mUUID;
     }
 
-    public void setUUID(String uuid) {
-        mUUID = uuid;
-    }
+    //TODO: remove? UUID shouldn't change throughout the installation
+//    public void setUUID(String uuid) {
+//        mUUID = uuid;
+//    }
 
 }

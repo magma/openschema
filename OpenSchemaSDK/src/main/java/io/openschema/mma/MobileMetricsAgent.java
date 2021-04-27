@@ -16,6 +16,7 @@ package io.openschema.mma;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -31,11 +32,11 @@ import java.util.List;
 import androidx.core.util.Pair;
 import io.openschema.mma.bootstrap.BootstrapManager;
 import io.openschema.mma.certifier.Certificate;
+import io.openschema.mma.helpers.SharedPreferencesHelper;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metrics.CellularNetworkMetrics;
 import io.openschema.mma.metrics.DeviceMetrics;
 import io.openschema.mma.metrics.MetricsManager;
-import io.openschema.mma.metrics.UsageDataWorker;
 import io.openschema.mma.metrics.WifiNetworkMetrics;
 import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.networking.RetrofitService;
@@ -174,14 +175,37 @@ public class MobileMetricsAgent {
 
         // Check if the static network and device metrics should be pushed
         if (mEnableLibraryMetrics) {
+            attemptFirstTimeSetup();
+
+            //TODO: remove or move to be periodically collected
             mMetricsManager.collect(CellularNetworkMetrics.METRIC_FAMILY_NAME, new CellularNetworkMetrics(mAppContext).retrieveNetworkMetrics());
             mMetricsManager.collect(WifiNetworkMetrics.METRIC_FAMILY_NAME, new WifiNetworkMetrics(mAppContext).retrieveNetworkMetrics());
-            mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, new DeviceMetrics(mAppContext).retrieveDeviceMetrics());
-
-            UsageDataWorker.enqueuePeriodicWorker(mAppContext);
+//            UsageDataWorker.enqueuePeriodicWorker(mAppContext);
         }
 
         mMetricsManager.startWorker(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader);
+    }
+
+    //TODO: javadoc
+    private void attemptFirstTimeSetup() {
+        //Check if this is the first time the SDK runs
+        SharedPreferences sharedPref = SharedPreferencesHelper.getInstance(mAppContext);
+        boolean isFirstTime = sharedPref.getBoolean(SharedPreferencesHelper.KEY_FIRST_TIME_SETUP, true);
+
+        if (isFirstTime) {
+            //Run any code required only the first time the SDK is started
+            executeFirstTimeSetup();
+
+            //Save sharedpref to prevent this code from running any subsequent start
+            sharedPref.edit()
+                    .putBoolean(SharedPreferencesHelper.KEY_FIRST_TIME_SETUP, false)
+                    .apply();
+        }
+    }
+
+    //TODO: javadoc
+    private void executeFirstTimeSetup(){
+        mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, new DeviceMetrics(mAppContext).retrieveDeviceMetrics());
     }
 
     /**
