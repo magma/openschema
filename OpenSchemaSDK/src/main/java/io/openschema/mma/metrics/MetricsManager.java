@@ -61,40 +61,8 @@ public class MetricsManager {
     }
 
     //TODO: javadoc
-    public void startWorker(Context appContext, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader) {
+    public static void startWorker(Context appContext, String metricsControllerAddress, String bootstrapperAddress, int metricsControllerPort, String metricsAuthorityHeader) {
         //Start the background worker to periodically push saved metrics.
-        MetricsWorker.enqueuePeriodicWorker(appContext, metricsControllerAddress, metricsControllerPort, metricsAuthorityHeader);
+        MetricsWorker.enqueuePeriodicWorker(appContext, metricsControllerAddress, bootstrapperAddress, metricsControllerPort, metricsAuthorityHeader);
     }
-
-    //TODO: remove
-//    /**
-//     * Send metrics to prometheus through GRPC using the Push method in metricsd.proto
-//     *
-//     * @param metricName   Root name for the group of collected metrics
-//     * @param metricValues List of metrics to collect with the <name, value> structure
-//     */
-//    @SuppressLint("CheckResult")
-//    @WorkerThread
-//    public void pushSync(String metricName, List<Pair<String, String>> metricValues) {
-//
-//        Log.d(TAG, "MMA: Sending push request...");
-//
-//        PushedMetric.Builder metricBuilder = PushedMetric.newBuilder()
-//                .setMetricName(metricName)
-//                .setTimestampMS(System.currentTimeMillis());
-//
-//        for (Pair<String, String> metricValue : metricValues) {
-//            metricBuilder.addLabels(LabelPair.newBuilder()
-//                    .setName(metricValue.first)
-//                    .setValue(metricValue.second)
-//                    .build());
-//        }
-//
-//        PushedMetricsContainer payload = PushedMetricsContainer.newBuilder()
-//                .setNetworkId(mIdentity.getUUID())
-//                .addMetrics(metricBuilder.build())
-//                .build();
-//
-//        mBlockingStub.push(payload);
-//    }
 }

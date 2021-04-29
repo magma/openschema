@@ -30,13 +30,12 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 import androidx.core.util.Pair;
-import io.openschema.mma.bootstrap.BootstrapManager;
-import io.openschema.mma.certifier.Certificate;
 import io.openschema.mma.helpers.SharedPreferencesHelper;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metrics.CellularNetworkMetrics;
 import io.openschema.mma.metrics.DeviceMetrics;
 import io.openschema.mma.metrics.MetricsManager;
+import io.openschema.mma.metrics.UsageDataWorker;
 import io.openschema.mma.metrics.WifiNetworkMetrics;
 import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.networking.RetrofitService;
@@ -67,7 +66,6 @@ public class MobileMetricsAgent {
     private boolean mIsReady = false;
 
     private RegistrationManager mRegistrationManager = null;
-    private BootstrapManager mBootstrapManager = null;
     private MetricsManager mMetricsManager = null;
 
     private MobileMetricsAgent(Builder mmaBuilder) {
@@ -110,7 +108,6 @@ public class MobileMetricsAgent {
         }
 
         //Initialize managers
-        mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.generateSSLContext(), mIdentity);
         mMetricsManager = new MetricsManager(mAppContext);
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -121,15 +118,7 @@ public class MobileMetricsAgent {
                 // Bootstrapping will fail if the registered UE can't be found.
                 boolean isRegistered = !mUseAutomaticRegistration || mRegistrationManager.registerSync();
 
-                Certificate certificate = null;
-                //Bootstrap
                 if (isRegistered) {
-                    certificate = mBootstrapManager.bootstrapSync();
-                }
-
-                //Store certificate & setup metrics manager
-                if (certificate != null) {
-                    mCertificateManager.addBootstrapCertificate(certificate);
                     mainHandler.post(this::onReady);
                 }
             } catch (Exception e) {
@@ -180,10 +169,10 @@ public class MobileMetricsAgent {
             //TODO: remove or move to be periodically collected
             mMetricsManager.collect(CellularNetworkMetrics.METRIC_FAMILY_NAME, new CellularNetworkMetrics(mAppContext).retrieveNetworkMetrics());
             mMetricsManager.collect(WifiNetworkMetrics.METRIC_FAMILY_NAME, new WifiNetworkMetrics(mAppContext).retrieveNetworkMetrics());
-//            UsageDataWorker.enqueuePeriodicWorker(mAppContext);
+            UsageDataWorker.enqueuePeriodicWorker(mAppContext);
         }
 
-        mMetricsManager.startWorker(mAppContext, mControllerAddress, mControllerPort, mMetricsAuthorityHeader);
+        MetricsManager.startWorker(mAppContext, mControllerAddress, mBootstrapperAddress, mControllerPort, mMetricsAuthorityHeader);
     }
 
     //TODO: javadoc
@@ -204,7 +193,7 @@ public class MobileMetricsAgent {
     }
 
     //TODO: javadoc
-    private void executeFirstTimeSetup(){
+    private void executeFirstTimeSetup() {
         mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, new DeviceMetrics(mAppContext).retrieveDeviceMetrics());
     }
 

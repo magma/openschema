@@ -41,34 +41,14 @@ public class DeviceMetrics extends BaseMetrics {
     private static final String METRIC_MODEL = "model";
     private static final String METRIC_MANUFACTURER = "manufacturer";
     private static final String METRIC_BRAND = "brand";
-    private static final String METRIC_UUID = "uuid";
     private static final String METRIC_ANDROID_ID = "android_id";
     private static final String METRIC_OPENSCHEMA_VERSION = "openschema_version"; //TODO: need to decide on a versioning scheme
-    private static final String METRIC_MAC_ADDRESS = "mac_address"; //TODO: remove since not available?
-    private static final String METRIC_IMEI = "imei"; //TODO: remove since not available?
 
-    private String mUUID;
     private String mSSAID;
-    private String mIMEI;
-    private String mMacAddress;
 
     public DeviceMetrics(Context context) {
         super(context);
-        mUUID = new UUID(context).getUUID();
-
         mSSAID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        TelephonyManager mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
-        try {
-            mIMEI = mTelephonyManager.getImei();
-        } catch (Exception e) {
-            mIMEI = null;
-            e.printStackTrace();
-        }
-
-        WifiManager mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        mMacAddress = mWifiManager.getConnectionInfo().getMacAddress();
     }
 
     /**
@@ -84,10 +64,7 @@ public class DeviceMetrics extends BaseMetrics {
         metricsList.add(new Pair<>(METRIC_MODEL, Build.MODEL));
         metricsList.add(new Pair<>(METRIC_MANUFACTURER, Build.MANUFACTURER));
         metricsList.add(new Pair<>(METRIC_BRAND, Build.BRAND));
-        metricsList.add(new Pair<>(METRIC_UUID, mUUID));
         metricsList.add(new Pair<>(METRIC_ANDROID_ID, mSSAID));
-        metricsList.add(new Pair<>(METRIC_IMEI, mIMEI));
-        metricsList.add(new Pair<>(METRIC_MAC_ADDRESS, mMacAddress));
 
         Log.d(TAG, "MMA: Collected metrics:\n" + metricsList.toString());
         return metricsList;

@@ -30,6 +30,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
+import io.openschema.mma.bootstrap.BootstrapManager;
 import io.openschema.mma.data.MetricsEntity;
 import io.openschema.mma.helpers.ChannelHelper;
 import io.openschema.mma.id.Identity;
@@ -49,6 +50,7 @@ public class MetricsWorker extends Worker {
     private static final String WORKER_TAG = "METRICS_TAG";
 
     private static final String DATA_CONTROLLER_ADDRESS = "CONTROLLER_ADDRESS";
+    private static final String DATA_BOOTSTRAPPER_ADDRESS = "BOOTSTRAPPER_ADDRESS";
     private static final String DATA_CONTROLLER_PORT = "CONTROLLER_PORT";
     private static final String DATA_AUTHORITY_HEADER = "AUTHORITY_HEADER";
 
@@ -56,8 +58,16 @@ public class MetricsWorker extends Worker {
 
     private final List<MetricsEntity> mMetricsList;
     private Identity mIdentity;
-    private final ManagedChannel mChannel;
-    private final MetricsControllerGrpc.MetricsControllerBlockingStub mBlockingStub;
+    private ManagedChannel mChannel;
+    private MetricsControllerGrpc.MetricsControllerBlockingStub mBlockingStub;
+
+    private final BootstrapManager mBootstrapManager;
+    private final CertificateManager mCertificateManager;
+
+    private final String mControllerAddress;
+    private final String mBootstrapperAddress;
+    private final String mMetricsAuthorityHeader;
+    private final int mControllerPort;
 
     public MetricsWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -77,27 +87,28 @@ public class MetricsWorker extends Worker {
         }
 
         //Certificates must have been previously loaded into the KeyStore
-        CertificateManager certificateManager = new CertificateManager();
+        mCertificateManager = new CertificateManager();
 
-        //Create channel using controller parameters
+        //Retrieve worker parameters
         Data data = workerParams.getInputData();
-        mChannel = ChannelHelper.getSecureManagedChannelWithAuthorityHeader(
-                data.getString(DATA_CONTROLLER_ADDRESS),
-                data.getInt(DATA_CONTROLLER_PORT, -1),
-                certificateManager.generateSSLContext().getSocketFactory(),
-                data.getString(DATA_AUTHORITY_HEADER));
+        mControllerAddress = data.getString(DATA_CONTROLLER_ADDRESS);
+        mBootstrapperAddress = data.getString(DATA_BOOTSTRAPPER_ADDRESS);
+        mMetricsAuthorityHeader = data.getString(DATA_AUTHORITY_HEADER);
+        mControllerPort = data.getInt(DATA_CONTROLLER_PORT, -1);
 
-        mBlockingStub = MetricsControllerGrpc.newBlockingStub(mChannel);
+        mBootstrapManager = new BootstrapManager(mBootstrapperAddress, mControllerPort, mCertificateManager.generateSSLContext(), mIdentity);
     }
 
 
     /**
      * Uses the GRPC stub to connect to the controller and send the data.
+     *
      * @throws StatusRuntimeException Exception thrown by failed GRPC connection.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @SuppressLint("CheckResult")
     private void pushMetric(MetricsContainer metricsContainer) throws StatusRuntimeException {
+        Log.d(TAG, "MMA: Pushing metrics container...");
         mBlockingStub.collect(metricsContainer);
     }
 
@@ -148,14 +159,27 @@ public class MetricsWorker extends Worker {
         return metricsContainerBuilder.build();
     }
 
+    private void bootstrap() {
+        try {
+            mCertificateManager.addBootstrapCertificate(mBootstrapManager.bootstrapSync());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //Create channel using controller parameters
+        Log.d(TAG, "MMA: Initializing gRPC channel...");
+        mChannel = ChannelHelper.getSecureManagedChannelWithAuthorityHeader(mControllerAddress, mControllerPort, mCertificateManager.generateSSLContext().getSocketFactory(), mMetricsAuthorityHeader);
+        mBlockingStub = MetricsControllerGrpc.newBlockingStub(mChannel);
+    }
+
     @NonNull
     @Override
     public Result doWork() {
 
         Log.d(TAG, "MMA: Starting background job to push queued metrics");
 
-        //TODO: It seems that we need to bootstrap again for future worker iterations
-        //TODO: Check what is the expiration time for the mTLS cert
+        //Bootstrap to make sure we got a valid certificate since the previous one might have expired
+        bootstrap();
 
         //Send all the metrics batched into a single container
         try {
@@ -187,11 +211,12 @@ public class MetricsWorker extends Worker {
      * @param metricsControllerPort    Port used by the magma controller.
      * @param metricsAuthorityHeader   Header used to override the TLS/HTTP authority.
      */
-    public static void enqueuePeriodicWorker(Context context, String metricsControllerAddress, int metricsControllerPort, String metricsAuthorityHeader) {
+    public static void enqueuePeriodicWorker(Context context, String metricsControllerAddress, String bootstrapperAddress, int metricsControllerPort, String metricsAuthorityHeader) {
         PeriodicWorkRequest.Builder workBuilder = new PeriodicWorkRequest.Builder(MetricsWorker.class, 4, TimeUnit.HOURS)
                 .addTag(WORKER_TAG)
                 .setInputData(new Data.Builder()
                         .putString(DATA_CONTROLLER_ADDRESS, metricsControllerAddress)
+                        .putString(DATA_BOOTSTRAPPER_ADDRESS, bootstrapperAddress)
                         .putInt(DATA_CONTROLLER_PORT, metricsControllerPort)
                         .putString(DATA_AUTHORITY_HEADER, metricsAuthorityHeader)
                         .build());
