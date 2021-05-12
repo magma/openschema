@@ -55,7 +55,7 @@ public class DeviceMetrics extends BaseMetrics {
      * Collects information about the device and generates a list of pairs to
      * be used in {@link MetricsManager#collect(String, List)}.
      */
-    public List<Pair<String, String>> retrieveDeviceMetrics() {
+    public List<Pair<String, String>> retrieveMetrics() {
         Log.d(TAG, "MMA: Generating device metrics...");
 
         List<Pair<String, String>> metricsList = generateTimeZoneMetrics();
@@ -66,6 +66,7 @@ public class DeviceMetrics extends BaseMetrics {
         metricsList.add(new Pair<>(METRIC_BRAND, Build.BRAND));
         metricsList.add(new Pair<>(METRIC_ANDROID_ID, mSSAID));
 
+        //TODO: remove
         Log.d(TAG, "MMA: Collected metrics:\n" + metricsList.toString());
         return metricsList;
     }

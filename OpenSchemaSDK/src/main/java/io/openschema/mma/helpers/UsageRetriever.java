@@ -80,6 +80,26 @@ public class UsageRetriever {
         return 0;
     }
 
+    public NetworkStats.Bucket getDeviceWifiBucket(long startTime, long endTime) {
+        if (mNetworkStatsManager != null) {
+            NetworkStats.Bucket wifiBucket = null;
+
+            try {
+                wifiBucket = mNetworkStatsManager.querySummaryForDevice(NetworkCapabilities.TRANSPORT_WIFI, null, startTime, endTime);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            return wifiBucket;
+        } else {
+            android.util.Log.e(TAG, "MMA: Missing required Usage Access permissions");
+        }
+
+        //Error
+        return null;
+    }
+
     public long getDeviceCellularTonnage(long startTime, long endTime) {
         if (mNetworkStatsManager != null &&
                 !(Build.VERSION.SDK_INT < 28 && (mSubscriberId == null || mSubscriberId.equals("")))) {
@@ -100,5 +120,25 @@ public class UsageRetriever {
 
         //Error
         return 0;
+    }
+
+    public NetworkStats.Bucket getDeviceCellularBucket(long startTime, long endTime) {
+        if (mNetworkStatsManager != null &&
+                !(Build.VERSION.SDK_INT < 28 && (mSubscriberId == null || mSubscriberId.equals("")))) {
+            NetworkStats.Bucket cellBucket = null;
+
+            try {
+                cellBucket = mNetworkStatsManager.querySummaryForDevice(NetworkCapabilities.TRANSPORT_CELLULAR, mSubscriberId, startTime, endTime);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return cellBucket;
+        } else {
+            android.util.Log.e(TAG, "MMA: Missing required Usage Access permissions");
+        }
+
+        //Error
+        return null;
     }
 }

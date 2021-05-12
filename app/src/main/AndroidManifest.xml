@@ -30,6 +30,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--TODO: Look for any useful additional attributes for the service-->
+        <service android:name="io.openschema.mma.MobileMetricsService" />
     </application>
 
 </manifest>

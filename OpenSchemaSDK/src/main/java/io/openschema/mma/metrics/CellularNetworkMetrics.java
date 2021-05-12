@@ -15,6 +15,7 @@
 package io.openschema.mma.metrics;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -54,20 +55,23 @@ public class CellularNetworkMetrics {
     private static final String METRIC_MOBILE_NETWORK_CODE = "mobile_network_code";
     private static final String METRIC_MOBILE_COUNTRY_CODE = "mobile_country_code";
     private static final String METRIC_ISO_COUNTRY_CODE = "iso_country_code";
-    private static final String METRIC_RADIO_TECHNOLOGY_CODE = "radio_technology_code";
+    private static final String METRIC_NETWORK_TYPE = "network_type";
 
-    private final Context mContext;
     private final TelephonyManager mTelephonyManager;
+    private final boolean mPhonePermissionGranted;
+    private final boolean mLocationPermissionGranted;
 
     public CellularNetworkMetrics(Context context) {
-        mContext = context;
-        mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        mPhonePermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
+        mLocationPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
      * Collects information about available cellular networks and generates a list of pairs to
      * be used in {@link MetricsManager#collect(String, List)}.
      */
+    @SuppressLint("MissingPermission")
     public List<Pair<String, String>> retrieveNetworkMetrics() {
         Log.d(TAG, "MMA: Generating cellular network metrics...");
 
@@ -77,12 +81,12 @@ public class CellularNetworkMetrics {
 
         metricsList.add(new Pair<>(METRIC_CARRIER_NAME, mTelephonyManager.getNetworkOperatorName()));
         metricsList.add(new Pair<>(METRIC_ISO_COUNTRY_CODE, mTelephonyManager.getNetworkCountryIso()));
-        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
-            metricsList.add(new Pair<>(METRIC_RADIO_TECHNOLOGY_CODE, getRadioTechnologyString(mTelephonyManager.getDataNetworkType())));
+        if (mPhonePermissionGranted) {
+            metricsList.add(new Pair<>(METRIC_NETWORK_TYPE, getRadioTechnologyString(mTelephonyManager.getDataNetworkType())));
         }
 
-        //TODO: Also check if location services are enabled?
-        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        //TODO: Should also check if location services are enabled
+        if (mLocationPermissionGranted) {
             // Requires location services to be enabled, otherwise returned list will be empty
             List<CellInfo> allCellInfo = mTelephonyManager.getAllCellInfo();
 

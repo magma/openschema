@@ -53,5 +53,9 @@ public abstract class BaseMetrics {
         return metricsList;
     }
 
-    public abstract List<Pair<String, String>> retrieveDeviceMetrics();
+    public abstract List<Pair<String, String>> retrieveMetrics();
+
+    public interface MetricsCollectorListener {
+        void onMetricCollected(String metricName, List<Pair<String, String>> metricsList);
+    }
 }

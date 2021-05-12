@@ -67,40 +67,48 @@ public class BootstrapManager {
      * operation can't be called from the main thread.
      */
     @WorkerThread
-    public Certificate bootstrapSync()
-            throws NoSuchAlgorithmException, IOException, OperatorCreationException, UnrecoverableKeyException, CertificateException, SignatureException, KeyStoreException, InvalidKeyException {
+    public Certificate bootstrapSync() {
 
         Log.d(TAG, "MMA: Starting bootstrap process");
+        Certificate gatewayCert = null;
 
-        AccessGatewayID hw_id = AccessGatewayID.newBuilder()
-                .setId(mIdentity.getUUID())
-                .build();
+        try {
+            AccessGatewayID hw_id = AccessGatewayID.newBuilder()
+                    .setId(mIdentity.getUUID())
+                    .build();
 
-        // Get challenge
-        Log.d(TAG, "MMA: Requesting challenge...");
-        Challenge challenge = mBlockingStub.getChallenge(hw_id);
-        RandSByteString rands = KeyHelper.getRandS(challenge);
-        CertSignRequest csr = new CertSignRequest(KeyHelper.generateRSAKeyPairForAlias(CertificateManager.GATEWAY_KEY_ALIAS), mIdentity.getUUID());
+            // Get challenge
+            Log.d(TAG, "MMA: Requesting challenge...");
+            Challenge challenge = mBlockingStub.getChallenge(hw_id);
+            RandSByteString rands = null;
 
-        ChallengeResponse response = new ChallengeResponse(
-                mIdentity.getUUID(),
-                challenge,
-                0,
-                10000,
-                csr.getCSRByteString(),
-                rands.getR(),
-                rands.getS());
+            rands = KeyHelper.getRandS(challenge);
 
-        // Send CSR to sign
-        Log.d(TAG, "MMA: Sending csr...");
-        Certificate certificate = mBlockingStub.requestSign(response.getResponse());
+            CertSignRequest csr = new CertSignRequest(KeyHelper.generateRSAKeyPairForAlias(CertificateManager.GATEWAY_KEY_ALIAS), mIdentity.getUUID());
 
-        Log.d(TAG, "MMA: Bootstrapping was successful");
+            ChallengeResponse response = new ChallengeResponse(
+                    mIdentity.getUUID(),
+                    challenge,
+                    0,
+                    10000,
+                    csr.getCSRByteString(),
+                    rands.getR(),
+                    rands.getS());
 
-        // Close bootstrapping grpc channel
-        mChannel.shutdown();
+            // Send CSR to sign
+            Log.d(TAG, "MMA: Sending csr...");
+            gatewayCert = mBlockingStub.requestSign(response.getResponse());
+
+            Log.d(TAG, "MMA: Bootstrapping was successful");
+        } catch (Exception e) {
+            Log.d(TAG, "MMA: Bootstrapping failed");
+            e.printStackTrace();
+        } finally {
+            // Close bootstrapping grpc channel
+            mChannel.shutdown();
+        }
 
         // Return certificate to be stored in the keystore for mutual TLS and use for calling Collect() and Push()
-        return certificate;
+        return gatewayCert;
     }
 }

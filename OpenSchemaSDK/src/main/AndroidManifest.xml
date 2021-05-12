@@ -13,10 +13,27 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="io.openschema.mma">
 
+    <!--Used to retrieve Wi-Fi SSID, BSSID & location-->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!--Used to retrieve information specific to the Wi-Fi network-->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+
+    <!--Used to retrieve information specific to the cellular network-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <!--Used to retrieve usage information-->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions"
+        />
+
+    <!--Used to track network changes-->
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+
+    <!--Used to allow using a foreground service to collect data from the background-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 </manifest>

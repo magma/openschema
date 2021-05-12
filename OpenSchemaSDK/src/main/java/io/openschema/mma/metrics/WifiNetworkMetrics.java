@@ -39,12 +39,10 @@ public class WifiNetworkMetrics {
     private static final String METRIC_SSID = "ssid";
     private static final String METRIC_BSSID = "bssid";
 
-    private final Context mContext;
     private WifiManager mWifiManager;
 
     public WifiNetworkMetrics(Context context) {
-        mContext = context;
-        mWifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
     }
 
     /**
@@ -59,7 +57,8 @@ public class WifiNetworkMetrics {
 
         //TODO: check for location permission & service enabled
         metricsList.add(new Pair<>(METRIC_SSID, wifiInfo.getSSID()));
-        metricsList.add(new Pair<>(METRIC_BSSID, wifiInfo.getBSSID()));
+        String bssid = wifiInfo.getBSSID();
+        metricsList.add(new Pair<>(METRIC_BSSID, bssid == null ? "null" : bssid));
 
 //        Log.d(TAG, "MMA: Collected metrics:\n" + metricsList.toString());
         return metricsList;

@@ -123,6 +123,7 @@ public class MetricsWorker extends Worker {
         //Iterate through every metric family in the database
         Log.d(TAG, "MMA: Iterating through " + mMetricsList.size() + " metrics...");
         for (MetricsEntity currentMetric : mMetricsList) {
+            Log.d(TAG, "MMA: Current metric: " + currentMetric.mFamilyName);
             Metric.Builder metricBuilder = Metric.newBuilder();
 
             //Iterate through every metric pair in the family
@@ -160,11 +161,7 @@ public class MetricsWorker extends Worker {
     }
 
     private void bootstrap() {
-        try {
-            mCertificateManager.addBootstrapCertificate(mBootstrapManager.bootstrapSync());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        mCertificateManager.addBootstrapCertificate(mBootstrapManager.bootstrapSync());
 
         //Create channel using controller parameters
         Log.d(TAG, "MMA: Initializing gRPC channel...");

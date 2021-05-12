@@ -16,6 +16,7 @@ package io.openschema.mma;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
@@ -35,7 +36,6 @@ import io.openschema.mma.id.Identity;
 import io.openschema.mma.metrics.CellularNetworkMetrics;
 import io.openschema.mma.metrics.DeviceMetrics;
 import io.openschema.mma.metrics.MetricsManager;
-import io.openschema.mma.metrics.UsageDataWorker;
 import io.openschema.mma.metrics.WifiNetworkMetrics;
 import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.networking.RetrofitService;
@@ -162,14 +162,11 @@ public class MobileMetricsAgent {
     private void onReady() {
         mIsReady = true;
 
-        // Check if the static network and device metrics should be pushed
-        if (mEnableLibraryMetrics) {
-            attemptFirstTimeSetup();
+        attemptFirstTimeSetup();
 
-            //TODO: remove or move to be periodically collected
-            mMetricsManager.collect(CellularNetworkMetrics.METRIC_FAMILY_NAME, new CellularNetworkMetrics(mAppContext).retrieveNetworkMetrics());
-            mMetricsManager.collect(WifiNetworkMetrics.METRIC_FAMILY_NAME, new WifiNetworkMetrics(mAppContext).retrieveNetworkMetrics());
-            UsageDataWorker.enqueuePeriodicWorker(mAppContext);
+        // Check if the library's baseline metrics are enabled
+        if (mEnableLibraryMetrics) {
+            mAppContext.startService(new Intent(mAppContext, MobileMetricsService.class));
         }
 
         MetricsManager.startWorker(mAppContext, mControllerAddress, mBootstrapperAddress, mControllerPort, mMetricsAuthorityHeader);
@@ -194,7 +191,10 @@ public class MobileMetricsAgent {
 
     //TODO: javadoc
     private void executeFirstTimeSetup() {
-        mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, new DeviceMetrics(mAppContext).retrieveDeviceMetrics());
+        // Check if the library's baseline metrics are enabled
+        if (mEnableLibraryMetrics) {
+            mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, new DeviceMetrics(mAppContext).retrieveMetrics());
+        }
     }
 
     /**
