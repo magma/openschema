@@ -35,21 +35,11 @@ public class MobileMetricsService extends Service implements BaseMetrics.Metrics
 
     private static final String TAG = "MobileMetricsService";
 
-//    private final IBinder mBinder = new MobileMetricsServiceBinder();
-//
-//    public class MobileMetricsServiceBinder extends Binder {
-//        public MobileMetricsService getService() {
-//            return MobileMetricsService.this;
-//        }
-//    }
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-//        return mBinder;
         return null;
     }
-
 
     private MetricsManager mMetricsManager;
     private WifiSessionMetrics mWifiSessionMetrics;
@@ -66,7 +56,6 @@ public class MobileMetricsService extends Service implements BaseMetrics.Metrics
         mCellularSessionMetrics = new CellularSessionMetrics(getApplicationContext(), this);
         mCellularSessionMetrics.startTrackers();
     }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

@@ -145,7 +145,7 @@ public class MetricsWorker extends Worker {
                             .setValue(currentMetric.mTimeStamp)
                             .build())
                     .setUntyped(Untyped.newBuilder()
-                            .setValue(0)
+                            .setValue(1) //Defaulting to 1 so that individual events can be easily counted
                             .build());
 
             //Build the metric family and add it to the container
