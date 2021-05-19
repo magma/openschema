@@ -35,26 +35,26 @@ public class MetricsEntity {
     public int mId = 0;
 
     /**
-     * Name used by the metric family in Prometheus.
+     * Name used by the metric.
      */
-    @ColumnInfo(name = "familyName")
-    public String mFamilyName;
+    @ColumnInfo(name = "metricName")
+    public String mMetricName;
+
+    /**
+     * List of collected metrics with the <name, value> structure.
+     */
+    @ColumnInfo(name = "metricsList")
+    public List<Pair<String, String>> mMetricsList;
 
     /**
      * Timestamp to attach to the metric.
      */
     @ColumnInfo(name = "timestamp")
-    public String mTimeStamp;
+    public Timestamp mTimeStamp;
 
-    /**
-     * List of collected metrics with the <name, value> structure.
-     */
-    @ColumnInfo(name = "metrics")
-    public List<Pair<String, String>> mMetrics;
-
-    public MetricsEntity(String familyName, String timeStamp, List<Pair<String, String>> metrics) {
-        mFamilyName = familyName;
+    public MetricsEntity(String metricName, List<Pair<String, String>> metricsList, Timestamp timeStamp) {
+        mMetricName = metricName;
+        mMetricsList = metricsList;
         mTimeStamp = timeStamp;
-        mMetrics = metrics;
     }
 }

@@ -21,6 +21,7 @@ import java.util.List;
 
 import androidx.core.util.Pair;
 import io.openschema.mma.data.MetricsEntity;
+import io.openschema.mma.data.Timestamp;
 
 /**
  * Class in charge of handling pushing metrics to the controller.
@@ -28,9 +29,6 @@ import io.openschema.mma.data.MetricsEntity;
 public class MetricsManager {
 
     private static final String TAG = "MetricsManager";
-
-    public static final String METRIC_UUID = "uuid";
-    public static final String METRIC_TIMESTAMP = "timestamp";
 
     private final MetricsRepository mMetricsRepository;
 
@@ -42,15 +40,14 @@ public class MetricsManager {
     }
 
     /**
-     * Send metrics to prometheus through GRPC using the Collect method in metricsd.proto
+     * Sends the metrics object to the repository to be stored for batching.
      *
-     * @param metricName Root name for the group of collected metrics
-     * @param metrics    List of metrics to collect with the <name, value> structure
+     * @param metricName  Root name for the group of collected metricsList
+     * @param metricsList List of metricsList to collect with the <name, value> structure
      */
-    public void collect(String metricName, List<Pair<String, String>> metrics) {
+    public void collect(String metricName, List<Pair<String, String>> metricsList) {
         Log.d(TAG, "MMA: Collecting metric \"" + metricName + "\"");
-
-        collect(new MetricsEntity(metricName, Long.toString(System.currentTimeMillis()), metrics));
+        collect(new MetricsEntity(metricName, metricsList, Timestamp.getTimestampInstance()));
     }
 
     /**
@@ -63,6 +60,6 @@ public class MetricsManager {
     //TODO: javadoc
     public static void startWorker(Context appContext, String metricsControllerAddress, String bootstrapperAddress, int metricsControllerPort, String metricsAuthorityHeader) {
         //Start the background worker to periodically push saved metrics.
-        MetricsWorker.enqueuePeriodicWorker(appContext, metricsControllerAddress, bootstrapperAddress, metricsControllerPort, metricsAuthorityHeader);
+        MetricsWorker.enqueuePeriodicWorker(appContext);
     }
 }

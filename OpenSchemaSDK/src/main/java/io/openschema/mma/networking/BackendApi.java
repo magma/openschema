@@ -14,6 +14,7 @@
 
 package io.openschema.mma.networking;
 
+import io.openschema.mma.networking.request.MetricsPushRequest;
 import io.openschema.mma.networking.request.RegisterRequest;
 import io.openschema.mma.networking.response.BaseResponse;
 import retrofit2.Call;
@@ -29,4 +30,8 @@ public interface BackendApi {
      */
     @POST("register")
     Call<BaseResponse> register(@Body RegisterRequest req);
+
+    //TODO: javadoc
+    @POST("metrics/push")
+    Call<BaseResponse> pushMetric(@Body MetricsPushRequest req);
 }

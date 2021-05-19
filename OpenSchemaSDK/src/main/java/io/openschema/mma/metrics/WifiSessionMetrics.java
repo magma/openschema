@@ -22,13 +22,10 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.util.Log;
 
-import java.text.DateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -43,14 +40,14 @@ public class WifiSessionMetrics extends BaseMetrics {
     private static final String TAG = "WifiSessionMetrics";
 
     /**
-     * Metric family name to be used for the collected information.
+     * Metric name to be used for the collected information.
      */
-    public static final String METRIC_FAMILY_NAME = "openschema_android_wifi_session";
+    public static final String METRIC_NAME = "openschemaWifiSession";
 
-    private static final String METRIC_RX_BYTES = "rx_bytes";
-    private static final String METRIC_TX_BYTES = "tx_bytes";
-    private static final String METRIC_SESSION_START_TIME_UTC = "session_start_time_utc";
-    private static final String METRIC_SESSION_DURATION_MILLIS = "session_duration_millis";
+    private static final String METRIC_RX_BYTES = "rxBytes";
+    private static final String METRIC_TX_BYTES = "txBytes";
+    private static final String METRIC_SESSION_START_TIME = "sessionStartTime";
+    private static final String METRIC_SESSION_DURATION_MILLIS = "sessionDurationMillis";
 
     private List<Pair<String, String>> mCurrentSession;
     private long mSessionStartTimestamp, mSessionEndTimestamp;
@@ -163,12 +160,9 @@ public class WifiSessionMetrics extends BaseMetrics {
 
         List<Pair<String, String>> currentSegmentMetrics = new ArrayList<>();
         currentSegmentMetrics.addAll(mCurrentSession);
-        currentSegmentMetrics.addAll(generateTimeZoneMetrics());
 
-        //Set window start time in UTC & the duration in milliseconds
-        DateFormat utcDateFormat = DateFormat.getTimeInstance();
-        utcDateFormat.setTimeZone(TimeZone.getTimeZone("gmt"));
-        currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_START_TIME_UTC, utcDateFormat.format(new Date(segmentStart.getTimeInMillis()))));
+        //Set window start time & duration in milliseconds
+        currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_START_TIME, Long.toString(segmentStart.getTimeInMillis())));
         long sessionDuration = segmentEnd.getTimeInMillis() - segmentStart.getTimeInMillis();
         currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_DURATION_MILLIS, Long.toString(sessionDuration)));
 
@@ -183,7 +177,7 @@ public class WifiSessionMetrics extends BaseMetrics {
         currentSegmentMetrics.add(new Pair<>(METRIC_TX_BYTES, Long.toString(txBytes)));
 
         Log.d(TAG, "MMA: Collected metrics:\n" + currentSegmentMetrics.toString());
-        mListener.onMetricCollected(METRIC_FAMILY_NAME, currentSegmentMetrics);
+        mListener.onMetricCollected(METRIC_NAME, currentSegmentMetrics);
     }
 
     public void startTrackers() {

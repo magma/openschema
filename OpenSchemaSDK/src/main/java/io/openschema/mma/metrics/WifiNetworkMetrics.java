@@ -34,7 +34,7 @@ public class WifiNetworkMetrics {
     /**
      * Metric family name to be used for the collected Wi-Fi information.
      */
-    public static final String METRIC_FAMILY_NAME = "openschema_android_wifi_network_info";
+    public static final String METRIC_NAME = "openschemaWifiNetworkInfo";
 
     private static final String METRIC_SSID = "ssid";
     private static final String METRIC_BSSID = "bssid";
@@ -56,7 +56,7 @@ public class WifiNetworkMetrics {
         WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
 
         //TODO: check for location permission & service enabled
-        metricsList.add(new Pair<>(METRIC_SSID, wifiInfo.getSSID()));
+        metricsList.add(new Pair<>(METRIC_SSID, wifiInfo.getSSID().replaceAll("\"", "")));
         String bssid = wifiInfo.getBSSID();
         metricsList.add(new Pair<>(METRIC_BSSID, bssid == null ? "null" : bssid));
 

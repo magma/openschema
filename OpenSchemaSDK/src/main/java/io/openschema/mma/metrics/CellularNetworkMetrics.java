@@ -49,13 +49,13 @@ public class CellularNetworkMetrics {
     /**
      * Metric family name to be used for the collected cellular information.
      */
-    public static final String METRIC_FAMILY_NAME = "openschema_android_cellular_network_info";
+    public static final String METRIC_NAME = "openschemaCellularNetworkInfo";
 
-    private static final String METRIC_CARRIER_NAME = "carrier_name";
-    private static final String METRIC_MOBILE_NETWORK_CODE = "mobile_network_code";
-    private static final String METRIC_MOBILE_COUNTRY_CODE = "mobile_country_code";
-    private static final String METRIC_ISO_COUNTRY_CODE = "iso_country_code";
-    private static final String METRIC_NETWORK_TYPE = "network_type";
+    private static final String METRIC_CARRIER_NAME = "carrierName";
+    private static final String METRIC_MOBILE_NETWORK_CODE = "mobileNetworkCode";
+    private static final String METRIC_MOBILE_COUNTRY_CODE = "mobileCountryCode";
+    private static final String METRIC_ISO_COUNTRY_CODE = "isoCountryCode";
+    private static final String METRIC_NETWORK_TYPE = "networkType";
 
     private final TelephonyManager mTelephonyManager;
     private final boolean mPhonePermissionGranted;

@@ -33,10 +33,8 @@ import java.util.List;
 import androidx.core.util.Pair;
 import io.openschema.mma.helpers.SharedPreferencesHelper;
 import io.openschema.mma.id.Identity;
-import io.openschema.mma.metrics.CellularNetworkMetrics;
 import io.openschema.mma.metrics.DeviceMetrics;
 import io.openschema.mma.metrics.MetricsManager;
-import io.openschema.mma.metrics.WifiNetworkMetrics;
 import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.networking.RetrofitService;
 import io.openschema.mma.register.RegistrationManager;
@@ -193,7 +191,7 @@ public class MobileMetricsAgent {
     private void executeFirstTimeSetup() {
         // Check if the library's baseline metrics are enabled
         if (mEnableLibraryMetrics) {
-            mMetricsManager.collect(DeviceMetrics.METRIC_FAMILY_NAME, new DeviceMetrics(mAppContext).retrieveMetrics());
+            mMetricsManager.collect(DeviceMetrics.METRIC_NAME, new DeviceMetrics(mAppContext).retrieveMetrics());
         }
     }
 

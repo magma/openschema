@@ -26,8 +26,12 @@ import androidx.room.TypeConverters;
  */
 @Database(
         entities = {MetricsEntity.class},
-        version = 1)
-@TypeConverters({MetricsTypeConverter.class})
+        version = 1
+)
+@TypeConverters({
+                        MetricsTypeConverter.class,
+                        TimestampTypeConverter.class
+                })
 public abstract class MMADatabase extends RoomDatabase {
     public abstract MetricsDAO metricsDAO();
 
