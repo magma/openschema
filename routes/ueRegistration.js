@@ -7,23 +7,29 @@ const am = require('../utils/asyncMiddleware').asyncMiddleware
 var router = express.Router()
 
 router.post('/register', am(async (req, res) => {
-    //Trim request body to only expected parameters
-    req.body = _.pick(req.body, ['uuid', 'publicKey'])
+    res.status(200).json({
+        message: 'Registration was successful'
+    })
 
-    let registrationResult = await sendRegister(req.body)
-    if (registrationResult === REGISTRATION_SUCCESS) {
-        res.status(200).json({
-            message: 'Registration was successful'
-        })
-    } else if (registrationResult === REGISTRATION_DUPLICATE) {
-        res.status(409).json({
-            message: 'UUID is already registered'
-        })
-    } else {
-        res.status(400).json({
-            message: 'Registration failed'
-        })
-    }
+    //TODO: Implement device registration with the new data lake
+    //TODO: Remove code that handles Magma orchestrator APIs
+    // //Trim request body to only expected parameters
+    // req.body = _.pick(req.body, ['uuid', 'publicKey'])
+
+    // let registrationResult = await sendRegister(req.body)
+    // if (registrationResult === REGISTRATION_SUCCESS) {
+    //     res.status(200).json({
+    //         message: 'Registration was successful'
+    //     })
+    // } else if (registrationResult === REGISTRATION_DUPLICATE) {
+    //     res.status(409).json({
+    //         message: 'UUID is already registered'
+    //     })
+    // } else {
+    //     res.status(400).json({
+    //         message: 'Registration failed'
+    //     })
+    // }
 }))
 
 module.exports = router

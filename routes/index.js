@@ -13,6 +13,7 @@ router.use(basicAuth({
 
 router.use('/', require('./ueRegistration'))
 // router.use('/', require('./qosScoring'))
+router.use('/', require('./pushMetric'))
 
 //Error handling middleware
 router.use(function (err, req, res, next) {
