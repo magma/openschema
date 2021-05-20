@@ -25,6 +25,5 @@ let wifiSessionSchema = new Schema({
     collection: openschemaMetricName
 })
 
-
 exports.model = mongoose.model(`WifiSession`, wifiSessionSchema)
 exports.metricName = openschemaMetricName

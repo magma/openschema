@@ -3,7 +3,7 @@ const axios = require("axios");
 const fs = require('fs')
 const https = require("https")
 const _ = require('lodash')
-const am = require('../utils/asyncMiddleware').asyncMiddleware
+const am = require('../utils/async-middleware').asyncMiddleware
 var router = express.Router()
 
 router.post('/register', am(async (req, res) => {

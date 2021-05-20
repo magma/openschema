@@ -1,14 +1,15 @@
 const express = require('express')
 const _ = require('lodash')
-const am = require('../utils/asyncMiddleware').asyncMiddleware
-const WifiSession = require('../models/wifiSession')
-const CellularSession = require('../models/cellularSession')
-const DeviceInfo = require('../models/deviceInfo')
-const CustomMetric = require('../models/customMetric')
+const am = require('../utils/async-middleware').asyncMiddleware
+const WifiSession = require('../models/wifi-session')
+const CellularSession = require('../models/cellular-session')
+const DeviceInfo = require('../models/device-info')
+const CustomMetric = require('../models/custom-metric')
 var router = express.Router()
 
 
-//TODO: add middleware to handle identifier and compare with registered devices
+//TODO: add middleware to handle identifier information and make sure that the UE has been registered
+
 router.post('/metrics/push', am(async (req, res) => {
 
     //Trim request body to expected parameters
