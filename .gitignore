@@ -6,6 +6,3 @@ node_modules/
 
 # Private keys not to be commited
 keys/
-
-# Test scripts
-tests/

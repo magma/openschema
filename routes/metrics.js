@@ -16,6 +16,7 @@ router.post('/metrics/push', am(async (req, res) => {
     req.body = _.pick(req.body, ['metricName', 'metricsList', 'identifier', 'timestamp'])
 
     let metricHandler = checkKnownMetrics(req.body.metricName)
+    
     let pushResult = await metricHandler(req.body)
 
     if (pushResult) {
@@ -47,7 +48,7 @@ function checkKnownMetrics(metricName) {
     }
 }
 
-//TODO: convert to middleware
+//TODO: convert to middleware?
 function processMetricsList(metricsList) {
     let metricsBody = {}
     for (let i = 0; i < metricsList.length; i++) {
