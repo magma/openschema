@@ -167,7 +167,7 @@ public class MobileMetricsAgent {
             mAppContext.startService(new Intent(mAppContext, MobileMetricsService.class));
         }
 
-        MetricsManager.startWorker(mAppContext, mControllerAddress, mBootstrapperAddress, mControllerPort, mMetricsAuthorityHeader);
+        MetricsManager.startWorker(mAppContext, mBackendBaseURL, mBackendUsername, mBackendPassword);
     }
 
     //TODO: javadoc

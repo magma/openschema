@@ -58,8 +58,8 @@ public class MetricsManager {
     }
 
     //TODO: javadoc
-    public static void startWorker(Context appContext, String metricsControllerAddress, String bootstrapperAddress, int metricsControllerPort, String metricsAuthorityHeader) {
+    public static void startWorker(Context appContext, String backendUrl, String backendUsername, String backendPassword) {
         //Start the background worker to periodically push saved metrics.
-        MetricsWorker.enqueuePeriodicWorker(appContext);
+        MetricsWorker.enqueuePeriodicWorker(appContext, backendUrl, backendUsername, backendPassword);
     }
 }

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
+import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
@@ -30,6 +31,7 @@ import androidx.work.WorkerParameters;
 import io.openschema.mma.data.MetricsEntity;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.networking.BackendApi;
+import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.networking.RetrofitService;
 import io.openschema.mma.networking.request.MetricsPushRequest;
 import io.openschema.mma.networking.response.BaseResponse;
@@ -45,6 +47,10 @@ public class MetricsWorker extends Worker {
 
     public static final String UNIQUE_PERIODIC_WORKER_NAME = "METRICS_PERIODIC";
     private static final String WORKER_TAG = "METRICS_TAG";
+
+    private static final String DATA_BACKEND_URL = "BACKEND_URL";
+    private static final String DATA_BACKEND_USERNAME = "BACKEND_USERNAME";
+    private static final String DATA_BACKEND_PASSWORD = "BACKEND_PASSWORD";
 
     private final MetricsRepository mMetricsRepository;
 
@@ -70,8 +76,15 @@ public class MetricsWorker extends Worker {
             e.printStackTrace();
         }
 
-        //TODO: might need to re-initialize the API in case the memory gets wiped
-        mBackendApi = RetrofitService.getService(context.getApplicationContext()).getApi();
+        //Retrieve worker parameters
+        Data data = workerParams.getInputData();
+
+        //TODO: Need to add the backend certificate again?
+        CertificateManager certificateManager = new CertificateManager();
+
+        RetrofitService retrofitService = RetrofitService.getService(context.getApplicationContext());
+        retrofitService.initApi(data.getString(DATA_BACKEND_URL), certificateManager.generateSSLContext(), data.getString(DATA_BACKEND_USERNAME), data.getString(DATA_BACKEND_PASSWORD));
+        mBackendApi = retrofitService.getApi();
     }
 
     @NonNull
@@ -88,17 +101,17 @@ public class MetricsWorker extends Worker {
         //TODO: Optimize to either:
         //      A) Batch several metrics in a single POST,
         //      B) Execute multiple POST requests asynchronously rather than in sequence
-        //TODO: reduce debug logging
+        //TODO: defer until wifi is connected?
         try {
+            Log.d(TAG, "MMA: Pushing " + mMetricsList.size() + " metrics...");
             for (MetricsEntity currentMetric : mMetricsList) {
-                Log.d(TAG, "MMA: Sending push request...");
                 Response<BaseResponse> res = mBackendApi.pushMetric(new MetricsPushRequest(currentMetric.mMetricName, currentMetric.mMetricsList, mIdentity.getUUID(), currentMetric.mTimeStamp))
                         .execute();
 
                 if (res.isSuccessful()) {
                     Log.d(TAG, "MMA: onResponse success: " + res.body().getMessage());
-                    Log.d(TAG, "MMA: Metric was pushed successfully");
                 } else {
+                    Log.d(TAG, "MMA: Failed to push metric:" + currentMetric.mMetricName);
                     String errorMessage = BaseResponse.getErrorMessage(res.errorBody());
                     Log.d(TAG, "MMA: onResponse failure (" + res.code() + "): " + errorMessage);
                 }
@@ -121,9 +134,14 @@ public class MetricsWorker extends Worker {
      * Static utility method to enqueue this worker to run periodically. Calling this method
      * will cause the worker to run immediately and restart the periodic calls delay counter.
      */
-    public static void enqueuePeriodicWorker(Context context) {
+    public static void enqueuePeriodicWorker(Context context, String backendUrl, String backendUsername, String backendPassword) {
         PeriodicWorkRequest.Builder workBuilder = new PeriodicWorkRequest.Builder(MetricsWorker.class, 4, TimeUnit.HOURS)
-                .addTag(WORKER_TAG);
+                .addTag(WORKER_TAG)
+                .setInputData(new Data.Builder()
+                        .putString(DATA_BACKEND_URL, backendUrl)
+                        .putString(DATA_BACKEND_USERNAME, backendUsername)
+                        .putString(DATA_BACKEND_PASSWORD, backendPassword)
+                        .build());
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(UNIQUE_PERIODIC_WORKER_NAME, ExistingPeriodicWorkPolicy.REPLACE, workBuilder.build());
     }
