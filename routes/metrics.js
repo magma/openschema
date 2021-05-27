@@ -10,17 +10,35 @@ var router = express.Router()
 
 //TODO: add middleware to handle identifier information and make sure that the UE has been registered
 
-router.post('/metrics/push', am(async (req, res) => {
 
+router.use(function (req, res, next) {
     //Trim request body to expected parameters
     req.body = _.pick(req.body, ['metricName', 'metricsList', 'identifier', 'timestamp'])
 
+    if (req.body.identifier.clientType === 'android') {
+        //Processing request from ANDROID clients
+        req.body.metrics = {}
+        for (let i = 0; i < req.body.metricsList.length; i++) {
+            const metricPair = req.body.metricsList[i];
+            //Convert numerical strings into number values
+            if (!isNaN(metricPair.second)) metricPair.second = Number(metricPair.second)
+            //Convert Android Pair<String,String> into javascript object
+            req.body.metrics[metricPair.first] = metricPair.second
+        }
+        delete req.body.metricsList
+    }
+
+    //TODO: implement other client types
+
+    next()
+})
+
+
+router.post('/metrics/push', am(async (req, res) => {
+
     let metricHandler = checkKnownMetrics(req.body.metricName)
-    
-    let pushResult = await metricHandler(req.body)
 
-    if (pushResult) {
-
+    if (await metricHandler(req.body)) {
         res.status(200).json({
             message: `Metric was stored successfully`
         })
@@ -48,20 +66,9 @@ function checkKnownMetrics(metricName) {
     }
 }
 
-//TODO: convert to middleware?
-function processMetricsList(metricsList) {
-    let metricsBody = {}
-    for (let i = 0; i < metricsList.length; i++) {
-        const metricPair = metricsList[i];
-        if (!isNaN(metricPair.second)) metricPair.second = Number(metricPair.second)
-        metricsBody[metricPair.first] = metricPair.second
-    }
-    return metricsBody
-}
-
 async function handleWifiSession(body) {
     let newEntry = {
-        metrics: processMetricsList(body.metricsList),
+        metrics: WifiSession.preProcessMetrics(body.metrics),
         identifier: body.identifier,
         timestamp: body.timestamp
     }
@@ -79,7 +86,7 @@ async function handleWifiSession(body) {
 
 async function handleCellularSession(body) {
     let newEntry = {
-        metrics: processMetricsList(body.metricsList),
+        metrics: CellularSession.preProcessMetrics(body.metrics),
         identifier: body.identifier,
         timestamp: body.timestamp
     }
@@ -97,7 +104,7 @@ async function handleCellularSession(body) {
 
 async function handleDeviceInfo(body) {
     let newEntry = {
-        metrics: processMetricsList(body.metricsList),
+        metrics: body.metrics,
         identifier: body.identifier,
         timestamp: body.timestamp
     }
