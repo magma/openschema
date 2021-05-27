@@ -89,6 +89,9 @@ dependencies {
     //Background Work
     implementation "androidx.work:work-runtime:2.4.0"
 
+    //Google Play Services
+    implementation "com.google.android.gms:play-services-location:18.0.0"
+
     //Data persistence
     def room_version = "2.2.5"
     implementation "androidx.room:room-runtime:$room_version"

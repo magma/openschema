@@ -42,7 +42,7 @@ import androidx.core.util.Pair;
 /**
  * Collects metrics related to cellular networks.
  */
-public class CellularNetworkMetrics {
+public class CellularNetworkMetrics extends BaseMetrics {
 
     private static final String TAG = "CellularNetworkMetrics";
 
@@ -62,6 +62,7 @@ public class CellularNetworkMetrics {
     private final boolean mLocationPermissionGranted;
 
     public CellularNetworkMetrics(Context context) {
+        super(context);
         mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         mPhonePermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
         mLocationPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
@@ -72,7 +73,7 @@ public class CellularNetworkMetrics {
      * be used in {@link MetricsManager#collect(String, List)}.
      */
     @SuppressLint("MissingPermission")
-    public List<Pair<String, String>> retrieveNetworkMetrics() {
+    public List<Pair<String, String>> retrieveMetrics() {
         Log.d(TAG, "MMA: Generating cellular network metrics...");
 
         //TODO: check if SIM is available?

@@ -27,7 +27,7 @@ import androidx.core.util.Pair;
 /**
  * Collects metrics related to Wi-Fi networks.
  */
-public class WifiNetworkMetrics {
+public class WifiNetworkMetrics extends BaseMetrics {
 
     private static final String TAG = "WifiNetworkMetrics";
 
@@ -42,6 +42,7 @@ public class WifiNetworkMetrics {
     private WifiManager mWifiManager;
 
     public WifiNetworkMetrics(Context context) {
+        super(context);
         mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
     }
 
@@ -49,7 +50,7 @@ public class WifiNetworkMetrics {
      * Collects information about current Wi-Fi and generates a list of pairs to
      * be used in {@link MetricsManager#collect(String, List)}.
      */
-    public List<Pair<String, String>> retrieveNetworkMetrics() {
+    public List<Pair<String, String>> retrieveMetrics() {
         Log.d(TAG, "MMA: Generating Wi-Fi network metrics...");
 
         List<Pair<String, String>> metricsList = new ArrayList<>();

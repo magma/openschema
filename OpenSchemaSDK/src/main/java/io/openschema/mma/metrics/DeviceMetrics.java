@@ -64,7 +64,7 @@ public class DeviceMetrics extends BaseMetrics {
         metricsList.add(new Pair<>(METRIC_BRAND, Build.BRAND));
         metricsList.add(new Pair<>(METRIC_ANDROID_ID, mSSAID));
 
-        //TODO: remove
+        //TODO: Add debugging flag to enable detailed metrics
         Log.d(TAG, "MMA: Collected metrics:\n" + metricsList.toString());
         return metricsList;
     }

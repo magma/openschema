@@ -14,6 +14,7 @@
 
 package io.openschema.mma.helpers;
 
+import android.annotation.SuppressLint;
 import android.app.AppOpsManager;
 import android.app.usage.NetworkStats;
 import android.app.usage.NetworkStatsManager;
@@ -35,6 +36,7 @@ public class UsageRetriever {
         initNetworkManager(ctx);
     }
 
+    @SuppressLint({"MissingPermission", "HardwareIds"})
     private void initNetworkManager(Context ctx) {
         try {
             AppOpsManager appOps = (AppOpsManager) ctx.getSystemService(Context.APP_OPS_SERVICE);
@@ -46,6 +48,7 @@ public class UsageRetriever {
                 //This means it's no longer possible to relate traffic to each SIM card on a dual SIM phone
                 if (Build.VERSION.SDK_INT < 28) {
                     TelephonyManager manager = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
+                    //TODO: Check for phone permission? Check for all permissions on app start?
                     mSubscriberId = manager.getSubscriberId();
                 }
             } else {
@@ -59,7 +62,31 @@ public class UsageRetriever {
         }
     }
 
-    public long getDeviceWifiTonnage(long startTime, long endTime) {
+    public long getDeviceTonnage(int transportType, long startTime, long endTime) {
+        switch (transportType) {
+            case NetworkCapabilities.TRANSPORT_WIFI:
+                return getDeviceWifiTonnage(startTime, endTime);
+            case NetworkCapabilities.TRANSPORT_CELLULAR:
+                return getDeviceCellularTonnage(startTime, endTime);
+            default:
+                //Error
+                return 0;
+        }
+    }
+
+    public NetworkStats.Bucket getDeviceNetworkBucket(int transportType, long startTime, long endTime) {
+        switch (transportType) {
+            case NetworkCapabilities.TRANSPORT_WIFI:
+                return getDeviceWifiBucket(startTime, endTime);
+            case NetworkCapabilities.TRANSPORT_CELLULAR:
+                return getDeviceCellularBucket(startTime, endTime);
+            default:
+                //Error
+                return null;
+        }
+    }
+
+    private long getDeviceWifiTonnage(long startTime, long endTime) {
         if (mNetworkStatsManager != null) {
             NetworkStats.Bucket wifiBucket = null;
 
@@ -80,7 +107,7 @@ public class UsageRetriever {
         return 0;
     }
 
-    public NetworkStats.Bucket getDeviceWifiBucket(long startTime, long endTime) {
+    private NetworkStats.Bucket getDeviceWifiBucket(long startTime, long endTime) {
         if (mNetworkStatsManager != null) {
             NetworkStats.Bucket wifiBucket = null;
 
@@ -100,7 +127,7 @@ public class UsageRetriever {
         return null;
     }
 
-    public long getDeviceCellularTonnage(long startTime, long endTime) {
+    private long getDeviceCellularTonnage(long startTime, long endTime) {
         if (mNetworkStatsManager != null &&
                 !(Build.VERSION.SDK_INT < 28 && (mSubscriberId == null || mSubscriberId.equals("")))) {
             NetworkStats.Bucket cellBucket = null;
@@ -122,7 +149,7 @@ public class UsageRetriever {
         return 0;
     }
 
-    public NetworkStats.Bucket getDeviceCellularBucket(long startTime, long endTime) {
+    private NetworkStats.Bucket getDeviceCellularBucket(long startTime, long endTime) {
         if (mNetworkStatsManager != null &&
                 !(Build.VERSION.SDK_INT < 28 && (mSubscriberId == null || mSubscriberId.equals("")))) {
             NetworkStats.Bucket cellBucket = null;
