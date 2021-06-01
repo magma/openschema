@@ -12,35 +12,23 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.data;
+package io.openschema.mma.data.dao;
 
 import java.util.List;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
-import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 
-/**
- * Data access object used to interact with the Metrics' table in the database.
- */
+//TODO: javadoc
 @Dao
-public interface MetricsDAO {
-    /**
-     * Returns a list of all metrics saved in the database.
-     */
-    @Query("SELECT * FROM metrics_entity")
-    List<MetricsEntity> getAll();
+public interface NetworkConnectionsDAO {
 
-    /**
-     * Inserts a metric in the database.
-     */
+    @Query("SELECT * FROM network_connections")
+    LiveData<List<NetworkConnectionsEntity>> getAll();
+
     @Insert
-    void insert(MetricsEntity newMetric);
-
-    /**
-     * Deletes a list of metrics from the database.
-     */
-    @Delete
-    void delete(MetricsEntity... metrics);
+    void insert(NetworkConnectionsEntity newEntity);
 }

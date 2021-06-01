@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.metrics;
+package io.openschema.mma.metrics.collectors;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -38,6 +38,7 @@ import java.util.List;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
+import io.openschema.mma.metrics.MetricsManager;
 
 /**
  * Collects metrics related to cellular networks.
@@ -51,11 +52,11 @@ public class CellularNetworkMetrics extends BaseMetrics {
      */
     public static final String METRIC_NAME = "openschemaCellularNetworkInfo";
 
-    private static final String METRIC_CARRIER_NAME = "carrierName";
-    private static final String METRIC_MOBILE_NETWORK_CODE = "mobileNetworkCode";
-    private static final String METRIC_MOBILE_COUNTRY_CODE = "mobileCountryCode";
-    private static final String METRIC_ISO_COUNTRY_CODE = "isoCountryCode";
-    private static final String METRIC_NETWORK_TYPE = "networkType";
+    public static final String METRIC_CARRIER_NAME = "carrierName";
+    public static final String METRIC_MOBILE_NETWORK_CODE = "mobileNetworkCode";
+    public static final String METRIC_MOBILE_COUNTRY_CODE = "mobileCountryCode";
+    public static final String METRIC_ISO_COUNTRY_CODE = "isoCountryCode";
+    public static final String METRIC_NETWORK_TYPE = "networkType";
 
     private final TelephonyManager mTelephonyManager;
     private final boolean mPhonePermissionGranted;

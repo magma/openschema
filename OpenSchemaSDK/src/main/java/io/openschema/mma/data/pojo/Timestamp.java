@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.data;
+package io.openschema.mma.data.pojo;
 
 import android.util.Log;
 
@@ -20,6 +20,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.TimeZone;
 
+//TODO: javadocs
 public class Timestamp {
     private static final String TAG = "Timestamp";
 
@@ -30,6 +31,8 @@ public class Timestamp {
         mTimestamp = timestampMillis;
         mOffsetMinutes = offsetMinutes;
     }
+
+    public long getTimestampMillis() {return mTimestamp;}
 
     public static Timestamp getTimestampInstance() {
         Log.d(TAG, "MMA: Generating time metrics...");

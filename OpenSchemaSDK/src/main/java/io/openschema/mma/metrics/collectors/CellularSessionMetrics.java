@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.metrics;
+package io.openschema.mma.metrics.collectors;
 
 import android.content.Context;
 import android.net.NetworkCapabilities;

@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.metrics;
+package io.openschema.mma.metrics.collectors;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Build;
 import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -43,13 +42,15 @@ public class LocationMetrics extends BaseMetrics {
      */
     public static final String METRIC_NAME = "openschemaLocationInfo";
 
-    private static final String METRIC_LATITUDE = "latitude";
-    private static final String METRIC_LONGITUDE = "longitude";
+    public static final String METRIC_LATITUDE = "latitude";
+    public static final String METRIC_LONGITUDE = "longitude";
 
     private final FusedLocationProviderClient mLocationClient;
     private final boolean mLocationPermissionGranted;
 
     private final MetricsCollectorListener mListener;
+
+    private Location mLastLocation;
 
     public LocationMetrics(Context context, MetricsCollectorListener listener) {
         super(context);
@@ -73,13 +74,20 @@ public class LocationMetrics extends BaseMetrics {
                 } else {
                     Log.d(TAG, "MMA: Failed to compute location");
                 }
+                mLastLocation = location;
                 mListener.onMetricCollected(METRIC_NAME, extractLocationValues(location));
             }).addOnFailureListener(e -> {
                 Log.d(TAG, "MMA: Failed to retrieve location");
                 e.printStackTrace();
+                mLastLocation = null;
                 mListener.onMetricCollected(METRIC_NAME, null);
             });
         }
+    }
+
+    //To be used if location attributes are needed after receiving metrics on listener
+    public Location getLastLocation() {
+        return mLastLocation;
     }
 
     private List<Pair<String, String>> extractLocationValues(Location location) {

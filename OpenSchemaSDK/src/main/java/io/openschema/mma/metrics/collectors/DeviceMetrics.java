@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.metrics;
+package io.openschema.mma.metrics.collectors;
 
 import android.content.Context;
 import android.os.Build;
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.core.util.Pair;
+import io.openschema.mma.metrics.MetricsManager;
 
 /**
  * Collects metrics related to the device.
@@ -35,12 +36,12 @@ public class DeviceMetrics extends BaseMetrics {
      */
     public static final String METRIC_NAME = "openschemaDeviceInfo";
 
-    private static final String METRIC_OS_VERSION = "osVersion";
-    private static final String METRIC_MODEL = "model";
-    private static final String METRIC_MANUFACTURER = "manufacturer";
-    private static final String METRIC_BRAND = "brand";
-    private static final String METRIC_ANDROID_ID = "androidId";
-    private static final String METRIC_OPENSCHEMA_VERSION = "openschemaVersion"; //TODO: need to decide on a versioning scheme
+    public static final String METRIC_OS_VERSION = "osVersion";
+    public static final String METRIC_MODEL = "model";
+    public static final String METRIC_MANUFACTURER = "manufacturer";
+    public static final String METRIC_BRAND = "brand";
+    public static final String METRIC_ANDROID_ID = "androidId";
+    public static final String METRIC_OPENSCHEMA_VERSION = "openschemaVersion"; //TODO: need to decide on a versioning scheme
 
     private String mSSAID;
 

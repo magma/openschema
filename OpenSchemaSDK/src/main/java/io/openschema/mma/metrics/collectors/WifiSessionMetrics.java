@@ -12,25 +12,20 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.metrics;
+package io.openschema.mma.metrics.collectors;
 
 import android.content.Context;
+import android.net.NetworkCapabilities;
 
-import java.util.List;
+//TODO: javadocs
+public class WifiSessionMetrics extends NetworkSessionMetrics {
 
-import androidx.core.util.Pair;
+    /**
+     * Metric name to be used for the collected information.
+     */
+    public static final String METRIC_NAME = "openschemaWifiSession";
 
-/**
- * TODO: javadocs
- */
-public abstract class BaseMetrics {
-    private static final String TAG = "BaseMetrics";
-
-    public BaseMetrics(Context context) { }
-
-    public abstract List<Pair<String, String>> retrieveMetrics();
-
-    public interface MetricsCollectorListener {
-        void onMetricCollected(String metricName, List<Pair<String, String>> metricsList);
+    public WifiSessionMetrics(Context context, MetricsCollectorListener listener) {
+        super(context, METRIC_NAME, NetworkCapabilities.TRANSPORT_WIFI, new WifiNetworkMetrics(context), listener);
     }
 }

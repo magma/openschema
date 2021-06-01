@@ -19,7 +19,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 import androidx.core.util.Pair;
-import io.openschema.mma.data.Timestamp;
+import io.openschema.mma.data.pojo.Timestamp;
 
 /**
  * Class with the structure expected to be received in the OpenSchema's middle box registration API.

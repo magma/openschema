@@ -33,7 +33,7 @@ import java.util.List;
 import androidx.core.util.Pair;
 import io.openschema.mma.helpers.SharedPreferencesHelper;
 import io.openschema.mma.id.Identity;
-import io.openschema.mma.metrics.DeviceMetrics;
+import io.openschema.mma.metrics.collectors.DeviceMetrics;
 import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.networking.CertificateManager;
 import io.openschema.mma.networking.RetrofitService;
@@ -227,6 +227,7 @@ public class MobileMetricsAgent {
         private String mBackendUsername;
         private String mBackendPassword;
         private boolean mEnableLibraryMetrics = true;
+        //TODO: add flag to disable storing metrics locally for UI
 
         private Context mAppContext;
 

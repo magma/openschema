@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.metrics;
+package io.openschema.mma.data;
 
 import android.content.Context;
 import android.util.Log;
@@ -21,15 +21,20 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import io.openschema.mma.data.MMADatabase;
-import io.openschema.mma.data.MetricsDAO;
-import io.openschema.mma.data.MetricsEntity;
+import androidx.lifecycle.LiveData;
+import io.openschema.mma.data.dao.MetricsDAO;
+import io.openschema.mma.data.dao.NetworkConnectionsDAO;
+import io.openschema.mma.data.database.MMADatabase;
+import io.openschema.mma.data.entity.MetricsEntity;
+import io.openschema.mma.data.entity.NetworkConnectionsEntity;
+import io.openschema.mma.metrics.MetricsWorker;
 import io.openschema.mma.networking.BackendApi;
 
 /**
  * Repository class to manage the metrics data.
  */
-class MetricsRepository {
+//TODO: update javadocs
+public class MetricsRepository {
 
     private static final String TAG = "MetricsRepository";
 
@@ -57,13 +62,18 @@ class MetricsRepository {
     private final ThreadPoolExecutor mExecutor;
 
     /**
-     * Data access object used to interact with the Metrics' table in the database.
+     * Data access object used to interact with the data tables in the database.
      */
     private final MetricsDAO mMetricsDAO;
+    private final NetworkConnectionsDAO mNetworkConnectionsDAO;
 
     private MetricsRepository(Context appContext) {
         MMADatabase db = MMADatabase.getDatabase(appContext);
         mMetricsDAO = db.metricsDAO();
+
+        //TODO: disable with flag from MMA builder
+        mNetworkConnectionsDAO = db.networkConnectionsDAO();
+
         mExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
@@ -88,5 +98,17 @@ class MetricsRepository {
      */
     public void clearMetrics(List<MetricsEntity> metrics) {
         mMetricsDAO.delete(metrics.toArray(new MetricsEntity[0]));
+    }
+
+    //Local metrics for UI
+    public void writeNetworkConnection(NetworkConnectionsEntity entity){
+        //TODO: disable with flag from MMA builder
+        Log.d(TAG, "MMA: Writing network connection to DB");
+        mExecutor.execute(() -> mNetworkConnectionsDAO.insert(entity));
+    }
+
+    //TODO: only expose UI related calls and hide the rest?
+    public LiveData<List<NetworkConnectionsEntity>> getAllNetworkConnections(){
+        return mNetworkConnectionsDAO.getAll();
     }
 }

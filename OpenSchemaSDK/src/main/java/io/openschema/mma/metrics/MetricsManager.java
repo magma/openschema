@@ -20,8 +20,9 @@ import android.util.Log;
 import java.util.List;
 
 import androidx.core.util.Pair;
-import io.openschema.mma.data.MetricsEntity;
-import io.openschema.mma.data.Timestamp;
+import io.openschema.mma.data.entity.MetricsEntity;
+import io.openschema.mma.data.MetricsRepository;
+import io.openschema.mma.data.pojo.Timestamp;
 
 /**
  * Class in charge of handling pushing metrics to the controller.

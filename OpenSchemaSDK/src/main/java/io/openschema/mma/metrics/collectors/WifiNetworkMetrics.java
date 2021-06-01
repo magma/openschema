@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.metrics;
+package io.openschema.mma.metrics.collectors;
 
 import android.content.Context;
 import android.net.wifi.WifiInfo;
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.core.util.Pair;
+import io.openschema.mma.metrics.MetricsManager;
 
 /**
  * Collects metrics related to Wi-Fi networks.
@@ -36,8 +37,8 @@ public class WifiNetworkMetrics extends BaseMetrics {
      */
     public static final String METRIC_NAME = "openschemaWifiNetworkInfo";
 
-    private static final String METRIC_SSID = "ssid";
-    private static final String METRIC_BSSID = "bssid";
+    public static final String METRIC_SSID = "ssid";
+    public static final String METRIC_BSSID = "bssid";
 
     private WifiManager mWifiManager;
 

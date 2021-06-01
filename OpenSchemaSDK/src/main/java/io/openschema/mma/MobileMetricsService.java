@@ -24,10 +24,10 @@ import java.util.List;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import io.openschema.mma.helpers.PersistentNotification;
-import io.openschema.mma.metrics.BaseMetrics;
-import io.openschema.mma.metrics.CellularSessionMetrics;
+import io.openschema.mma.metrics.collectors.BaseMetrics;
+import io.openschema.mma.metrics.collectors.CellularSessionMetrics;
 import io.openschema.mma.metrics.MetricsManager;
-import io.openschema.mma.metrics.WifiSessionMetrics;
+import io.openschema.mma.metrics.collectors.WifiSessionMetrics;
 
 //TODO: javadocs
 //Used to provide a persistent context to data collectors

@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 
 import androidx.room.TypeConverter;
+import io.openschema.mma.data.pojo.Timestamp;
 
 /**
  * Class used by Room to handle complex data objects.

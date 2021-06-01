@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.data;
+package io.openschema.mma.data.database;
 
 import android.content.Context;
 
@@ -20,12 +20,21 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
+import io.openschema.mma.data.dao.MetricsDAO;
+import io.openschema.mma.data.MetricsTypeConverter;
+import io.openschema.mma.data.TimestampTypeConverter;
+import io.openschema.mma.data.dao.NetworkConnectionsDAO;
+import io.openschema.mma.data.entity.MetricsEntity;
+import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 
 /**
  * Room database to handle data used by the library.
  */
 @Database(
-        entities = {MetricsEntity.class},
+        entities = {
+                MetricsEntity.class,
+                NetworkConnectionsEntity.class
+        },
         version = 1
 )
 @TypeConverters({
@@ -34,6 +43,7 @@ import androidx.room.TypeConverters;
                 })
 public abstract class MMADatabase extends RoomDatabase {
     public abstract MetricsDAO metricsDAO();
+    public abstract NetworkConnectionsDAO networkConnectionsDAO();
 
     private static volatile MMADatabase _instance;
 
