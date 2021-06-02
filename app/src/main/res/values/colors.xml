@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2020, The Magma Authors
   ~ All rights reserved.
   ~
@@ -14,7 +13,17 @@
   -->
 
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="primaryColor">#5602a4</color>
+    <color name="primaryLightColor">#8a3ed6</color>
+    <color name="primaryDarkColor">#1b0074</color>
+    <color name="primaryTextColor">#ffffff</color>
+
+    <color name="surfaceColor">#FFFFFF</color>
+    <color name="surfaceTextColor">#000000</color>
+
+    <color name="backgroundColor">#FFFFFF</color>
+    <color name="backgroundTextColor">#000000</color>
+
+    <color name="errorColor">#B00020</color>
+    <color name="errorTextColor">#FFFFFF</color>
 </resources>

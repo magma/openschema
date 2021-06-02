@@ -14,11 +14,23 @@
 
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/primaryColor</item>
+<!--        <item name="colorSecondary">@color/my_app_secondary_color</item>-->
+        <item name="android:colorBackground">@color/backgroundColor</item>
+        <item name="colorError">@color/errorColor</item>
+
+        <!-- MaterialComponents attributes. -->
+        <item name="colorPrimaryVariant">@color/primaryDarkColor</item>
+<!--        <item name="colorSecondaryVariant">@color/my_app_secondary_variant_color</item>-->
+        <item name="colorSurface">@color/surfaceColor</item>
+        <item name="colorOnPrimary">@color/primaryTextColor</item>
+<!--        <item name="colorOnSecondary">@color/my_app_color_on_secondary</item>-->
+        <item name="colorOnBackground">@color/backgroundTextColor</item>
+        <item name="colorOnError">@color/errorTextColor</item>
+        <item name="colorOnSurface">@color/surfaceTextColor</item>
+<!--        <item name="scrimBackground">@color/mtrl</item>-->
     </style>
 
 </resources>

@@ -17,16 +17,20 @@ package io.openschema.mma.data;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import io.openschema.mma.data.dao.MetricsDAO;
 import io.openschema.mma.data.dao.NetworkConnectionsDAO;
 import io.openschema.mma.data.database.MMADatabase;
+import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.MetricsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
+import io.openschema.mma.data.entity.WifiConnectionsEntity;
 import io.openschema.mma.metrics.MetricsWorker;
 import io.openschema.mma.networking.BackendApi;
 
@@ -101,14 +105,50 @@ public class MetricsRepository {
     }
 
     //Local metrics for UI
-    public void writeNetworkConnection(NetworkConnectionsEntity entity){
-        //TODO: disable with flag from MMA builder
-        Log.d(TAG, "MMA: Writing network connection to DB");
-        mExecutor.execute(() -> mNetworkConnectionsDAO.insert(entity));
+    public void writeNetworkConnection(NetworkConnectionsEntity entity) {
+        if (entity != null) {
+            //TODO: disable with flag from MMA builder
+            Log.d(TAG, "MMA: Writing network connection to DB");
+
+            if (entity instanceof WifiConnectionsEntity) {
+                mExecutor.execute(() -> mNetworkConnectionsDAO.insert((WifiConnectionsEntity) entity));
+            } else if (entity instanceof CellularConnectionsEntity) {
+                mExecutor.execute(() -> mNetworkConnectionsDAO.insert((CellularConnectionsEntity) entity));
+            } else {
+                Log.e(TAG, "MMA: The connection entity didn't have a valid class");
+            }
+        }
     }
 
     //TODO: only expose UI related calls and hide the rest?
-    public LiveData<List<NetworkConnectionsEntity>> getAllNetworkConnections(){
-        return mNetworkConnectionsDAO.getAll();
+    public LiveData<List<NetworkConnectionsEntity>> getAllNetworkConnections() {
+        return new NetworkConnectionsLiveData(mNetworkConnectionsDAO.getAllWifiConnections(), mNetworkConnectionsDAO.getAllCellularConnections());
+    }
+
+    //MediatorLiveData used to merge both Wifi and Cellular connections into a single List stream
+    static class NetworkConnectionsLiveData extends MediatorLiveData<List<NetworkConnectionsEntity>> {
+
+        List<WifiConnectionsEntity> mLastWifiList = null;
+        List<CellularConnectionsEntity> mLastCellularList = null;
+
+        public NetworkConnectionsLiveData(LiveData<List<WifiConnectionsEntity>> wifiList, LiveData<List<CellularConnectionsEntity>> cellularList) {
+            addSource(wifiList, wifiConnectionsEntities -> {
+                mLastWifiList = wifiConnectionsEntities;
+                update();
+            });
+
+            addSource(cellularList, cellularConnectionsEntities -> {
+                mLastCellularList = cellularConnectionsEntities;
+                update();
+            });
+        }
+
+        private void update() {
+            List<NetworkConnectionsEntity> newList = new ArrayList<>();
+            if (mLastWifiList != null) newList.addAll(mLastWifiList);
+            if (mLastCellularList != null) newList.addAll(mLastCellularList);
+            newList.sort((o1, o2) -> Long.compare(o1.mTimeStamp.getTimestampMillis(), o2.mTimeStamp.getTimestampMillis()));
+            setValue(newList);
+        }
     }
 }

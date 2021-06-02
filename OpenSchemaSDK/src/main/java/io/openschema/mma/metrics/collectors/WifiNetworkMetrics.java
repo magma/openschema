@@ -42,6 +42,9 @@ public class WifiNetworkMetrics extends BaseMetrics {
 
     private WifiManager mWifiManager;
 
+    private String mSSID = null;
+    private String mBSSID = null;
+
     public WifiNetworkMetrics(Context context) {
         super(context);
         mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -58,11 +61,23 @@ public class WifiNetworkMetrics extends BaseMetrics {
         WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
 
         //TODO: check for location permission & service enabled
-        metricsList.add(new Pair<>(METRIC_SSID, wifiInfo.getSSID().replaceAll("\"", "")));
+        mSSID = wifiInfo.getSSID().replaceAll("\"", "");
         String bssid = wifiInfo.getBSSID();
-        metricsList.add(new Pair<>(METRIC_BSSID, bssid == null ? "null" : bssid));
+        mBSSID = bssid == null ? "null" : bssid;
+
+        metricsList.add(new Pair<>(METRIC_SSID, mSSID));
+        metricsList.add(new Pair<>(METRIC_BSSID, mBSSID));
 
 //        Log.d(TAG, "MMA: Collected metrics:\n" + metricsList.toString());
         return metricsList;
+    }
+
+    //TODO: javadocs
+    public String getSSID() {
+        return mSSID;
+    }
+
+    public String getBSSID() {
+        return mBSSID;
     }
 }

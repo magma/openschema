@@ -16,7 +16,6 @@ package io.openschema.mma.metrics.collectors;
 
 import android.app.usage.NetworkStats;
 import android.content.Context;
-import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkRequest;
@@ -31,7 +30,6 @@ import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
-import io.openschema.mma.data.pojo.Timestamp;
 import io.openschema.mma.helpers.UsageRetriever;
 
 //TODO: javadocs
@@ -47,18 +45,20 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     public static final String METRIC_SESSION_DURATION_MILLIS = "sessionDurationMillis";
 
     //Session data
-    private List<Pair<String, String>> mCurrentSession;
-    private long mSessionStartTimestamp, mSessionEndTimestamp;
-    private boolean mSessionLocationReceived;
+    protected List<Pair<String, String>> mCurrentSession;
+    protected long mSessionStartTimestamp, mSessionEndTimestamp;
+    protected boolean mSessionLocationReceived;
 
     //Metrics sources
-    private final ConnectivityManager mConnectivityManager;
-    private final BaseMetrics mNetworkMetrics;
-    private final UsageRetriever mUsageRetriever;
-    private final LocationMetrics mLocationMetrics;
+    protected final ConnectivityManager mConnectivityManager;
+    protected final BaseMetrics mNetworkMetrics;
+    protected final UsageRetriever mUsageRetriever;
+    protected final LocationMetrics mLocationMetrics;
 
     private final MetricsCollectorListener mListener;
-    private final int mTransportType; //TODO: data can get lost if OS kills app temporarily?
+    protected final int mTransportType; //TODO: data can get lost if OS kills app temporarily?
+
+    private NetworkConnectionEntityAdapter mNetworkConnectionEntityAdapter = null;
 
     private final MetricsRepository mMetricsRepository;
 
@@ -107,6 +107,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     // May also be called if a new connection is detected without having detected the previous session's disconnection.
     protected void onSessionEnd() {
         mSessionEndTimestamp = System.currentTimeMillis();
+
         //TODO: wait until session location is received? mSessionLocationReceived is currently ignored
         processConnectionSession();
 
@@ -123,12 +124,6 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         if (metricsList != null) {
             Log.d(TAG, "MMA: Location received");
             mCurrentSession.addAll(metricsList);
-
-            //Save connection into an optional local table to be used in UI
-            Location lastLocation = mLocationMetrics.getLastLocation();
-            if (lastLocation != null) {
-                mMetricsRepository.writeNetworkConnection(new NetworkConnectionsEntity(mTransportType, lastLocation.getLongitude(), lastLocation.getLatitude(), Timestamp.getTimestampInstance()));
-            }
         }
     }
 
@@ -136,8 +131,12 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     //TODO: Provide example
     protected void processConnectionSession() {
 
+        //Attempt to store the network connection in the optional local table
+        storeNetworkConnection();
+
+        //Calculate the amount of hour segments included in our session.
         long hourSegments = getIterationHours();
-        Log.d(TAG, "MMA: Hour windows included in this session: " + hourSegments);
+        Log.d(TAG, "MMA: Hour segments included in this session: " + hourSegments);
 
         Calendar currentSegmentStart = Calendar.getInstance();
         currentSegmentStart.setTimeInMillis(mSessionStartTimestamp);
@@ -164,6 +163,14 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
 
             //Configure variables for next iteration
             currentSegmentStart.setTimeInMillis(segmentEnd.getTimeInMillis());
+        }
+    }
+
+    //Save connection information into an optional local table to be used in UI
+    protected void storeNetworkConnection() {
+        //TODO: disable with flag from MMA builder? avoid extra calculations & storage
+        if (mNetworkConnectionEntityAdapter != null) {
+            mMetricsRepository.writeNetworkConnection(mNetworkConnectionEntityAdapter.getEntity());
         }
     }
 
@@ -241,5 +248,13 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
 
     public List<Pair<String, String>> retrieveMetrics() {
         return null;
+    }
+
+    public void setNetworkConnectionEntityAdapter(NetworkConnectionEntityAdapter adapter) {
+        mNetworkConnectionEntityAdapter = adapter;
+    }
+
+    public interface NetworkConnectionEntityAdapter {
+        NetworkConnectionsEntity getEntity();
     }
 }

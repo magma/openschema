@@ -15,7 +15,12 @@
 package io.openschema.mma.metrics.collectors;
 
 import android.content.Context;
+import android.location.Location;
 import android.net.NetworkCapabilities;
+
+import io.openschema.mma.data.entity.CellularConnectionsEntity;
+import io.openschema.mma.data.entity.NetworkConnectionsEntity;
+import io.openschema.mma.data.pojo.Timestamp;
 
 //TODO: javadocs
 public class CellularSessionMetrics extends NetworkSessionMetrics {
@@ -27,5 +32,23 @@ public class CellularSessionMetrics extends NetworkSessionMetrics {
 
     public CellularSessionMetrics(Context context, MetricsCollectorListener listener) {
         super(context, METRIC_NAME, NetworkCapabilities.TRANSPORT_CELLULAR, new CellularNetworkMetrics(context), listener);
+        setNetworkConnectionEntityAdapter(new CellularConnectionAdapter());
+    }
+
+    class CellularConnectionAdapter implements NetworkConnectionEntityAdapter {
+
+        @Override
+        public NetworkConnectionsEntity getEntity() {
+            Location lastLocation = mLocationMetrics.getLastLocation();
+            if (lastLocation != null) {
+
+                long sessionDuration = mSessionEndTimestamp - mSessionStartTimestamp;
+                long sessionUsage = mUsageRetriever.getDeviceTonnage(mTransportType, mSessionStartTimestamp, mSessionEndTimestamp);
+
+                CellularNetworkMetrics cellularNetworkMetrics = (CellularNetworkMetrics) mNetworkMetrics;
+                return new CellularConnectionsEntity(mTransportType, cellularNetworkMetrics.getNetworkType(), cellularNetworkMetrics.getCellIdentity(), sessionDuration, sessionUsage, lastLocation.getLongitude(), lastLocation.getLatitude(), Timestamp.getTimestampInstance());
+            }
+            return null;
+        }
     }
 }

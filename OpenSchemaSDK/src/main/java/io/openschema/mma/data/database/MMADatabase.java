@@ -24,8 +24,9 @@ import io.openschema.mma.data.dao.MetricsDAO;
 import io.openschema.mma.data.MetricsTypeConverter;
 import io.openschema.mma.data.TimestampTypeConverter;
 import io.openschema.mma.data.dao.NetworkConnectionsDAO;
+import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.MetricsEntity;
-import io.openschema.mma.data.entity.NetworkConnectionsEntity;
+import io.openschema.mma.data.entity.WifiConnectionsEntity;
 
 /**
  * Room database to handle data used by the library.
@@ -33,7 +34,8 @@ import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 @Database(
         entities = {
                 MetricsEntity.class,
-                NetworkConnectionsEntity.class
+                WifiConnectionsEntity.class,
+                CellularConnectionsEntity.class
         },
         version = 1
 )

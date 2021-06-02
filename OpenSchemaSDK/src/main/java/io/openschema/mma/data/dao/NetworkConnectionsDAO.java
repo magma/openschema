@@ -20,15 +20,22 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
-import io.openschema.mma.data.entity.NetworkConnectionsEntity;
+import io.openschema.mma.data.entity.CellularConnectionsEntity;
+import io.openschema.mma.data.entity.WifiConnectionsEntity;
 
 //TODO: javadoc
 @Dao
 public interface NetworkConnectionsDAO {
 
-    @Query("SELECT * FROM network_connections")
-    LiveData<List<NetworkConnectionsEntity>> getAll();
+    @Query("SELECT * FROM wifi_connections")
+    LiveData<List<WifiConnectionsEntity>> getAllWifiConnections();
+
+    @Query("SELECT * FROM cellular_connections")
+    LiveData<List<CellularConnectionsEntity>> getAllCellularConnections();
 
     @Insert
-    void insert(NetworkConnectionsEntity newEntity);
+    void insert(WifiConnectionsEntity newEntity);
+
+    @Insert
+    void insert(CellularConnectionsEntity newEntity);
 }

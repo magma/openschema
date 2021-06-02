@@ -19,6 +19,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.telephony.CellIdentityCdma;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellIdentityLte;
 import android.telephony.CellIdentityNr;
@@ -57,10 +58,14 @@ public class CellularNetworkMetrics extends BaseMetrics {
     public static final String METRIC_MOBILE_COUNTRY_CODE = "mobileCountryCode";
     public static final String METRIC_ISO_COUNTRY_CODE = "isoCountryCode";
     public static final String METRIC_NETWORK_TYPE = "networkType";
+    public static final String METRIC_CELL_ID = "cellId";
 
     private final TelephonyManager mTelephonyManager;
     private final boolean mPhonePermissionGranted;
     private final boolean mLocationPermissionGranted;
+
+    private String mNetworkType = null;
+    private long mCellIdentity = -1;
 
     public CellularNetworkMetrics(Context context) {
         super(context);
@@ -84,7 +89,8 @@ public class CellularNetworkMetrics extends BaseMetrics {
         metricsList.add(new Pair<>(METRIC_CARRIER_NAME, mTelephonyManager.getNetworkOperatorName()));
         metricsList.add(new Pair<>(METRIC_ISO_COUNTRY_CODE, mTelephonyManager.getNetworkCountryIso()));
         if (mPhonePermissionGranted) {
-            metricsList.add(new Pair<>(METRIC_NETWORK_TYPE, getRadioTechnologyString(mTelephonyManager.getDataNetworkType())));
+            mNetworkType = getRadioTechnologyString(mTelephonyManager.getDataNetworkType());
+            metricsList.add(new Pair<>(METRIC_NETWORK_TYPE, mNetworkType));
         }
 
         //TODO: Should also check if location services are enabled
@@ -100,7 +106,7 @@ public class CellularNetworkMetrics extends BaseMetrics {
                     //TODO: Can there be more than 1 registered network?
 
                     if (cellInfo instanceof CellInfoCdma) {
-                        getInfoCDMA(metricsList);
+                        getInfoCDMA(metricsList, cellInfo);
                     } else if (cellInfo instanceof CellInfoGsm) {
                         getInfoGSM(metricsList, cellInfo);
                     } else if (cellInfo instanceof CellInfoLte) {
@@ -122,12 +128,18 @@ public class CellularNetworkMetrics extends BaseMetrics {
     /**
      * Collects the mobile network code & mobile country code from a CDMA cell.
      */
-    private void getInfoCDMA(List<Pair<String, String>> metricsList) {
+    private void getInfoCDMA(List<Pair<String, String>> metricsList, CellInfo cellInfo) {
+        CellInfoCdma info = (CellInfoCdma) cellInfo;
+        CellIdentityCdma cellIdentity = info.getCellIdentity();
+
         String networkOperator = mTelephonyManager.getNetworkOperator();
         if (networkOperator != null) {
             metricsList.add(new Pair<>(METRIC_MOBILE_NETWORK_CODE, networkOperator.substring(3)));
             metricsList.add(new Pair<>(METRIC_MOBILE_COUNTRY_CODE, networkOperator.substring(0, 3)));
         }
+        //TODO: Is this the correct equivalent?
+        mCellIdentity = cellIdentity.getBasestationId();
+        metricsList.add(new Pair<>(METRIC_CELL_ID, Long.toString(mCellIdentity)));
     }
 
     /**
@@ -144,6 +156,9 @@ public class CellularNetworkMetrics extends BaseMetrics {
             metricsList.add(new Pair<>(METRIC_MOBILE_NETWORK_CODE, Integer.toString(cellIdentity.getMnc())));
             metricsList.add(new Pair<>(METRIC_MOBILE_COUNTRY_CODE, Integer.toString(cellIdentity.getMcc())));
         }
+
+        mCellIdentity = cellIdentity.getCid();
+        metricsList.add(new Pair<>(METRIC_CELL_ID, Long.toString(mCellIdentity)));
     }
 
     /**
@@ -161,6 +176,9 @@ public class CellularNetworkMetrics extends BaseMetrics {
             metricsList.add(new Pair<>(METRIC_MOBILE_NETWORK_CODE, Integer.toString(cellIdentity.getMnc())));
             metricsList.add(new Pair<>(METRIC_MOBILE_COUNTRY_CODE, Integer.toString(cellIdentity.getMcc())));
         }
+
+        mCellIdentity = cellIdentity.getCi();
+        metricsList.add(new Pair<>(METRIC_CELL_ID, Long.toString(mCellIdentity)));
     }
 
     /**
@@ -177,6 +195,9 @@ public class CellularNetworkMetrics extends BaseMetrics {
             metricsList.add(new Pair<>(METRIC_MOBILE_NETWORK_CODE, Integer.toString(cellIdentity.getMnc())));
             metricsList.add(new Pair<>(METRIC_MOBILE_COUNTRY_CODE, Integer.toString(cellIdentity.getMcc())));
         }
+
+        mCellIdentity = cellIdentity.getCid();
+        metricsList.add(new Pair<>(METRIC_CELL_ID, Long.toString(mCellIdentity)));
     }
 
     /**
@@ -189,6 +210,9 @@ public class CellularNetworkMetrics extends BaseMetrics {
 
         metricsList.add(new Pair<>(METRIC_MOBILE_NETWORK_CODE, cellIdentity.getMncString()));
         metricsList.add(new Pair<>(METRIC_MOBILE_COUNTRY_CODE, cellIdentity.getMccString()));
+
+        mCellIdentity = cellIdentity.getNci();
+        metricsList.add(new Pair<>(METRIC_CELL_ID, Long.toString(mCellIdentity)));
     }
 
     /**
@@ -219,5 +243,13 @@ public class CellularNetworkMetrics extends BaseMetrics {
             default:
                 return "Unknown";
         }
+    }
+
+    public String getNetworkType() {
+        return mNetworkType;
+    }
+
+    public long getCellIdentity() {
+        return mCellIdentity;
     }
 }
