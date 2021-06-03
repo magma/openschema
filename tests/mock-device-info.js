@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const faker = require('faker')
-const WifiSession = require('../models/wifi-session')
+const DeviceInfo = require('../models/device-info')
 
 //Use a separate test DB to avoid polluting the data
 const MONGODB_URI = `mongodb://localhost:27017/openschema_datalake_test`
@@ -33,7 +33,7 @@ db.once(`open`, async () => {
     try {
         //Run any code needed for creating mockup data
         console.log(`Creating mock data...`)
-        await createMockWiFiSessionData()
+        await createMockDeviceInfoSessionData()
         console.log(`Finished writing mock data...`)
     } catch (e) {
         console.log(e.message)
@@ -97,7 +97,7 @@ function getRandomLocation(latitude, longitude, radiusInMeters) {
     }
 }
 
-async function createMockWiFiSessionData() {
+async function createMockDeviceInfoSessionData() {
     let nUsers = 6
     createUsers(nUsers)
     let dataCount = Math.floor(Math.random() * 11); 
@@ -117,17 +117,7 @@ async function createMockWiFiSessionData() {
                     model: models[i],
                     manufacturer: manufacturers[i],
                     brand: brands[i],
-                    androidId: androidIds[i],
-                    sessionStartTime: faker.time.recent(), //TODO: Should manipulate timestamps to model data better
-                    sessionDurationMillis: faker.datatype.number({ min: 5000, max: 3600000 }), //5s to 1h
-                    rxBytes: faker.datatype.number({ min: 3072, max: 1048576 }), //3KB to 1GB
-                    txBytes: faker.datatype.number({ min: 3072, max: 1048576 }), //3KB to 1GB
-                    location: {
-                        latitude: coordinates.latitude,
-                        longitude: coordinates.longitude,
-                    }
-                    country: countries[i],
-                    city: cities[i]
+                    androidId: androidIds[i]
                 },
                 identifier: {
                     clientType: 'android',
@@ -145,5 +135,5 @@ async function createMockWiFiSessionData() {
     }
 
     console.log(`Pushing entries to DB...`)
-    await WifiSession.model.create(newItems)
+    await DeviceInfo.model.create(newItems)
 }

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const faker = require('faker')
-const WifiSession = require('../models/wifi-session')
+const CellularSession = require('../models/cellular-session')
 
 //Use a separate test DB to avoid polluting the data
 const MONGODB_URI = `mongodb://localhost:27017/openschema_datalake_test`
@@ -33,7 +33,7 @@ db.once(`open`, async () => {
     try {
         //Run any code needed for creating mockup data
         console.log(`Creating mock data...`)
-        await createMockWiFiSessionData()
+        await createMockCellularSessionData()
         console.log(`Finished writing mock data...`)
     } catch (e) {
         console.log(e.message)
@@ -94,7 +94,7 @@ function getRandomLocation(latitude, longitude, radiusInMeters) {
     }
 }
 
-async function createMockWiFiSessionData() {
+async function createMockCellularSessionData() {
     let nUsers = 6
     createUsers(nUsers)
     let dataCount = Math.floor(Math.random() * 11); 
@@ -122,9 +122,7 @@ async function createMockWiFiSessionData() {
                     location: {
                         latitude: coordinates.latitude,
                         longitude: coordinates.longitude,
-                    },
-                    country: countries[i],
-                    city: cities[i]
+                    }
                 },
                 identifier: {
                     clientType: 'android',
@@ -142,5 +140,5 @@ async function createMockWiFiSessionData() {
     }
 
     console.log(`Pushing entries to DB...`)
-    await WifiSession.model.create(newItems)
+    await CellularSession.model.create(newItems)
 }
