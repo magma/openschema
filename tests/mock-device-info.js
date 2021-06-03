@@ -1,18 +1,21 @@
 const mongoose = require('mongoose')
 const faker = require('faker')
-const WifiSession = require('../models/wifi-session')
+const DeviceInfo = require('../models/device-info')
 
 //Use a separate test DB to avoid polluting the data
 const MONGODB_URI = `mongodb://localhost:27017/openschema_datalake_test`
 
 //Define Arrays for users
 let uuids = []
-let ssids = []
-let bssids = []
-let latitudes = [-16.390332, -12.105356, -12.091066, 33.772516, 33.932614]
-let longitudes = [-71.549965, -76.964025, -77.066721, -118.193372, -118.379157]
-let countries = ["PE", "PE", "PE", "US", "US"]
-let cities = ["Arequipa", "Lima", "Lima", "Long Beach", "Los Angeles"]
+let osVersions = ["29", "30", "28", "29", "29", "30"]
+let models = ["Samsung Galaxy A72", "Google Pixel 4a", "Google Pixel 5", "Huawei P40 Lite", "Samsung Galaxy S21 Ultra", "Samsung Galaxy A72"]
+let manufacturers = ["Samsung", "Google", "Google", "Huawei", "Samsung", "Samsung"]
+let brands = ["Samsung", "Google", "Google", "Huawei", "Samsung", "Samsung"]
+let androidIds = []
+let latitudes = [-16.390332, -12.105356, -12.091066, 33.772516, 33.932614, 28.511954]
+let longitudes = [-71.549965, -76.964025, -77.066721, -118.193372, -118.379157, -81.381235]
+let countries = ["PE", "PE", "PE", "US", "US", "US"]
+let cities = ["Arequipa", "Lima", "Lima", "Long Beach", "Los Angeles", "Orlando"]
 
 //Create DB handler
 mongoose.Promise = global.Promise
@@ -30,7 +33,7 @@ db.once(`open`, async () => {
     try {
         //Run any code needed for creating mockup data
         console.log(`Creating mock data...`)
-        await createMockWiFiSessionData()
+        await createMockDeviceInfoSessionData()
         console.log(`Finished writing mock data...`)
     } catch (e) {
         console.log(e.message)
@@ -45,12 +48,10 @@ function createUsers(nUsers) {
 
     for (let i = 0; i < nUsers; i++) {
         let uuid = "uuid-user-" + i
-        let ssid = "ssid-user-" + i
-        let bssid = "bssid-user-" + i
+        let androidId = "androidId-" + i
 
         uuids.push(uuid)
-        ssids.push(ssid)
-        bssids.push(bssid)
+        androidIds.push(androidId)
     }
 
 }
@@ -96,8 +97,8 @@ function getRandomLocation(latitude, longitude, radiusInMeters) {
     }
 }
 
-async function createMockWiFiSessionData() {
-    let nUsers = 5
+async function createMockDeviceInfoSessionData() {
+    let nUsers = 6
     createUsers(nUsers)
     let dataCount = Math.floor(Math.random() * 11); 
     let newItems = []
@@ -112,16 +113,11 @@ async function createMockWiFiSessionData() {
             //Create body to populate the mongoose schema
             let newItem = {
                 metrics: {
-                    ssid: ssids[i],
-                    bssid: bssids[i],
-                    sessionStartTime: faker.time.recent(), //TODO: Should manipulate timestamps to model data better
-                    sessionDurationMillis: faker.datatype.number({ min: 5000, max: 3600000 }), //5s to 1h
-                    rxBytes: faker.datatype.number({ min: 3072, max: 1048576 }), //3KB to 1GB
-                    txBytes: faker.datatype.number({ min: 3072, max: 1048576 }), //3KB to 1GB
-                    location: {
-                        latitude: coordinates.latitude,
-                        longitude: coordinates.longitude,
-                    }
+                    osVersion: osVersions[i],
+                    model: models[i],
+                    manufacturer: manufacturers[i],
+                    brand: brands[i],
+                    androidId: androidIds[i]
                 },
                 identifier: {
                     clientType: 'android',
@@ -139,5 +135,5 @@ async function createMockWiFiSessionData() {
     }
 
     console.log(`Pushing entries to DB...`)
-    await WifiSession.model.create(newItems)
+    await DeviceInfo.model.create(newItems)
 }
