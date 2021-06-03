@@ -125,9 +125,9 @@ async function createMockWiFiSessionData() {
                     location: {
                         latitude: coordinates.latitude,
                         longitude: coordinates.longitude,
-                        country: countries[i],
-                        city: cities[i],
                     }
+                    country: countries[i],
+                    city: cities[i]
                 },
                 identifier: {
                     clientType: 'android',
