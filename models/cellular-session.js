@@ -17,6 +17,7 @@ let metricsSchema = new Schema({
     mobileCountryCode: String,
     isoCountryCode: String,
     networkType: String,
+    cellId: Number,
     location: locationSchema
 }, {
     _id: false
