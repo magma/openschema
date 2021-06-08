@@ -4,13 +4,12 @@ const am = require('../utils/async-middleware').asyncMiddleware
 const WifiSession = require('../models/wifi-session')
 const CellularSession = require('../models/cellular-session')
 const DeviceInfo = require('../models/device-info')
+const ConnectionReport = require('../models/connection-report')
 const CustomMetric = require('../models/custom-metric')
 var router = express.Router()
 
 
 //TODO: add middleware to handle identifier information and make sure that the UE has been registered
-
-
 router.use(function (req, res, next) {
     //Trim request body to expected parameters
     req.body = _.pick(req.body, ['metricName', 'metricsList', 'identifier', 'timestamp'])
@@ -52,7 +51,7 @@ router.post('/metrics/push', am(async (req, res) => {
 
 module.exports = router
 
-//TODO: Abstract handlers into a new layer?
+//TODO: Abstract handlers back into each schema's module?
 function checkKnownMetrics(metricName) {
     switch (metricName) {
         case WifiSession.metricName:
@@ -61,6 +60,8 @@ function checkKnownMetrics(metricName) {
             return handleCellularSession
         case DeviceInfo.metricName:
             return handleDeviceInfo
+        case ConnectionReport.metricName:
+            return handleConnectionReport
         default:
             return handleCustomMetric
     }
@@ -120,6 +121,25 @@ async function handleDeviceInfo(body) {
     return storedEntry != null
 }
 
+async function handleConnectionReport(body) {
+    let newEntry = {
+        metrics: ConnectionReport.preProcessMetrics(body.metrics),
+        identifier: body.identifier,
+        timestamp: body.timestamp
+    }
+
+    //TODO: remove
+    console.log(newEntry)
+    console.log(`Saving entry...`)
+
+    let storedEntry = await new ConnectionReport.model(newEntry)
+        .save()
+        .catch(e => console.log('Error: ', e.message));
+
+    return storedEntry != null
+}
+
 async function handleCustomMetric(body) {
     //TODO: implement custom metric handling
+    console.log(`Error: Custom metric handling hasn't been implemented yet.`)
 }
