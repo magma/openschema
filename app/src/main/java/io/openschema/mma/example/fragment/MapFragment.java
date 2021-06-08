@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example;
+package io.openschema.mma.example.fragment;
 
 import android.annotation.SuppressLint;
 import android.net.NetworkCapabilities;
@@ -35,23 +35,39 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.navigation.NavBackStackEntry;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
+import io.openschema.mma.example.MainActivity;
+import io.openschema.mma.example.R;
+import io.openschema.mma.example.Utils;
 import io.openschema.mma.example.databinding.FragmentMapBinding;
+import io.openschema.mma.example.view.ConnectionReportDialog;
+import io.openschema.mma.metrics.collectors.ConnectionReport;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = "MapFragment";
     private FragmentMapBinding mBinding;
     private GoogleMap mGoogleMap = null;
-    private int mCurrentMarkerId = -1;
+    private MetricsRepository mMetricsRepository;
+
+    //TODO: Persisted with ViewModel instead?
+    private HashMap<String, NetworkConnectionsEntity> mSeenEntitiesMap = new HashMap<>();
+    private Marker mCurrentMarker = null;
 
     @Nullable
     @Override
@@ -65,7 +81,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mBinding.mapReportConnectionBtn.setOnClickListener(v -> onConnectionReported());
+        mBinding.mapReportConnectionBtn.setOnClickListener(v -> onConnectionReportOpened());
 
         //Start loading map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(mBinding.mapContainer.getId());
@@ -81,7 +97,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         //Configure map object
         mGoogleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style));
         mGoogleMap.setOnMarkerClickListener(this);
-        mGoogleMap.setOnInfoWindowCloseListener(marker -> onConnectionReportDismiss());
+        mGoogleMap.setOnInfoWindowCloseListener(marker -> onMarkerDeselected());
         mGoogleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
 
         //TODO: check for location permission granted during runtime
@@ -91,7 +107,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         //TODO: persist state in cache with a viewmodel?
         //Setup observer for network connections from SDK
-        MetricsRepository.getRepository(requireContext().getApplicationContext()).getAllNetworkConnections().observe(getViewLifecycleOwner(), networkConnectionsEntities -> {
+        mMetricsRepository = MetricsRepository.getRepository(requireContext().getApplicationContext());
+        mMetricsRepository.getAllNetworkConnections().observe(getViewLifecycleOwner(), networkConnectionsEntities -> {
             if (networkConnectionsEntities != null) {
                 onNetworkConnectionsReceived(networkConnectionsEntities);
             }
@@ -100,6 +117,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         //TODO: center map around current location. (If not available? Center around last connection's location?)
     }
 
+    //Iterates through all the network connections received from observing the Room database and creates a marker in the google map instance for each unique session.
     private void onNetworkConnectionsReceived(List<NetworkConnectionsEntity> networkConnectionsEntities) {
         Log.d(TAG, "UI: There are " + networkConnectionsEntities.size() + " connections in DB");
 
@@ -109,13 +127,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             return;
         }
 
-        //TODO: Avoid iterating through previously seen items since the whole list is going to be received during an update.
-        // Maybe store the list locally and compare against it, similar to how RecyclerView handles it?
         //Iterate through all network connections
         for (int i = 0; i < networkConnectionsEntities.size(); i++) {
             NetworkConnectionsEntity currentEntity = networkConnectionsEntities.get(i);
 
-            createMarker(currentEntity);
+            //Use a hashmap to cache connections that have been processed in previous observer events
+            if (mSeenEntitiesMap.get(currentEntity.getCompoundId()) == null) {
+                createMarker(currentEntity);
+            }
 
             //Center camera around last marker and zoom to street level
             if (i == networkConnectionsEntities.size() - 1) {
@@ -124,16 +143,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
     }
 
+    //Create values to configure the data contained in each marker
     private void createMarker(NetworkConnectionsEntity currentEntity) {
-        //Configure values to draw the Marker
         LatLng currentLatLng = new LatLng(currentEntity.mLatitude, currentEntity.mLongitude);
         float currentIconHue = currentEntity.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? BitmapDescriptorFactory.HUE_AZURE : BitmapDescriptorFactory.HUE_ORANGE;
 
+        //Each data point is split by a newline to be able to process it later on the custom info window
         StringBuilder snippetBuilder = new StringBuilder();
-        snippetBuilder.append(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(currentEntity.mTimeStamp.getTimestampMillis())));
+        snippetBuilder.append(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(currentEntity.mTimeStamp)));
         snippetBuilder.append("\n").append("Duration: ").append(Utils.humanReadableTime(currentEntity.mDuration));
         snippetBuilder.append("\n").append("Usage: ").append(Utils.humanReadableByteCountSI(currentEntity.mUsage));
+        if (currentEntity.mIsReported) {
+            snippetBuilder.append("\n").append("You reported this connection.");
+        }
 
+        //Check the network type for the connection entity and extract network-specific information
         String currentTitle;
         if (currentEntity instanceof WifiConnectionsEntity) {
             WifiConnectionsEntity newEntity = (WifiConnectionsEntity) currentEntity;
@@ -155,7 +179,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         //Save the db entry's ID in the marker for reference
         if (newMarker != null) {
-            newMarker.setTag(currentEntity.mId);
+            newMarker.setTag(currentEntity.getCompoundId());
+            mSeenEntitiesMap.put(currentEntity.getCompoundId(), currentEntity);
         } else {
             Log.e(TAG, "UI: There was an error adding a marker to connection " + currentEntity.mId);
         }
@@ -164,34 +189,75 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public boolean onMarkerClick(@NonNull Marker marker) {
         //Retrieve the db entry's ID
-        Integer networkConnectionId = (Integer) marker.getTag();
+        NetworkConnectionsEntity entity = mSeenEntitiesMap.get(marker.getTag());
 
-        Log.d(TAG, "UI: onMarkerClick: " + marker.getSnippet());
-
-        if (networkConnectionId != null) {
+        //Check that the marker hasn't been reported already and show the reporting button.
+        if (entity != null && !entity.mIsReported) {
             mBinding.mapReportConnection.setVisibility(View.VISIBLE);
-            mCurrentMarkerId = networkConnectionId;
-        } else {
-            Log.e(TAG, "UI: The marker didn't have a correct ID attached");
+            mCurrentMarker = marker;
         }
 
         return false;
     }
 
-    private void onConnectionReported() {
-        if (mCurrentMarkerId == -1) {
+    //Clear the cached selected marker ID and hide the connection report button.
+    private void onMarkerDeselected() {
+        mBinding.mapReportConnection.setVisibility(View.GONE);
+        mCurrentMarker = null;
+    }
+
+    //Opens a report dialog and handles the result
+    private void onConnectionReportOpened() {
+        if (mCurrentMarker == null) {
             Log.e(TAG, "UI: No network connection has been selected");
             return;
         }
 
-        Log.d(TAG, "UI: Attempting to report connection with ID: " + mCurrentMarkerId);
+        //Open dialog for user to describe the issue with the connection.
+        final NavController navController = NavHostFragment.findNavController(this);
+        navController.navigate(R.id.action_nav_map_to_dialog_connection_report);
+
+        //Setup observer to receive result when the fragment resumes after returning from the dialog.
+        final NavBackStackEntry navBackStackEntry = navController.getBackStackEntry(R.id.nav_map);
+        navBackStackEntry.getLifecycle().addObserver(new LifecycleEventObserver() {
+            @Override
+            public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
+                if (event.equals(Lifecycle.Event.ON_RESUME)) {
+                    String reportDescription = navBackStackEntry.getSavedStateHandle().get(ConnectionReportDialog.KEY_REPORT_DESCRIPTION);
+                    if (reportDescription != null) {
+                        onConnectionReported(reportDescription);
+
+                        //Remove value from SavedStateHandle to make sure we consume this event only once.
+                        navBackStackEntry.getSavedStateHandle().remove(ConnectionReportDialog.KEY_REPORT_DESCRIPTION);
+                    }
+
+                    //Remove observer since event was resolved.
+                    navBackStackEntry.getLifecycle().removeObserver(this);
+                } else if (event.equals(Lifecycle.Event.ON_DESTROY)) {
+                    //Remove observer in case the app was destroyed and the event wasn't resolved.
+                    navBackStackEntry.getLifecycle().removeObserver(this);
+                }
+            }
+        });
     }
 
-    private void onConnectionReportDismiss() {
-        mBinding.mapReportConnection.setVisibility(View.GONE);
-        mCurrentMarkerId = -1;
+    //Generate the connection report structure and use the SDK to collect it.
+    private void onConnectionReported(String reportDescription) {
+        final NetworkConnectionsEntity connectionEntity = mSeenEntitiesMap.get(mCurrentMarker.getTag());
+        final ConnectionReport connectionReport = new ConnectionReport(requireContext(), connectionEntity, reportDescription);
+
+        //Collect metric into SDK's buffer.
+        ((MainActivity) requireActivity()).pushMetric(ConnectionReport.METRIC_NAME, connectionReport.retrieveMetrics());
+
+        //Mark the network connection locally as reported to prevent reporting the same connection multiple times.
+        mMetricsRepository.flagNetworkConnectionReported(connectionEntity);
+
+        //Remove the marker from both the hashmap and map view for it to be updated.
+        mSeenEntitiesMap.remove(mCurrentMarker.getTag());
+        mCurrentMarker.remove();
     }
 
+    //Class to handle customized view when opening a marker within the map.
     class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         private final View mContents;
@@ -212,6 +278,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             TextView titleTxt = mContents.findViewById(R.id.info_title);
             titleTxt.setText(marker.getTitle());
 
+            //Separate data separated by a newline that was prepared when creating the marker
             String[] markerContents = marker.getSnippet().split("\\r?\\n");
 
             TextView timestampTxt = mContents.findViewById(R.id.info_timestamp);
@@ -222,6 +289,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
             TextView usageTxt = mContents.findViewById(R.id.info_usage);
             usageTxt.setText(markerContents[2]);
+
+            TextView reportedTxt = mContents.findViewById(R.id.info_reported);
+            if (markerContents.length == 4) {
+                reportedTxt.setText(markerContents[3]);
+                reportedTxt.setVisibility(View.VISIBLE);
+            } else {
+                reportedTxt.setVisibility(View.GONE);
+            }
 
             return mContents;
         }

@@ -31,7 +31,7 @@ public class WifiConnectionsEntity extends NetworkConnectionsEntity {
     @ColumnInfo(name = "bssid")
     public String mBSSID;
 
-    public WifiConnectionsEntity(int transportType, String mSSID, String mBSSID, long duration, long usage, double longitude, double latitude, Timestamp timeStamp) {
+    public WifiConnectionsEntity(int transportType, String mSSID, String mBSSID, long duration, long usage, double longitude, double latitude, long timeStamp) {
         super(transportType, duration, usage, longitude, latitude, timeStamp);
 
         //Adding m to parameters due to Room not matching them correctly to the attributes

@@ -15,6 +15,7 @@
 package io.openschema.mma.data;
 
 import android.content.Context;
+import android.net.NetworkCapabilities;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -125,6 +126,17 @@ public class MetricsRepository {
         return new NetworkConnectionsLiveData(mNetworkConnectionsDAO.getAllWifiConnections(), mNetworkConnectionsDAO.getAllCellularConnections());
     }
 
+    public void flagNetworkConnectionReported(NetworkConnectionsEntity entity) {
+        switch (entity.mTransportType) {
+            case NetworkCapabilities.TRANSPORT_WIFI:
+                mExecutor.execute(() -> mNetworkConnectionsDAO.setWifiReported(entity.mId));
+                break;
+            case NetworkCapabilities.TRANSPORT_CELLULAR:
+                mExecutor.execute(() -> mNetworkConnectionsDAO.setCellularReported(entity.mId));
+                break;
+        }
+    }
+
     //MediatorLiveData used to merge both Wifi and Cellular connections into a single List stream
     static class NetworkConnectionsLiveData extends MediatorLiveData<List<NetworkConnectionsEntity>> {
 
@@ -147,7 +159,7 @@ public class MetricsRepository {
             List<NetworkConnectionsEntity> newList = new ArrayList<>();
             if (mLastWifiList != null) newList.addAll(mLastWifiList);
             if (mLastCellularList != null) newList.addAll(mLastCellularList);
-            newList.sort((o1, o2) -> Long.compare(o1.mTimeStamp.getTimestampMillis(), o2.mTimeStamp.getTimestampMillis()));
+            newList.sort((o1, o2) -> Long.compare(o1.mTimeStamp, o2.mTimeStamp));
             setValue(newList);
         }
     }

@@ -31,7 +31,7 @@ public class CellularConnectionsEntity extends NetworkConnectionsEntity {
     @ColumnInfo(name = "cellIdentity")
     public long mCellIdentity;
 
-    public CellularConnectionsEntity(int transportType, String networkType, long cellIdentity, long duration, long usage, double longitude, double latitude, Timestamp timeStamp) {
+    public CellularConnectionsEntity(int transportType, String networkType, long cellIdentity, long duration, long usage, double longitude, double latitude, long timeStamp) {
         super(transportType, duration, usage, longitude, latitude, timeStamp);
         mNetworkType = networkType;
         mCellIdentity = cellIdentity;

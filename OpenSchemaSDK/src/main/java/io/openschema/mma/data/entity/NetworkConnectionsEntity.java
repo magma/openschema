@@ -49,14 +49,22 @@ public class NetworkConnectionsEntity {
     public double mLatitude;
 
     @ColumnInfo(name = "timestamp")
-    public Timestamp mTimeStamp;
+    public long mTimeStamp;
 
-    public NetworkConnectionsEntity(int transportType, long duration, long usage, double longitude, double latitude, Timestamp timeStamp) {
+    @ColumnInfo(name = "is_reported")
+    public boolean mIsReported = false;
+
+    public NetworkConnectionsEntity(int transportType, long duration, long usage, double longitude, double latitude, long timeStamp) {
         mTransportType = transportType;
         mDuration = duration;
         mUsage = usage;
         mLongitude = longitude;
         mLatitude = latitude;
         mTimeStamp = timeStamp;
+    }
+
+    //We need to include the transport type to generate a unique key since each network uses an independent table for storage
+    public String getCompoundId() {
+        return Integer.toString(mId) + mTransportType;
     }
 }

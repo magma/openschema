@@ -27,15 +27,23 @@ import io.openschema.mma.data.entity.WifiConnectionsEntity;
 @Dao
 public interface NetworkConnectionsDAO {
 
+    //Wi-Fi calls
+    @Insert
+    void insert(WifiConnectionsEntity newEntity);
+
     @Query("SELECT * FROM wifi_connections")
     LiveData<List<WifiConnectionsEntity>> getAllWifiConnections();
 
+    @Query("UPDATE wifi_connections SET is_reported = 1 WHERE id=:id")
+    void setWifiReported(int id);
+
+    //Cellular calls
     @Query("SELECT * FROM cellular_connections")
     LiveData<List<CellularConnectionsEntity>> getAllCellularConnections();
 
     @Insert
-    void insert(WifiConnectionsEntity newEntity);
-
-    @Insert
     void insert(CellularConnectionsEntity newEntity);
+
+    @Query("UPDATE cellular_connections SET is_reported = 1 WHERE id=:id")
+    void setCellularReported(int id);
 }

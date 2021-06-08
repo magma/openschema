@@ -18,13 +18,18 @@ import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.util.Pair;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 import io.openschema.mma.MobileMetricsAgent;
 
 public class MainActivity extends AppCompatActivity {
+
+    private MobileMetricsAgent mMobileMetricsAgent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
         //Build OpenSchema agent with required data
-        MobileMetricsAgent mma = new MobileMetricsAgent.Builder()
+        mMobileMetricsAgent = new MobileMetricsAgent.Builder()
                 .setAppContext(getApplicationContext())
                 .setControllerAddress(getString(R.string.controller_address))
                 .setControllerPort(getResources().getInteger(R.integer.controller_port))
@@ -53,9 +58,13 @@ public class MainActivity extends AppCompatActivity {
 
         //Initialize agent
         try {
-            mma.init();
+            mMobileMetricsAgent.init();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void pushMetric(String metricName, List<Pair<String, String>> metricValues) {
+        mMobileMetricsAgent.pushUntypedMetric(metricName, metricValues);
     }
 }

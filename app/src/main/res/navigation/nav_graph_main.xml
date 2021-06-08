@@ -21,13 +21,24 @@
 
     <fragment
         android:id="@+id/nav_main"
-        android:name="io.openschema.mma.example.MainFragment"
+        android:name="io.openschema.mma.example.fragment.MainFragment"
         android:label="@string/app_name"
         />
 
     <fragment
         android:id="@+id/nav_map"
-        android:name="io.openschema.mma.example.MapFragment"
+        android:name="io.openschema.mma.example.fragment.MapFragment"
         android:label="@string/app_name"
+        >
+        <action
+            android:id="@+id/action_nav_map_to_dialog_connection_report"
+            app:destination="@id/dialog_connection_report"
+            />
+    </fragment>
+
+    <dialog
+        android:id="@+id/dialog_connection_report"
+        android:name="io.openschema.mma.example.view.ConnectionReportDialog"
+        android:label="Connection Report"
         />
 </navigation>

@@ -18,7 +18,7 @@ import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.concurrent.TimeUnit;
 
-class Utils {
+public class Utils {
 
     //Converts bytes to a SI formatted String
     public static String humanReadableByteCountSI(long bytes) {

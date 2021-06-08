@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example;
+package io.openschema.mma.example.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

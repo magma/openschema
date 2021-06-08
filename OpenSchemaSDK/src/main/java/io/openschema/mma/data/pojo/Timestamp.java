@@ -35,12 +35,15 @@ public class Timestamp {
     public long getTimestampMillis() {return mTimestamp;}
 
     public static Timestamp getTimestampInstance() {
+        return getTimestampInstance(System.currentTimeMillis());
+    }
+
+    public static Timestamp getTimestampInstance(long timestampMillis) {
         Log.d(TAG, "MMA: Generating time metrics...");
 
-        long timestamp = System.currentTimeMillis();
         TimeZone currentTimeZone = TimeZone.getDefault();
 
-        return new Timestamp(timestamp,
+        return new Timestamp(timestampMillis,
                 currentTimeZone.getRawOffset() / (60 * 1000)
         );
     }

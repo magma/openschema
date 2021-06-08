@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020, The Magma Authors
+  ~ All rights reserved.
+  ~
+  ~ This source code is licensed under the BSD-style license found in the
+  ~ LICENSE file in the root directory of this source tree.
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        >
+
+        <TextView
+            android:id="@+id/report_dialog_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            android:paddingStart="4dp"
+            android:text="Got a connection issue?"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/report_dialog_feedback"
+            app:layout_constraintEnd_toEndOf="@id/report_dialog_submit_btn"
+            app:layout_constraintStart_toStartOf="@id/report_dialog_cancel_btn"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <EditText
+            android:id="@+id/report_dialog_feedback"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:hint="Please explain your experience."
+            android:maxLength="100"
+            android:maxLines="8"
+            android:minLines="4"
+            app:layout_constraintBottom_toTopOf="@id/report_dialog_submit_btn"
+            app:layout_constraintEnd_toEndOf="@id/report_dialog_title"
+            app:layout_constraintStart_toStartOf="@id/report_dialog_title"
+            app:layout_constraintTop_toBottomOf="@id/report_dialog_title"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/report_dialog_submit_btn"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Report Connection"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/report_dialog_cancel_btn"
+            app:layout_constraintTop_toBottomOf="@id/report_dialog_feedback"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/report_dialog_cancel_btn"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="Cancel"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@id/report_dialog_submit_btn"
+            app:layout_constraintEnd_toStartOf="@id/report_dialog_submit_btn"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/report_dialog_submit_btn"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
+
