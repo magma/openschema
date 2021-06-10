@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example;
+package io.openschema.mma.example.util;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.concurrent.TimeUnit;
 
-public class Utils {
+public class FormattingUtils {
 
     //Converts bytes to a SI formatted String
     public static String humanReadableByteCountSI(long bytes) {

@@ -12,9 +12,11 @@
   ~ limitations under the License.
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="io.openschema.mma">
+    package="io.openschema.mma"
+    >
 
     <!--Used to retrieve Wi-Fi SSID, BSSID & location-->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -27,7 +29,8 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!--Used to retrieve usage information-->
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions"
         />
 
@@ -35,5 +38,8 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
     <!--Used to allow using a foreground service to collect data from the background-->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!--TODO: research using this permission to avoid being killed in the background-->
+<!--    <uses-permission android:name="REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />-->
 </manifest>

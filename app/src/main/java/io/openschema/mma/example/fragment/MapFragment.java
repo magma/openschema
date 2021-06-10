@@ -51,9 +51,9 @@ import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
-import io.openschema.mma.example.MainActivity;
+import io.openschema.mma.example.activity.MainActivity;
 import io.openschema.mma.example.R;
-import io.openschema.mma.example.Utils;
+import io.openschema.mma.example.util.FormattingUtils;
 import io.openschema.mma.example.databinding.FragmentMapBinding;
 import io.openschema.mma.example.view.ConnectionReportDialog;
 import io.openschema.mma.metrics.collectors.ConnectionReport;
@@ -151,8 +151,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         //Each data point is split by a newline to be able to process it later on the custom info window
         StringBuilder snippetBuilder = new StringBuilder();
         snippetBuilder.append(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(currentEntity.mTimeStamp)));
-        snippetBuilder.append("\n").append("Duration: ").append(Utils.humanReadableTime(currentEntity.mDuration));
-        snippetBuilder.append("\n").append("Usage: ").append(Utils.humanReadableByteCountSI(currentEntity.mUsage));
+        snippetBuilder.append("\n").append("Duration: ").append(FormattingUtils.humanReadableTime(currentEntity.mDuration));
+        snippetBuilder.append("\n").append("Usage: ").append(FormattingUtils.humanReadableByteCountSI(currentEntity.mUsage));
         if (currentEntity.mIsReported) {
             snippetBuilder.append("\n").append("You reported this connection.");
         }

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example;
+package io.openschema.mma.example.activity;
 
 import android.os.Bundle;
 
@@ -21,11 +21,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.util.Pair;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import io.openschema.mma.MobileMetricsAgent;
+import io.openschema.mma.example.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,11 +38,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        NavController navController = Navigation.findNavController(this, R.id.main_content);
 
         //Setup bottom navigation
-        NavController navController = Navigation.findNavController(this, R.id.main_content);
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.main_bottom_navigation_bar);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
+
+        //Setup tool bar (top app bar)
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_main, R.id.nav_map).build();
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
 
         //Build OpenSchema agent with required data
         mMobileMetricsAgent = new MobileMetricsAgent.Builder()
@@ -57,11 +65,11 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         //Initialize agent
-        try {
-            mMobileMetricsAgent.init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            mMobileMetricsAgent.init();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void pushMetric(String metricName, List<Pair<String, String>> metricValues) {

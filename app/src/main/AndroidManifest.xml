@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2020, The Magma Authors
   ~ All rights reserved.
   ~
@@ -13,8 +12,10 @@
   ~ limitations under the License.
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.openschema.mma.example">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.openschema.mma.example"
+    >
 
     <application
         android:allowBackup="true"
@@ -22,14 +23,24 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        android:theme="@style/AppTheme"
+        >
+
+        <activity
+            android:name=".activity.OnboardingActivity"
+            android:screenOrientation="portrait"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activity.MainActivity"
+            android:screenOrientation="portrait"
+            />
 
         <!--TODO: Look for any useful additional attributes for the service-->
         <service android:name="io.openschema.mma.MobileMetricsService" />
@@ -38,7 +49,8 @@
         <!--Configure the google_maps_key value as a string resource-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+            android:value="@string/google_maps_key"
+            />
     </application>
 
 </manifest>

@@ -18,50 +18,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.MainActivity"
+    tools:context=".activity.OnboardingActivity"
     >
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        >
-
-        <com.google.android.material.appbar.MaterialToolbar
-            style="@style/Widget.MaterialComponents.Toolbar.Primary"
-            android:id="@+id/main_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-
     <fragment
-        android:id="@+id/main_content"
         android:name="androidx.navigation.fragment.NavHostFragment"
+        app:navGraph="@navigation/nav_graph_onboarding"
+        app:defaultNavHost="true"
+        android:id="@+id/onboarding_content"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipChildren="false"
         android:clipToPadding="false"
-        app:defaultNavHost="true"
-        app:layout_constraintBottom_toTopOf="@+id/main_bottom_navigation_bar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/main_toolbar"
-        app:navGraph="@navigation/nav_graph_main"
-        />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/main_bottom_navigation_bar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/nav_bottom_items"
+        app:layout_constraintTop_toTopOf="parent"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
