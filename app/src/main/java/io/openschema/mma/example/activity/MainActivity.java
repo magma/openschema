@@ -65,11 +65,11 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         //Initialize agent
-//        try {
-//            mMobileMetricsAgent.init();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            mMobileMetricsAgent.init();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void pushMetric(String metricName, List<Pair<String, String>> metricValues) {

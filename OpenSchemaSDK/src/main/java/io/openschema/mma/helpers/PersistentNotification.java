@@ -60,7 +60,7 @@ public class PersistentNotification {
     private void initNotificationChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Persistent Service";
-            String description = "Active when BoostAgent is running";
+            String description = "Active when application is running";
             int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel channel = new NotificationChannel(SERVICE_NOTIFICATION_CHANNEL_ID, name, importance);
             channel.setDescription(description);

@@ -14,6 +14,7 @@
 
 package io.openschema.mma.example.activity;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,7 +37,8 @@ public class OnboardingActivity extends AppCompatActivity {
 
         int targetDestination = -1;
 
-        if (!PermissionManager.isLocationPermissionGranted(this)) {
+        if (!PermissionManager.isLocationPermissionGranted(this) ||
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !PermissionManager.isBackgroundLocationPermissionGranted(this)) {
             targetDestination = R.id.action_to_location_permission;
         }
 

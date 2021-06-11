@@ -127,12 +127,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             return;
         }
 
+        int processedCount=0;
+
         //Iterate through all network connections
         for (int i = 0; i < networkConnectionsEntities.size(); i++) {
             NetworkConnectionsEntity currentEntity = networkConnectionsEntities.get(i);
 
             //Use a hashmap to cache connections that have been processed in previous observer events
             if (mSeenEntitiesMap.get(currentEntity.getCompoundId()) == null) {
+                processedCount++;
                 createMarker(currentEntity);
             }
 
@@ -141,6 +144,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentEntity.mLatitude, currentEntity.mLongitude), 16));
             }
         }
+
+        Log.d(TAG, "UI: Added " + processedCount + " new markers to the map");
     }
 
     //Create values to configure the data contained in each marker

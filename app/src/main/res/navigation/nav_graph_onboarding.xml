@@ -24,9 +24,12 @@
         android:name="io.openschema.mma.example.fragment.UsagePermissionFragment"
         android:label="Usage Permission"
         />
+    <!--TODO: add transition animation-->
     <action
         android:id="@+id/action_to_usage_permission"
         app:destination="@id/nav_usage_permission"
+        app:popUpTo="@id/nav_graph_main"
+        app:popUpToInclusive="true"
         />
 
     <fragment
@@ -34,9 +37,12 @@
         android:name="io.openschema.mma.example.fragment.PhonePermissionFragment"
         android:label="Phone Permission"
         />
+    <!--TODO: add transition animation-->
     <action
         android:id="@+id/action_to_phone_permission"
         app:destination="@id/nav_phone_permission"
+        app:popUpTo="@id/nav_graph_main"
+        app:popUpToInclusive="true"
         />
 
     <fragment
@@ -44,9 +50,12 @@
         android:name="io.openschema.mma.example.fragment.LocationPermissionFragment"
         android:label="Location Permission"
         />
+    <!--TODO: add transition animation-->
     <action
         android:id="@+id/action_to_location_permission"
         app:destination="@id/nav_location_permission"
+        app:popUpTo="@id/nav_graph_main"
+        app:popUpToInclusive="true"
         />
 
     <activity
