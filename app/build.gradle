@@ -13,6 +13,8 @@
  */
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     compileSdkVersion 30
@@ -66,6 +68,7 @@ dependencies {
     //Material Design components
     implementation 'com.google.android.material:material:1.3.0'
 
-    //Google Play Services
+    //Google Services
     implementation 'com.google.android.gms:play-services-maps:17.0.1'
+    implementation 'com.google.firebase:firebase-crashlytics:18.0.1'
 }
