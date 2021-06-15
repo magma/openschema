@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020, The Magma Authors
+  ~ All rights reserved.
+  ~
+  ~ This source code is licensed under the BSD-style license found in the
+  ~ LICENSE file in the root directory of this source tree.
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="currentWindowTxt"
+            type="String"
+            />
+
+        <variable
+            name="isDataAvailable"
+            type="Boolean"
+            />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <ImageButton
+            android:id="@+id/usage_window_left"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="8dp"
+            android:background="?android:selectableItemBackground"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_chevron_left"
+            app:layout_constraintBottom_toTopOf="@id/usage_tonnage_chart"
+            app:layout_constraintEnd_toStartOf="@id/usage_window_title"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            />
+
+        <ImageButton
+            android:id="@+id/usage_window_right"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="8dp"
+            android:background="?android:selectableItemBackground"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_chevron_right"
+            app:layout_constraintBottom_toBottomOf="@id/usage_window_left"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/usage_window_title"
+            app:layout_constraintTop_toTopOf="@id/usage_window_left"
+            />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/usage_window_title"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@{currentWindowTxt}"
+            app:layout_constraintBottom_toBottomOf="@id/usage_window_left"
+            app:layout_constraintEnd_toStartOf="@id/usage_window_right"
+            app:layout_constraintStart_toEndOf="@id/usage_window_left"
+            app:layout_constraintTop_toTopOf="@id/usage_window_left"
+            tools:text="Today"
+            />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/usage_empty_data_txt"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:text="There is no data available yet."
+            android:visibility="@{isDataAvailable ? View.GONE  : View.VISIBLE}"
+            app:layout_constraintBottom_toBottomOf="@id/usage_tonnage_chart"
+            app:layout_constraintEnd_toEndOf="@id/usage_tonnage_chart"
+            app:layout_constraintStart_toStartOf="@id/usage_tonnage_chart"
+            app:layout_constraintTop_toTopOf="@id/usage_tonnage_chart"
+            tools:visibility="gone"
+            />
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/usage_tonnage_chart"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="@{isDataAvailable ? View.VISIBLE  : View.INVISIBLE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/usage_window_left"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

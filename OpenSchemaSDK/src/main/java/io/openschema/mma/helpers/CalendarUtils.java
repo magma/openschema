@@ -18,6 +18,14 @@ import java.util.Calendar;
 
 //TODO: javadocs
 public class CalendarUtils {
+    public static Calendar getCurrentHourCalendar() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal;
+    }
+
     public static Calendar getCurrentDayCalendar() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -27,8 +35,10 @@ public class CalendarUtils {
         return cal;
     }
 
-    public static Calendar getCurrentHourCalendar() {
+    public static Calendar getCurrentMonthCalendar() {
         Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DATE, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);

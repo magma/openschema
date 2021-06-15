@@ -14,6 +14,7 @@
 
 package io.openschema.mma.example.util;
 
+import java.sql.Timestamp;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.concurrent.TimeUnit;
@@ -33,26 +34,31 @@ public class FormattingUtils {
         return String.format("%.1f %cB", bytes / 1000.0, ci.current());
     }
 
-    //Converts bytes to a SI formatted String
-    public static String humanReadableTime(long milliseconds) {
-        if (milliseconds < 1000) {
-            return String.format("%02dms", milliseconds);
-        } else if (milliseconds < 1000 * 10) { //Less than 10 seconds
-            return String.format("%2ds", TimeUnit.MILLISECONDS.toSeconds(milliseconds));
-        } else if (milliseconds < 1000 * 60) {
-            return String.format("%02ds", TimeUnit.MILLISECONDS.toSeconds(milliseconds));
-        } else if (milliseconds < 1000 * 60 * 60) {
+    //Converts time duration to a HH:MM:SS formatted String
+    public static String humanReadableTime(long durationMillis) {
+        if (durationMillis < 1000) {
+            return String.format("%02dms", durationMillis);
+        } else if (durationMillis < 1000 * 10) { //Less than 10 seconds
+            return String.format("%2ds", TimeUnit.MILLISECONDS.toSeconds(durationMillis));
+        } else if (durationMillis < 1000 * 60) {
+            return String.format("%02ds", TimeUnit.MILLISECONDS.toSeconds(durationMillis));
+        } else if (durationMillis < 1000 * 60 * 60) {
             return String.format("%02dm:%02ds",
-                    TimeUnit.MILLISECONDS.toMinutes(milliseconds),
-                    TimeUnit.MILLISECONDS.toSeconds(milliseconds) -
-                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds)));
+                    TimeUnit.MILLISECONDS.toMinutes(durationMillis),
+                    TimeUnit.MILLISECONDS.toSeconds(durationMillis) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(durationMillis)));
         } else {
             return String.format("%02dh:%02dm:%02ds",
-                    TimeUnit.MILLISECONDS.toHours(milliseconds),
-                    TimeUnit.MILLISECONDS.toMinutes(milliseconds) -
-                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(milliseconds)),
-                    TimeUnit.MILLISECONDS.toSeconds(milliseconds) -
-                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds)));
+                    TimeUnit.MILLISECONDS.toHours(durationMillis),
+                    TimeUnit.MILLISECONDS.toMinutes(durationMillis) -
+                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(durationMillis)),
+                    TimeUnit.MILLISECONDS.toSeconds(durationMillis) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(durationMillis)));
         }
+    }
+
+    //Converts a timestamp to a date formatted String
+    public static String humanReadableDate(long timestamp) {
+        return new Timestamp(timestamp).toString();
     }
 }

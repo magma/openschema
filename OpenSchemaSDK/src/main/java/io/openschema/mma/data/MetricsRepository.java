@@ -27,10 +27,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import io.openschema.mma.data.dao.MetricsDAO;
 import io.openschema.mma.data.dao.NetworkConnectionsDAO;
+import io.openschema.mma.data.dao.NetworkUsageDAO;
 import io.openschema.mma.data.database.MMADatabase;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.MetricsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
+import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 import io.openschema.mma.metrics.MetricsWorker;
 import io.openschema.mma.networking.BackendApi;
@@ -71,6 +73,7 @@ public class MetricsRepository {
      */
     private final MetricsDAO mMetricsDAO;
     private final NetworkConnectionsDAO mNetworkConnectionsDAO;
+    private final NetworkUsageDAO mNetworkUsageDAO;
 
     private MetricsRepository(Context appContext) {
         MMADatabase db = MMADatabase.getDatabase(appContext);
@@ -78,6 +81,7 @@ public class MetricsRepository {
 
         //TODO: disable with flag from MMA builder
         mNetworkConnectionsDAO = db.networkConnectionsDAO();
+        mNetworkUsageDAO = db.networkUsageDAO();
 
         mExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
@@ -121,6 +125,15 @@ public class MetricsRepository {
         }
     }
 
+    //Local metrics for UI
+    public void writeNetworkSessionSegment(NetworkUsageEntity entity) {
+        if (entity != null) {
+            //TODO: disable with flag from MMA builder
+            Log.d(TAG, "MMA: Writing network usage session to DB");
+            mExecutor.execute(() -> mNetworkUsageDAO.insert(entity));
+        }
+    }
+
     //TODO: only expose UI related calls and hide the rest?
     public LiveData<List<NetworkConnectionsEntity>> getAllNetworkConnections() {
         return new NetworkConnectionsLiveData(mNetworkConnectionsDAO.getAllWifiConnections(), mNetworkConnectionsDAO.getAllCellularConnections());
@@ -135,6 +148,10 @@ public class MetricsRepository {
                 mExecutor.execute(() -> mNetworkConnectionsDAO.setCellularReported(entity.mId));
                 break;
         }
+    }
+
+    public LiveData<List<NetworkUsageEntity>> getUsageEntities(long startTime, long endTime) {
+        return mNetworkUsageDAO.getUsageEntities(startTime, endTime);
     }
 
     //MediatorLiveData used to merge both Wifi and Cellular connections into a single List stream

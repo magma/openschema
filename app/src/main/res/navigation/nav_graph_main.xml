@@ -16,12 +16,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph_main"
-    app:startDestination="@id/nav_main"
+    app:startDestination="@id/nav_usage"
     >
 
     <fragment
-        android:id="@+id/nav_main"
-        android:name="io.openschema.mma.example.fragment.MainFragment"
+        android:id="@+id/nav_usage"
+        android:name="io.openschema.mma.example.fragment.UsageFragment"
         android:label="@string/app_name"
         />
 

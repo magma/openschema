@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
         //Setup tool bar (top app bar)
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_main, R.id.nav_map).build();
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_usage, R.id.nav_map).build();
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
 

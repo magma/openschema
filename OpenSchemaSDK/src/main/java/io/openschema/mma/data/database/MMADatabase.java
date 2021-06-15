@@ -24,8 +24,10 @@ import io.openschema.mma.data.dao.MetricsDAO;
 import io.openschema.mma.data.MetricsTypeConverter;
 import io.openschema.mma.data.TimestampTypeConverter;
 import io.openschema.mma.data.dao.NetworkConnectionsDAO;
+import io.openschema.mma.data.dao.NetworkUsageDAO;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.MetricsEntity;
+import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 
 /**
@@ -35,7 +37,8 @@ import io.openschema.mma.data.entity.WifiConnectionsEntity;
         entities = {
                 MetricsEntity.class,
                 WifiConnectionsEntity.class,
-                CellularConnectionsEntity.class
+                CellularConnectionsEntity.class,
+                NetworkUsageEntity.class
         },
         version = 1
 )
@@ -46,6 +49,7 @@ import io.openschema.mma.data.entity.WifiConnectionsEntity;
 public abstract class MMADatabase extends RoomDatabase {
     public abstract MetricsDAO metricsDAO();
     public abstract NetworkConnectionsDAO networkConnectionsDAO();
+    public abstract NetworkUsageDAO networkUsageDAO();
 
     private static volatile MMADatabase _instance;
 

@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
+import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.mma.helpers.UsageRetriever;
 
 //TODO: javadocs
@@ -166,14 +167,6 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         }
     }
 
-    //Save connection information into an optional local table to be used in UI
-    protected void storeNetworkConnection() {
-        //TODO: disable with flag from MMA builder? avoid extra calculations & storage
-        if (mNetworkConnectionEntityAdapter != null) {
-            mMetricsRepository.writeNetworkConnection(mNetworkConnectionEntityAdapter.getEntity());
-        }
-    }
-
     //TODO: come up with a better term for "clock hours"
     //Calculate the amount of hour segments included in our session. The segments are based on clock hours.
     // (e.g. A session that ocurred at 4:37pm - 5:22pm would include 2 hour iterations, 4:00pm - 5:00pm and 5:00pm - 6:00pm.)
@@ -228,7 +221,22 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         //TODO: Add debugging flag to enable detailed metrics
         Log.d(TAG, "MMA: Collected metrics:\n" + currentSegmentMetrics.toString());
         //Collect the metric locally to be pushed later.
+        storeSessionSegment(sessionDuration, rxBytes + txBytes, segmentStart.getTimeInMillis());
         mListener.onMetricCollected(METRIC_NAME, currentSegmentMetrics);
+    }
+
+    //Save connection information into an optional local table to be used in UI
+    protected void storeNetworkConnection() {
+        //TODO: disable with flag from MMA builder? avoid extra calculations & storage
+        if (mNetworkConnectionEntityAdapter != null) {
+            mMetricsRepository.writeNetworkConnection(mNetworkConnectionEntityAdapter.getEntity());
+        }
+    }
+
+    //Save usage information into an optional local table to be used in UI
+    protected void storeSessionSegment(long duration, long usage, long timestamp) {
+        //TODO: disable with flag from MMA builder? avoid extra calculations & storage
+        mMetricsRepository.writeNetworkSessionSegment(new NetworkUsageEntity(mTransportType, duration, usage, timestamp));
     }
 
     //Starts tracking the network's changes

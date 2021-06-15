@@ -40,6 +40,8 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
@@ -69,11 +71,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private HashMap<String, NetworkConnectionsEntity> mSeenEntitiesMap = new HashMap<>();
     private Marker mCurrentMarker = null;
 
+    private int mWifiHue, mCellularHue;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mBinding = FragmentMapBinding.inflate(inflater, container, false);
+        mMetricsRepository = MetricsRepository.getRepository(requireContext().getApplicationContext());
         return mBinding.getRoot();
     }
 
@@ -82,6 +87,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         super.onViewCreated(view, savedInstanceState);
 
         mBinding.mapReportConnectionBtn.setOnClickListener(v -> onConnectionReportOpened());
+
+        float[] hsl = new float[3];
+        ColorUtils.colorToHSL(ContextCompat.getColor(requireContext(), R.color.wifiColor), hsl);
+        mWifiHue = (int) hsl[0];
+        ColorUtils.colorToHSL(ContextCompat.getColor(requireContext(), R.color.cellularColor), hsl);
+        mCellularHue = (int) hsl[0];
+
 
         //Start loading map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(mBinding.mapContainer.getId());
@@ -107,7 +119,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         //TODO: persist state in cache with a viewmodel?
         //Setup observer for network connections from SDK
-        mMetricsRepository = MetricsRepository.getRepository(requireContext().getApplicationContext());
         mMetricsRepository.getAllNetworkConnections().observe(getViewLifecycleOwner(), networkConnectionsEntities -> {
             if (networkConnectionsEntities != null) {
                 onNetworkConnectionsReceived(networkConnectionsEntities);
@@ -127,7 +138,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             return;
         }
 
-        int processedCount=0;
+        int processedCount = 0;
 
         //Iterate through all network connections
         for (int i = 0; i < networkConnectionsEntities.size(); i++) {
@@ -151,7 +162,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     //Create values to configure the data contained in each marker
     private void createMarker(NetworkConnectionsEntity currentEntity) {
         LatLng currentLatLng = new LatLng(currentEntity.mLatitude, currentEntity.mLongitude);
-        float currentIconHue = currentEntity.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? BitmapDescriptorFactory.HUE_AZURE : BitmapDescriptorFactory.HUE_ORANGE;
+        float currentIconHue = currentEntity.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? mWifiHue : mCellularHue;
 
         //Each data point is split by a newline to be able to process it later on the custom info window
         StringBuilder snippetBuilder = new StringBuilder();
