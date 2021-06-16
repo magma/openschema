@@ -16,6 +16,7 @@ package io.openschema.mma.data.dao;
 
 import java.util.List;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -31,7 +32,10 @@ public interface MetricsDAO {
      * Returns a list of all metrics saved in the database.
      */
     @Query("SELECT * FROM metrics")
-    List<MetricsEntity> getAll();
+    List<MetricsEntity> getAllSync();
+
+    @Query("SELECT * FROM metrics")
+    LiveData<List<MetricsEntity>> getAll();
 
     /**
      * Inserts a metric in the database.

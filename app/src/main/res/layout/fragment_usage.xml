@@ -87,9 +87,10 @@
             tools:text="Today"
             />
 
+        <!--TODO: Add a border so the empty state is more obvious-->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/usage_empty_data_txt"
-            style="@style/TextAppearance.MaterialComponents.Headline6"
+            style="@style/TextAppearance.MaterialComponents.Body1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -101,7 +102,7 @@
             app:layout_constraintEnd_toEndOf="@id/usage_tonnage_chart"
             app:layout_constraintStart_toStartOf="@id/usage_tonnage_chart"
             app:layout_constraintTop_toTopOf="@id/usage_tonnage_chart"
-            tools:visibility="gone"
+            tools:visibility="visible"
             />
 
         <com.github.mikephil.charting.charts.PieChart

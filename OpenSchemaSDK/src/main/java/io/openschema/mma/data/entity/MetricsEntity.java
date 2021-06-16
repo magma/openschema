@@ -19,6 +19,7 @@ import java.util.List;
 import androidx.core.util.Pair;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import io.openschema.mma.data.pojo.Timestamp;
 
@@ -33,29 +34,43 @@ public class MetricsEntity {
      */
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    public int mId = 0;
+    private int id = 0;
 
     /**
      * Name used by the metric.
      */
     @ColumnInfo(name = "metric_name")
-    public String mMetricName;
+    private String metricName;
 
     /**
      * List of collected metrics with the <name, value> structure.
      */
     @ColumnInfo(name = "metrics_list")
-    public List<Pair<String, String>> mMetricsList;
+    private List<Pair<String, String>> metricsList;
 
     /**
      * Timestamp to attach to the metric.
      */
     @ColumnInfo(name = "timestamp")
-    public Timestamp mTimeStamp;
+    private Timestamp timestamp;
 
-    public MetricsEntity(String metricName, List<Pair<String, String>> metricsList, Timestamp timeStamp) {
-        mMetricName = metricName;
-        mMetricsList = metricsList;
-        mTimeStamp = timeStamp;
+    @Ignore
+    public MetricsEntity(String metricName, List<Pair<String, String>> metricsList, Timestamp timestamp) {
+        this(0, metricName, metricsList, timestamp);
     }
+
+    /**
+     * Constructor with all fields. Required for Android Room.
+     */
+    public MetricsEntity(int id, String metricName, List<Pair<String, String>> metricsList, Timestamp timestamp) {
+        this.id = id;
+        this.metricName = metricName;
+        this.metricsList = metricsList;
+        this.timestamp = timestamp;
+    }
+
+    public int getId() { return id;}
+    public String getMetricName() {return metricName;}
+    public List<Pair<String, String>> getMetricsList() {return metricsList;}
+    public Timestamp getTimestamp() { return timestamp;}
 }

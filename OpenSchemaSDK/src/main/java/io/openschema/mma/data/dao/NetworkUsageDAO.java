@@ -37,6 +37,6 @@ public interface NetworkUsageDAO {
     @Query("SELECT * from network_usage " +
                    "WHERE timestamp >= :startTime " +
                    "AND timestamp < :endTime " +
-                   "AND transport_type==:transportType")
+                   "AND transport_type ==:transportType")
     LiveData<List<NetworkUsageEntity>> getUsageEntities(long startTime, long endTime, int transportType);
 }

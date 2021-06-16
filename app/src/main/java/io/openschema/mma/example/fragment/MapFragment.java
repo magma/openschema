@@ -152,7 +152,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
             //Center camera around last marker and zoom to street level
             if (i == networkConnectionsEntities.size() - 1) {
-                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentEntity.mLatitude, currentEntity.mLongitude), 16));
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentEntity.getLatitude(), currentEntity.getLongitude()), 16));
             }
         }
 
@@ -161,15 +161,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     //Create values to configure the data contained in each marker
     private void createMarker(NetworkConnectionsEntity currentEntity) {
-        LatLng currentLatLng = new LatLng(currentEntity.mLatitude, currentEntity.mLongitude);
-        float currentIconHue = currentEntity.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? mWifiHue : mCellularHue;
+        LatLng currentLatLng = new LatLng(currentEntity.getLatitude(), currentEntity.getLongitude());
+        float currentIconHue = currentEntity.getTransportType() == NetworkCapabilities.TRANSPORT_WIFI ? mWifiHue : mCellularHue;
 
         //Each data point is split by a newline to be able to process it later on the custom info window
         StringBuilder snippetBuilder = new StringBuilder();
-        snippetBuilder.append(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(currentEntity.mTimeStamp)));
-        snippetBuilder.append("\n").append("Duration: ").append(FormattingUtils.humanReadableTime(currentEntity.mDuration));
-        snippetBuilder.append("\n").append("Usage: ").append(FormattingUtils.humanReadableByteCountSI(currentEntity.mUsage));
-        if (currentEntity.mIsReported) {
+        snippetBuilder.append(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(currentEntity.getTimestamp())));
+        snippetBuilder.append("\n").append("Duration: ").append(FormattingUtils.humanReadableTime(currentEntity.getDuration()));
+        snippetBuilder.append("\n").append("Usage: ").append(FormattingUtils.humanReadableByteCountSI(currentEntity.getUsage()));
+        if (currentEntity.getIsReported()) {
             snippetBuilder.append("\n").append("You reported this connection.");
         }
 
@@ -177,12 +177,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         String currentTitle;
         if (currentEntity instanceof WifiConnectionsEntity) {
             WifiConnectionsEntity newEntity = (WifiConnectionsEntity) currentEntity;
-            currentTitle = String.format("Wi-Fi: %s", newEntity.mSSID);
+            currentTitle = String.format("Wi-Fi: %s", newEntity.getSSID());
         } else if (currentEntity instanceof CellularConnectionsEntity) {
             CellularConnectionsEntity newEntity = (CellularConnectionsEntity) currentEntity;
-            currentTitle = String.format("Cellular (%s): %s", newEntity.mNetworkType, newEntity.mCellIdentity);
+            currentTitle = String.format("Cellular (%s): %s", newEntity.getNetworkType(), newEntity.getCellIdentity());
         } else {
-            currentTitle = currentEntity.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi Connection" : "Cellular Connection";
+            currentTitle = currentEntity.getTransportType() == NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi Connection" : "Cellular Connection";
         }
 
         //Add the Marker to the map
@@ -198,7 +198,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             newMarker.setTag(currentEntity.getCompoundId());
             mSeenEntitiesMap.put(currentEntity.getCompoundId(), currentEntity);
         } else {
-            Log.e(TAG, "UI: There was an error adding a marker to connection " + currentEntity.mId);
+            Log.e(TAG, "UI: There was an error adding a marker to connection " + currentEntity.getId());
         }
     }
 
@@ -208,7 +208,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         NetworkConnectionsEntity entity = mSeenEntitiesMap.get(marker.getTag());
 
         //Check that the marker hasn't been reported already and show the reporting button.
-        if (entity != null && !entity.mIsReported) {
+        if (entity != null && !entity.getIsReported()) {
             mBinding.mapReportConnection.setVisibility(View.VISIBLE);
             mCurrentMarker = marker;
         }

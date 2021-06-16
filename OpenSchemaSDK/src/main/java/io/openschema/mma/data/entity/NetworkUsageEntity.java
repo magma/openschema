@@ -16,6 +16,7 @@ package io.openschema.mma.data.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /**
@@ -29,26 +30,41 @@ public class NetworkUsageEntity {
      */
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    public int mId = 0;
+    private int id = 0;
 
     @ColumnInfo(name = "transport_type")
-    public int mTransportType;
+    private int transportType;
 
     //Stored in milliseconds
     @ColumnInfo(name = "duration")
-    public long mDuration;
+    private long duration;
 
     //Stored in bytes
     @ColumnInfo(name = "usage")
-    public long mUsage;
+    private long usage;
 
     @ColumnInfo(name = "timestamp")
-    public long mTimeStamp;
+    private long timestamp;
 
-    public NetworkUsageEntity(int transportType, long duration, long usage, long timeStamp) {
-        mTransportType = transportType;
-        mDuration = duration;
-        mUsage = usage;
-        mTimeStamp = timeStamp;
+    @Ignore
+    public NetworkUsageEntity(int transportType, long duration, long usage, long timestamp) {
+        this(0, transportType, duration, usage, timestamp);
     }
+
+    /**
+     * Constructor with all fields. Required for Android Room.
+     */
+    public NetworkUsageEntity(int id, int transportType, long duration, long usage, long timestamp) {
+        this.id = id;
+        this.transportType = transportType;
+        this.duration = duration;
+        this.usage = usage;
+        this.timestamp = timestamp;
+    }
+
+    public int getId() { return id;}
+    public int getTransportType() {return transportType;}
+    public long getDuration() {return duration;}
+    public long getUsage() {return usage;}
+    public long getTimestamp() {return timestamp;}
 }

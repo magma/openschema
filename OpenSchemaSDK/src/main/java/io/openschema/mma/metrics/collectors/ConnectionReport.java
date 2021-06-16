@@ -58,21 +58,21 @@ public class ConnectionReport extends BaseMetrics {
 
         //Extract information shared by both network types
         metricsList.add(new Pair<>(METRIC_REPORT_DESCRIPTION, mReportDescription));
-        metricsList.add(new Pair<>(LocationMetrics.METRIC_LATITUDE, Double.toString(mConnectionEntity.mLatitude)));
-        metricsList.add(new Pair<>(LocationMetrics.METRIC_LONGITUDE, Double.toString(mConnectionEntity.mLongitude)));
-        metricsList.add(new Pair<>(NetworkSessionMetrics.METRIC_SESSION_START_TIME, Long.toString(mConnectionEntity.mTimeStamp)));
+        metricsList.add(new Pair<>(LocationMetrics.METRIC_LATITUDE, Double.toString(mConnectionEntity.getLatitude())));
+        metricsList.add(new Pair<>(LocationMetrics.METRIC_LONGITUDE, Double.toString(mConnectionEntity.getLongitude())));
+        metricsList.add(new Pair<>(NetworkSessionMetrics.METRIC_SESSION_START_TIME, Long.toString(mConnectionEntity.getTimestamp())));
 
         //Extract network specific information
         if (mConnectionEntity instanceof WifiConnectionsEntity) {
             WifiConnectionsEntity entity = (WifiConnectionsEntity) mConnectionEntity;
             metricsList.add(new Pair<>(METRIC_TRANSPORT_TYPE, TRANSPORT_WIFI));
-            metricsList.add(new Pair<>(WifiNetworkMetrics.METRIC_SSID, entity.mSSID));
-            metricsList.add(new Pair<>(WifiNetworkMetrics.METRIC_BSSID, entity.mBSSID));
+            metricsList.add(new Pair<>(WifiNetworkMetrics.METRIC_SSID, entity.getSSID()));
+            metricsList.add(new Pair<>(WifiNetworkMetrics.METRIC_BSSID, entity.getBSSID()));
         } else if (mConnectionEntity instanceof CellularConnectionsEntity) {
             CellularConnectionsEntity entity = (CellularConnectionsEntity) mConnectionEntity;
             metricsList.add(new Pair<>(METRIC_TRANSPORT_TYPE, TRANSPORT_CELLULAR));
-            metricsList.add(new Pair<>(CellularNetworkMetrics.METRIC_NETWORK_TYPE, entity.mNetworkType));
-            metricsList.add(new Pair<>(CellularNetworkMetrics.METRIC_CELL_ID, Long.toString(entity.mCellIdentity)));
+            metricsList.add(new Pair<>(CellularNetworkMetrics.METRIC_NETWORK_TYPE, entity.getNetworkType()));
+            metricsList.add(new Pair<>(CellularNetworkMetrics.METRIC_CELL_ID, Long.toString(entity.getCellIdentity())));
         }
 
         Log.d(TAG, "MMA: Collected report:\n" + metricsList.toString());

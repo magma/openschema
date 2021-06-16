@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import io.openschema.mma.data.dao.MetricsDAO;
@@ -94,9 +95,14 @@ public class MetricsRepository {
     }
 
     /**
-     * Retrieves a list of all currently queued metrics.
+     * Retrieves a list of all currently queued metrics. This query is made synchronously so it can't be called from the main thread.
      */
-    public List<MetricsEntity> getEnqueuedMetrics() {
+    @WorkerThread
+    public List<MetricsEntity> getEnqueuedMetricsSync() {
+        return mMetricsDAO.getAllSync();
+    }
+
+    public LiveData<List<MetricsEntity>> getEnqueuedMetrics() {
         return mMetricsDAO.getAll();
     }
 
@@ -140,12 +146,12 @@ public class MetricsRepository {
     }
 
     public void flagNetworkConnectionReported(NetworkConnectionsEntity entity) {
-        switch (entity.mTransportType) {
+        switch (entity.getTransportType()) {
             case NetworkCapabilities.TRANSPORT_WIFI:
-                mExecutor.execute(() -> mNetworkConnectionsDAO.setWifiReported(entity.mId));
+                mExecutor.execute(() -> mNetworkConnectionsDAO.setWifiReported(entity.getId()));
                 break;
             case NetworkCapabilities.TRANSPORT_CELLULAR:
-                mExecutor.execute(() -> mNetworkConnectionsDAO.setCellularReported(entity.mId));
+                mExecutor.execute(() -> mNetworkConnectionsDAO.setCellularReported(entity.getId()));
                 break;
         }
     }
@@ -176,7 +182,7 @@ public class MetricsRepository {
             List<NetworkConnectionsEntity> newList = new ArrayList<>();
             if (mLastWifiList != null) newList.addAll(mLastWifiList);
             if (mLastCellularList != null) newList.addAll(mLastCellularList);
-            newList.sort((o1, o2) -> Long.compare(o1.mTimeStamp, o2.mTimeStamp));
+            newList.sort((o1, o2) -> Long.compare(o1.getTimestamp(), o2.getTimestamp()));
             setValue(newList);
         }
     }

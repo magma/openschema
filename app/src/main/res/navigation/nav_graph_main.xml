@@ -36,6 +36,12 @@
             />
     </fragment>
 
+    <fragment
+        android:id="@+id/nav_metric_logs"
+        android:name="io.openschema.mma.example.fragment.MetricLogsFragment"
+        android:label="@string/app_name"
+        />
+
     <dialog
         android:id="@+id/dialog_connection_report"
         android:name="io.openschema.mma.example.view.ConnectionReportDialog"

@@ -16,7 +16,7 @@ package io.openschema.mma.data.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import io.openschema.mma.data.pojo.Timestamp;
+import androidx.room.Ignore;
 
 /**
  * Entity class used by Room to store network connections locally
@@ -26,14 +26,22 @@ import io.openschema.mma.data.pojo.Timestamp;
 public class CellularConnectionsEntity extends NetworkConnectionsEntity {
 
     @ColumnInfo(name = "networkType")
-    public String mNetworkType;
+    private String networkType;
 
     @ColumnInfo(name = "cellIdentity")
-    public long mCellIdentity;
+    private long cellIdentity;
 
-    public CellularConnectionsEntity(int transportType, String networkType, long cellIdentity, long duration, long usage, double longitude, double latitude, long timeStamp) {
-        super(transportType, duration, usage, longitude, latitude, timeStamp);
-        mNetworkType = networkType;
-        mCellIdentity = cellIdentity;
+    @Ignore
+    public CellularConnectionsEntity(int transportType, String networkType, long cellIdentity, long duration, long usage, double longitude, double latitude, long timestamp) {
+        this(0, transportType, networkType, cellIdentity, duration, usage, longitude, latitude, timestamp, false);
     }
+
+    public CellularConnectionsEntity(int id, int transportType, String networkType, long cellIdentity, long duration, long usage, double longitude, double latitude, long timestamp, boolean reported) {
+        super(id, transportType, duration, usage, longitude, latitude, timestamp, reported);
+        this.networkType = networkType;
+        this.cellIdentity = cellIdentity;
+    }
+
+    public String getNetworkType() { return networkType;}
+    public long getCellIdentity() {return cellIdentity;}
 }

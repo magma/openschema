@@ -68,7 +68,7 @@ public class MetricsWorker extends Worker {
         mMetricsRepository = MetricsRepository.getRepository(context.getApplicationContext());
 
         //Load queue from repository
-        mMetricsList = mMetricsRepository.getEnqueuedMetrics();
+        mMetricsList = mMetricsRepository.getEnqueuedMetricsSync();
 
         //Identity must have been previously generated during initialization
         try {
@@ -106,13 +106,13 @@ public class MetricsWorker extends Worker {
         try {
             Log.d(TAG, "MMA: Pushing " + mMetricsList.size() + " metrics...");
             for (MetricsEntity currentMetric : mMetricsList) {
-                Response<BaseResponse> res = mBackendApi.pushMetric(new MetricsPushRequest(currentMetric.mMetricName, currentMetric.mMetricsList, mIdentity.getUUID(), currentMetric.mTimeStamp))
+                Response<BaseResponse> res = mBackendApi.pushMetric(new MetricsPushRequest(currentMetric.getMetricName(), currentMetric.getMetricsList(), mIdentity.getUUID(), currentMetric.getTimestamp()))
                         .execute();
 
                 if (res.isSuccessful()) {
                     Log.d(TAG, "MMA: onResponse success: " + res.body().getMessage());
                 } else {
-                    Log.d(TAG, "MMA: Failed to push metric:" + currentMetric.mMetricName);
+                    Log.d(TAG, "MMA: Failed to push metric:" + currentMetric.getMetricName());
                     String errorMessage = BaseResponse.getErrorMessage(res.errorBody());
                     Log.d(TAG, "MMA: onResponse failure (" + res.code() + "): " + errorMessage);
                 }

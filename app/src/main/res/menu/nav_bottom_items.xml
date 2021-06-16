@@ -15,11 +15,15 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/nav_usage"
-        android:title="Main"
+        android:title="Usage"
         android:icon="@drawable/persistent_notification_icon"
         />
     <item android:id="@+id/nav_map"
         android:title="Map"
+        android:icon="@drawable/persistent_notification_icon"
+        />
+    <item android:id="@+id/nav_metric_logs"
+        android:title="Metric Logs"
         android:icon="@drawable/persistent_notification_icon"
         />
 </menu>

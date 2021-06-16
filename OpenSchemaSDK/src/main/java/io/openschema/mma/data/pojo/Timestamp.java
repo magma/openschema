@@ -18,6 +18,8 @@ import android.util.Log;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.TimeZone;
 
 //TODO: javadocs
@@ -34,6 +36,10 @@ public class Timestamp {
 
     public long getTimestampMillis() {return mTimestamp;}
 
+    @Override
+    public String toString() {
+        return DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mTimestamp));
+    }
     public static Timestamp getTimestampInstance() {
         return getTimestampInstance(System.currentTimeMillis());
     }

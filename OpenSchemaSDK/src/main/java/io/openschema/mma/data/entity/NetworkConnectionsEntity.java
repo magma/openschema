@@ -15,9 +15,8 @@
 package io.openschema.mma.data.entity;
 
 import androidx.room.ColumnInfo;
-import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-import io.openschema.mma.data.pojo.Timestamp;
 
 /**
  * Entity class used by Room to store network connections locally
@@ -29,42 +28,55 @@ public class NetworkConnectionsEntity {
      */
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    public int mId = 0;
+    private int id;
 
     @ColumnInfo(name = "transport_type")
-    public int mTransportType;
+    private int transportType;
 
     //Stored in milliseconds
     @ColumnInfo(name = "duration")
-    public long mDuration;
+    private long duration;
 
     //Stored in bytes
     @ColumnInfo(name = "usage")
-    public long mUsage;
+    private long usage;
 
     @ColumnInfo(name = "longitude")
-    public double mLongitude;
+    private double longitude;
 
     @ColumnInfo(name = "latitude")
-    public double mLatitude;
+    private double latitude;
 
     @ColumnInfo(name = "timestamp")
-    public long mTimeStamp;
+    private long timestamp;
 
     @ColumnInfo(name = "is_reported")
-    public boolean mIsReported = false;
+    private boolean isReported;
 
-    public NetworkConnectionsEntity(int transportType, long duration, long usage, double longitude, double latitude, long timeStamp) {
-        mTransportType = transportType;
-        mDuration = duration;
-        mUsage = usage;
-        mLongitude = longitude;
-        mLatitude = latitude;
-        mTimeStamp = timeStamp;
+    public NetworkConnectionsEntity(int id, int transportType, long duration, long usage, double longitude, double latitude, long timestamp, boolean isReported) {
+        this.id = id;
+        this.transportType = transportType;
+        this.duration = duration;
+        this.usage = usage;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.timestamp = timestamp;
+        this.isReported = isReported;
     }
 
     //We need to include the transport type to generate a unique key since each network uses an independent table for storage
     public String getCompoundId() {
-        return Integer.toString(mId) + mTransportType;
+        return Integer.toString(id) + transportType;
     }
+
+    public int getId() { return id;}
+    public int getTransportType() {return transportType;}
+    public long getDuration() {return duration;}
+    public long getUsage() {return usage;}
+    public double getLongitude() {return longitude;}
+    public double getLatitude() {return latitude;}
+    public long getTimestamp() {return timestamp;}
+    public boolean getIsReported() {return isReported;}
+
+//    public void setReported(boolean reported) { this.reported = reported;}
 }

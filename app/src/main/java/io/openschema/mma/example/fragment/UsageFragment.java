@@ -70,12 +70,12 @@ public class UsageFragment extends Fragment {
                 //Calculate tonnage for each network type
                 for (int i = 0; i < networkUsageEntities.size(); i++) {
                     NetworkUsageEntity currentEntity = networkUsageEntities.get(i);
-                    switch (currentEntity.mTransportType) {
+                    switch (currentEntity.getTransportType()) {
                         case NetworkCapabilities.TRANSPORT_CELLULAR:
-                            cellularTonnage += currentEntity.mUsage;
+                            cellularTonnage += currentEntity.getUsage();
                             break;
                         case NetworkCapabilities.TRANSPORT_WIFI:
-                            wifiTonnage += currentEntity.mUsage;
+                            wifiTonnage += currentEntity.getUsage();
                             break;
                     }
                 }

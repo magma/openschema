@@ -16,6 +16,7 @@ package io.openschema.mma.data.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import io.openschema.mma.data.pojo.Timestamp;
 
 /**
@@ -26,16 +27,22 @@ import io.openschema.mma.data.pojo.Timestamp;
 public class WifiConnectionsEntity extends NetworkConnectionsEntity {
 
     @ColumnInfo(name = "ssid")
-    public String mSSID;
+    private String SSID;
 
     @ColumnInfo(name = "bssid")
-    public String mBSSID;
+    private String BSSID;
 
-    public WifiConnectionsEntity(int transportType, String mSSID, String mBSSID, long duration, long usage, double longitude, double latitude, long timeStamp) {
-        super(transportType, duration, usage, longitude, latitude, timeStamp);
-
-        //Adding m to parameters due to Room not matching them correctly to the attributes
-        this.mSSID = mSSID;
-        this.mBSSID = mBSSID;
+    @Ignore
+    public WifiConnectionsEntity(int transportType, String SSID, String BSSID, long duration, long usage, double longitude, double latitude, long timestamp) {
+        this(0, transportType, SSID, BSSID, duration, usage, longitude, latitude, timestamp, false);
     }
+
+    public WifiConnectionsEntity(int id, int transportType, String SSID, String BSSID, long duration, long usage, double longitude, double latitude, long timestamp, boolean reported) {
+        super(id, transportType, duration, usage, longitude, latitude, timestamp, reported);
+        this.SSID = SSID;
+        this.BSSID = BSSID;
+    }
+
+    public String getSSID() { return SSID;}
+    public String getBSSID() {return BSSID;}
 }

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020, The Magma Authors
+  ~ All rights reserved.
+  ~
+  ~ This source code is licensed under the BSD-style license found in the
+  ~ LICENSE file in the root directory of this source tree.
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="isDataAvailable"
+            type="Boolean"
+            />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/usage_empty_data_txt"
+            style="@style/TextAppearance.MaterialComponents.Body1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:text="There is no data available yet."
+            android:visibility="@{isDataAvailable ? View.GONE  : View.VISIBLE}"
+            app:layout_constraintBottom_toBottomOf="@id/metric_logs_list"
+            app:layout_constraintEnd_toEndOf="@id/metric_logs_list"
+            app:layout_constraintStart_toStartOf="@id/metric_logs_list"
+            app:layout_constraintTop_toTopOf="@id/metric_logs_list"
+            tools:visibility="gone"
+            />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/metric_logs_list"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="@{isDataAvailable ? View.VISIBLE  : View.INVISIBLE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:listitem="@layout/view_metric_log_list_entry"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
