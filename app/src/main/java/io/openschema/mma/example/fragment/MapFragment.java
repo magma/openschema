@@ -23,6 +23,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -58,6 +60,7 @@ import io.openschema.mma.example.R;
 import io.openschema.mma.example.util.FormattingUtils;
 import io.openschema.mma.example.databinding.FragmentMapBinding;
 import io.openschema.mma.example.view.ConnectionReportDialog;
+import io.openschema.mma.helpers.LocationServicesChecker;
 import io.openschema.mma.metrics.collectors.ConnectionReport;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
@@ -112,7 +115,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mGoogleMap.setOnInfoWindowCloseListener(marker -> onMarkerDeselected());
         mGoogleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
 
-        //TODO: check for location permission granted during runtime
+        //Ignoring location permission since it's mandatory for the app
         mGoogleMap.setMyLocationEnabled(true);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
         mGoogleMap.getUiSettings().setRotateGesturesEnabled(false);
@@ -125,7 +128,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             }
         });
 
-        //TODO: center map around current location. (If not available? Center around last connection's location?)
+        //Center camera on the device's current location and zoom to street level. If location services are not enabled, the camera will be centered around the last connection made.
+        if (LocationServicesChecker.isLocationEnabled(requireContext())) {
+            FusedLocationProviderClient locationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+            locationClient.getLastLocation().addOnSuccessListener(location -> {
+                if (location != null) {
+                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16));
+                }
+            });
+        }
+
     }
 
     //Iterates through all the network connections received from observing the Room database and creates a marker in the google map instance for each unique session.
@@ -150,8 +162,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 createMarker(currentEntity);
             }
 
-            //Center camera around last marker and zoom to street level
-            if (i == networkConnectionsEntities.size() - 1) {
+            //Center camera around last marker and zoom to street level. This will only run if location services weren't enabled and the map couldn't be centered around the devices'current location.
+            if (i == networkConnectionsEntities.size() - 1 && !LocationServicesChecker.isLocationEnabled(requireContext())) {
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentEntity.getLatitude(), currentEntity.getLongitude()), 16));
             }
         }

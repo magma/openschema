@@ -47,4 +47,13 @@
         android:name="io.openschema.mma.example.view.ConnectionReportDialog"
         android:label="Connection Report"
         />
+
+    <activity
+        android:id="@+id/activity_onboarding"
+        android:name="io.openschema.mma.example.activity.OnboardingActivity"
+        />
+    <action
+        android:id="@+id/action_to_onboarding"
+        app:destination="@id/activity_onboarding"
+        />
 </navigation>

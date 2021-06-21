@@ -65,7 +65,6 @@ public class LocationPermissionFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        //TODO: Only enable continue button after permission is accepted
         mBinding.locationContinueBtn.setOnClickListener(v -> requestPermission());
     }
 

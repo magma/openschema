@@ -87,7 +87,6 @@
             tools:text="Today"
             />
 
-        <!--TODO: Add a border so the empty state is more obvious-->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/usage_empty_data_txt"
             style="@style/TextAppearance.MaterialComponents.Body1"

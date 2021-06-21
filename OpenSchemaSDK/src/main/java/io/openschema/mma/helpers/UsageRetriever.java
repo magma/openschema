@@ -48,7 +48,6 @@ public class UsageRetriever {
                 //This means it's no longer possible to relate traffic to each SIM card on a dual SIM phone
                 if (Build.VERSION.SDK_INT < 28) {
                     TelephonyManager manager = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
-                    //TODO: Check for phone permission? Check for all permissions on app start?
                     mSubscriberId = manager.getSubscriberId();
                 }
             } else {

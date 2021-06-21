@@ -24,12 +24,14 @@ import android.util.Log;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.CancellationTokenSource;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
+import io.openschema.mma.helpers.LocationServicesChecker;
 
 /**
  * Collects metrics related to device's location.
@@ -45,15 +47,18 @@ public class LocationMetrics extends BaseMetrics {
     public static final String METRIC_LATITUDE = "latitude";
     public static final String METRIC_LONGITUDE = "longitude";
 
+    private final Context mContext;
     private final FusedLocationProviderClient mLocationClient;
     private final boolean mLocationPermissionGranted;
 
     private final MetricsCollectorListener mListener;
 
     private Location mLastLocation;
+    private CancellationTokenSource mCancellationTokenSource = null;
 
     public LocationMetrics(Context context, MetricsCollectorListener listener) {
         super(context);
+        mContext = context;
         mListener = listener;
 
         mLocationClient = LocationServices.getFusedLocationProviderClient(context);
@@ -64,24 +69,42 @@ public class LocationMetrics extends BaseMetrics {
     @SuppressLint("MissingPermission")
     public void requestLocation() {
         Log.d(TAG, "MMA: Generating location metrics...");
-        //TODO: also check if location settings are enabled
         //TODO: need to evaluate the correct priority/accuracy
         //TODO: need to consider cases where google play services aren't available
-        if (mLocationPermissionGranted) {
-            mLocationClient.getCurrentLocation(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY, null).addOnSuccessListener(location -> {
-                if (location != null) {
-                    Log.d(TAG, "MMA: Location received successfully");
-                } else {
-                    Log.d(TAG, "MMA: Failed to compute location");
-                }
-                mLastLocation = location;
-                mListener.onMetricCollected(METRIC_NAME, extractLocationValues(location));
-            }).addOnFailureListener(e -> {
-                Log.d(TAG, "MMA: Failed to retrieve location");
-                e.printStackTrace();
-                mLastLocation = null;
-                mListener.onMetricCollected(METRIC_NAME, null);
-            });
+        if (mLocationPermissionGranted && LocationServicesChecker.isLocationEnabled(mContext)) {
+            mCancellationTokenSource = new CancellationTokenSource();
+            mLocationClient.getCurrentLocation(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY, mCancellationTokenSource.getToken())
+                    .addOnSuccessListener(this::onRequestSuccess)
+                    .addOnFailureListener(e -> {
+                        e.printStackTrace();
+                        onRequestFailure();
+                    });
+        } else {
+            onRequestFailure();
+        }
+    }
+
+    private void onRequestSuccess(Location location) {
+        if (location != null) {
+            Log.d(TAG, "MMA: Location received successfully");
+        } else {
+            Log.d(TAG, "MMA: Failed to compute location");
+        }
+        mLastLocation = location;
+        mCancellationTokenSource = null;
+        mListener.onMetricCollected(METRIC_NAME, extractLocationValues(location));
+    }
+
+    private void onRequestFailure() {
+        Log.d(TAG, "MMA: Failed to retrieve location");
+        mLastLocation = null;
+        mCancellationTokenSource = null;
+        mListener.onMetricCollected(METRIC_NAME, null);
+    }
+
+    public void cancelLocationRequest() {
+        if (mCancellationTokenSource != null) {
+            mCancellationTokenSource.cancel();
         }
     }
 

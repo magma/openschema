@@ -52,8 +52,8 @@ public class ConnectionReportDialog extends DialogFragment {
                 NavHostFragment.findNavController(this).getPreviousBackStackEntry().getSavedStateHandle().set(KEY_REPORT_DESCRIPTION, reportDescription);
                 dismiss();
             } else {
-                //TODO: set error on edittext
-                Log.e("ConnectionReportDialog", "UI: Connection report description is empty");
+                //TODO: Listen to the user typing something to remove the error.
+                mBinding.reportDialogFeedback.setError("Please describe your issue.");
             }
         });
     }

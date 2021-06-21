@@ -46,7 +46,7 @@ public class Identity {
         mUUID = new UUID(context).getUUID();
         mPublicKey = new HardwareKey().getHwPublicKey();
 
-        //TODO: remove, used for testing purposes
+        //TODO: remove, used for testing purposes. Add API to retrieve UUID on UI (about page)
         Log.d("MMA: TestIdentity", mUUID + "\n" + mPublicKey);
     }
 

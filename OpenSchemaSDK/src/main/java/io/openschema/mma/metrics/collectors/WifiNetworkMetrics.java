@@ -60,7 +60,6 @@ public class WifiNetworkMetrics extends BaseMetrics {
         List<Pair<String, String>> metricsList = new ArrayList<>();
         WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
 
-        //TODO: check for location permission & service enabled
         mSSID = wifiInfo.getSSID().replaceAll("\"", "");
         String bssid = wifiInfo.getBSSID();
         mBSSID = bssid == null ? "null" : bssid;

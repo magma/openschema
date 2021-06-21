@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
+import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
@@ -102,7 +104,6 @@ public class MetricsWorker extends Worker {
         //TODO: Optimize to either:
         //      A) Batch several metrics in a single POST,
         //      B) Execute multiple POST requests asynchronously rather than in sequence
-        //TODO: defer until wifi is connected?
         try {
             Log.d(TAG, "MMA: Pushing " + mMetricsList.size() + " metrics...");
             for (MetricsEntity currentMetric : mMetricsList) {
@@ -134,10 +135,16 @@ public class MetricsWorker extends Worker {
     /**
      * Static utility method to enqueue this worker to run periodically. Calling this method
      * will cause the worker to run immediately and restart the periodic calls delay counter.
+     * <p>
+     * The worker will wait until the device is connected to Wi-Fi and battery is not low.
      */
     public static void enqueuePeriodicWorker(Context context, String backendUrl, String backendUsername, String backendPassword) {
         PeriodicWorkRequest.Builder workBuilder = new PeriodicWorkRequest.Builder(MetricsWorker.class, 4, TimeUnit.HOURS)
                 .addTag(WORKER_TAG)
+                .setConstraints(new Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.UNMETERED)
+                        .setRequiresBatteryNotLow(true)
+                        .build())
                 .setInputData(new Data.Builder()
                         .putString(DATA_BACKEND_URL, backendUrl)
                         .putString(DATA_BACKEND_USERNAME, backendUsername)

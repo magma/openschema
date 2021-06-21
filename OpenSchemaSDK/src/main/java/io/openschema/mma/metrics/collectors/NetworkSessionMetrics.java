@@ -48,7 +48,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     //Session data
     protected List<Pair<String, String>> mCurrentSession;
     protected long mSessionStartTimestamp, mSessionEndTimestamp;
-    protected boolean mSessionLocationReceived;
+    protected boolean mIsExpectingLocation;
 
     //Metrics sources
     protected final ConnectivityManager mConnectivityManager;
@@ -98,7 +98,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     protected void onSessionStart() {
         mSessionStartTimestamp = System.currentTimeMillis();
         mCurrentSession = mNetworkMetrics.retrieveMetrics();
-        mSessionLocationReceived = false;
+        mIsExpectingLocation = true;
         mLocationMetrics.requestLocation();
         //TODO: Persist the current session in SharedPrefs to avoid losing data in case app is killed temporarily.
 
@@ -109,22 +109,26 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     protected void onSessionEnd() {
         mSessionEndTimestamp = System.currentTimeMillis();
 
-        //TODO: wait until session location is received? mSessionLocationReceived is currently ignored
         processConnectionSession();
 
         //Reset session-tracking variables
         mCurrentSession = null;
         mSessionStartTimestamp = -1;
         mSessionEndTimestamp = -1;
-        mSessionLocationReceived = false;
+        if (mIsExpectingLocation) {
+            //TODO: We should monitor the data reaching the data lake. If too many instances are missing location information,
+                //maybe we should consider waiting for the request to complete rather than ignoring.
+            mLocationMetrics.cancelLocationRequest();
+            mIsExpectingLocation = false;
+        }
     }
 
     //Called when the LocationMetrics object finishes calculating the device's location.
     protected void onLocationReceived(List<Pair<String, String>> metricsList) {
-        mSessionLocationReceived = true;
-        if (metricsList != null) {
+        if (mIsExpectingLocation && metricsList != null) {
             Log.d(TAG, "MMA: Location received");
             mCurrentSession.addAll(metricsList);
+            mIsExpectingLocation = false;
         }
     }
 

@@ -43,4 +43,11 @@ public class PermissionManager {
     public static boolean isBackgroundLocationPermissionGranted(Context ctx) {
         return (ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED);
     }
+
+    public static boolean areMandatoryPermissionsGranted(Context ctx) {
+        return isUsagePermissionGranted(ctx) &&
+                isPhonePermissionGranted(ctx) &&
+                isLocationPermissionGranted(ctx) &&
+                (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || isBackgroundLocationPermissionGranted(ctx));
+    }
 }

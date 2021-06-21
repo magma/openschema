@@ -39,6 +39,7 @@ import java.util.List;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
+import io.openschema.mma.helpers.LocationServicesChecker;
 import io.openschema.mma.metrics.MetricsManager;
 
 /**
@@ -60,6 +61,7 @@ public class CellularNetworkMetrics extends BaseMetrics {
     public static final String METRIC_NETWORK_TYPE = "networkType";
     public static final String METRIC_CELL_ID = "cellId";
 
+    private final Context mContext;
     private final TelephonyManager mTelephonyManager;
     private final boolean mPhonePermissionGranted;
     private final boolean mLocationPermissionGranted;
@@ -69,6 +71,7 @@ public class CellularNetworkMetrics extends BaseMetrics {
 
     public CellularNetworkMetrics(Context context) {
         super(context);
+        mContext = context;
         mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         mPhonePermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
         mLocationPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
@@ -93,8 +96,7 @@ public class CellularNetworkMetrics extends BaseMetrics {
             metricsList.add(new Pair<>(METRIC_NETWORK_TYPE, mNetworkType));
         }
 
-        //TODO: Should also check if location services are enabled
-        if (mLocationPermissionGranted) {
+        if (mLocationPermissionGranted && LocationServicesChecker.isLocationEnabled(mContext)) {
             // Requires location services to be enabled, otherwise returned list will be empty
             List<CellInfo> allCellInfo = mTelephonyManager.getAllCellInfo();
 

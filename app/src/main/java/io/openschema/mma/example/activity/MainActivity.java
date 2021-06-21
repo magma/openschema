@@ -29,6 +29,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import io.openschema.mma.MobileMetricsAgent;
 import io.openschema.mma.example.R;
+import io.openschema.mma.example.util.PermissionManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,41 +39,61 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        NavController navController = Navigation.findNavController(this, R.id.main_content);
 
-        //Setup bottom navigation
-        BottomNavigationView bottomNavigationView = findViewById(R.id.main_bottom_navigation_bar);
-        NavigationUI.setupWithNavController(bottomNavigationView, navController);
+        if (checkMandatoryPermissions()) {
+            NavController navController = Navigation.findNavController(this, R.id.main_content);
 
-        //Setup tool bar (top app bar)
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_usage, R.id.nav_map, R.id.nav_metric_logs).build();
-        Toolbar toolbar = findViewById(R.id.main_toolbar);
-        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
+            //Setup bottom navigation
+            BottomNavigationView bottomNavigationView = findViewById(R.id.main_bottom_navigation_bar);
+            NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
-        //Build OpenSchema agent with required data
-        mMobileMetricsAgent = new MobileMetricsAgent.Builder()
-                .setAppContext(getApplicationContext())
-                .setControllerAddress(getString(R.string.controller_address))
-                .setControllerPort(getResources().getInteger(R.integer.controller_port))
-                .setBootstrapperAddress(getString(R.string.bootstrapper_address))
-                .setControllerCertificateResId(R.raw.controller)
-                .setAuthorityHeader(getString(R.string.metrics_authority_header))
+            //Setup tool bar (top app bar)
+            AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_usage, R.id.nav_map, R.id.nav_metric_logs).build();
+            Toolbar toolbar = findViewById(R.id.main_toolbar);
+            NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
+
+            //Build OpenSchema agent with required data
+            mMobileMetricsAgent = new MobileMetricsAgent.Builder()
+                    .setAppContext(getApplicationContext())
+                    .setControllerAddress(getString(R.string.controller_address))
+                    .setControllerPort(getResources().getInteger(R.integer.controller_port))
+                    .setBootstrapperAddress(getString(R.string.bootstrapper_address))
+                    .setControllerCertificateResId(R.raw.controller)
+                    .setAuthorityHeader(getString(R.string.metrics_authority_header))
 //                .setUseAutomaticRegistration(false)
-                .setBackendBaseURL(getString(R.string.backend_base_url))
-                .setBackendCertificateResId(R.raw.backend)
-                .setBackendUsername(getString(R.string.backend_username))
-                .setBackendPassword(getString(R.string.backend_password))
-                .build();
+                    .setBackendBaseURL(getString(R.string.backend_base_url))
+                    .setBackendCertificateResId(R.raw.backend)
+                    .setBackendUsername(getString(R.string.backend_username))
+                    .setBackendPassword(getString(R.string.backend_password))
+                    .build();
 
-        //Initialize agent
-        try {
-            mMobileMetricsAgent.init();
-        } catch (Exception e) {
-            e.printStackTrace();
+            //Initialize agent
+            try {
+                mMobileMetricsAgent.init();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void pushMetric(String metricName, List<Pair<String, String>> metricValues) {
         mMobileMetricsAgent.pushUntypedMetric(metricName, metricValues);
+    }
+
+    private boolean checkMandatoryPermissions() {
+        if (!PermissionManager.areMandatoryPermissionsGranted(this)) {
+            //Redirect to onboarding to go through the required permissions
+            NavController navController = Navigation.findNavController(this, R.id.main_content);
+            navController.navigate(R.id.action_to_onboarding);
+            finish();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkMandatoryPermissions();
     }
 }
