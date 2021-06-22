@@ -21,19 +21,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
+import com.mackhartley.roundedprogressbar.RoundedProgressBar;
 
-import java.util.Arrays;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
+import androidx.databinding.BindingAdapter;
+import androidx.databinding.BindingMethod;
+import androidx.databinding.BindingMethods;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
-import io.openschema.mma.example.R;
 import io.openschema.mma.example.databinding.FragmentUsageBinding;
 import io.openschema.mma.example.util.FormattingUtils;
 import io.openschema.mma.example.viewmodel.UsageViewModel;
@@ -43,8 +42,6 @@ public class UsageFragment extends Fragment {
     private static final String TAG = "UsageFragment";
     private FragmentUsageBinding mBinding;
     private UsageViewModel mViewModel;
-
-    private PieDataSet mDataSet;
 
     @Nullable
     @Override
@@ -58,48 +55,8 @@ public class UsageFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        initTonnageChart();
 
-        mViewModel.getUsageEntities().observe(getViewLifecycleOwner(), networkUsageEntities -> {
-            //TODO: optimize to prevent recalculating entries we've already seen when new entries are received.
-            // Will only be able to optimize while the current window is still the same. Not urgent since most people wouldn't stay constantly looking at this page.
-            long cellularTonnage = 0, wifiTonnage = 0;
-
-            if (networkUsageEntities != null) {
-                Log.d(TAG, "UI: " + networkUsageEntities.size() + " entities are being used for this calculation.");
-                //Calculate tonnage for each network type
-                for (int i = 0; i < networkUsageEntities.size(); i++) {
-                    NetworkUsageEntity currentEntity = networkUsageEntities.get(i);
-                    switch (currentEntity.getTransportType()) {
-                        case NetworkCapabilities.TRANSPORT_CELLULAR:
-                            cellularTonnage += currentEntity.getUsage();
-                            break;
-                        case NetworkCapabilities.TRANSPORT_WIFI:
-                            wifiTonnage += currentEntity.getUsage();
-                            break;
-                    }
-                }
-
-                //Debugging difference between info collected by the service & the usage tracked by the OS.
-//                Log.e(TAG, "UI: Tonnage difference between logged vs OS:" +
-//                        "\nCellular (Counted): " + FormattingUtils.humanReadableByteCountSI(cellularTonnage) +
-//                        "\nWi-Fi (Counted): " + FormattingUtils.humanReadableByteCountSI(wifiTonnage));
-
-            }
-
-            //Set data available flag to hide chart if no data is available.
-            mBinding.setIsDataAvailable(cellularTonnage != 0 || wifiTonnage != 0);
-
-            //Set calculated tonnage to pie chart
-            mDataSet.getEntryForIndex(NetworkCapabilities.TRANSPORT_CELLULAR).setY(cellularTonnage);
-            mDataSet.getEntryForIndex(NetworkCapabilities.TRANSPORT_WIFI).setY(wifiTonnage);
-            mBinding.usageTonnageChart.setCenterText(FormattingUtils.humanReadableByteCountSI(cellularTonnage + wifiTonnage));
-
-            //Apply data changes
-            mBinding.usageTonnageChart.getData().notifyDataChanged();
-            mBinding.usageTonnageChart.notifyDataSetChanged();
-            mBinding.usageTonnageChart.invalidate();
-        });
+        mViewModel.getUsageEntities().observe(getViewLifecycleOwner(), this::updateTonnageChart);
 
         mBinding.usageWindowLeft.setOnClickListener(v -> mViewModel.moveUsageWindow(-1));
         mBinding.usageWindowRight.setOnClickListener(v -> mViewModel.moveUsageWindow(1));
@@ -107,24 +64,78 @@ public class UsageFragment extends Fragment {
         mViewModel.getCurrentWindowTxt().observe(getViewLifecycleOwner(), s -> mBinding.setCurrentWindowTxt(s));
     }
 
-    private void initTonnageChart() {
-        //Init data
-        PieEntry[] newEntries = new PieEntry[2];
-        newEntries[NetworkCapabilities.TRANSPORT_CELLULAR] = new PieEntry(0, "Cellular");
-        newEntries[NetworkCapabilities.TRANSPORT_WIFI] = new PieEntry(0, "Wi-Fi");
+    private void updateTonnageChart(List<NetworkUsageEntity> networkUsageEntities) {
+        //TODO: optimize to prevent recalculating entries we've already seen when new entries are received.
+        // Will only be able to optimize while the current window is still the same. Not urgent since most people wouldn't stay constantly looking at this page.
+        long cellularTonnage = 0, wifiTonnage = 0;
 
-        mDataSet = new PieDataSet(Arrays.asList(newEntries), "");
-        mDataSet.setColors(ContextCompat.getColor(requireContext(), R.color.wifiColor), ContextCompat.getColor(requireContext(), R.color.cellularColor));
-        mDataSet.setSliceSpace(5);
-        mDataSet.setDrawValues(false);
+        if (networkUsageEntities != null) {
+            Log.d(TAG, "UI: " + networkUsageEntities.size() + " entities are being used for this calculation.");
+            //Calculate tonnage for each network type
+            for (int i = 0; i < networkUsageEntities.size(); i++) {
+                NetworkUsageEntity currentEntity = networkUsageEntities.get(i);
+                switch (currentEntity.getTransportType()) {
+                    case NetworkCapabilities.TRANSPORT_CELLULAR:
+                        cellularTonnage += currentEntity.getUsage();
+                        break;
+                    case NetworkCapabilities.TRANSPORT_WIFI:
+                        wifiTonnage += currentEntity.getUsage();
+                        break;
+                }
+            }
 
-        //Configure chart
-        mBinding.usageTonnageChart.setData(new PieData(mDataSet));
-        mBinding.usageTonnageChart.setCenterTextSize(28);
-        mBinding.usageTonnageChart.setHoleRadius(60);
-        mBinding.usageTonnageChart.setTransparentCircleAlpha(0);
-        mBinding.usageTonnageChart.setTouchEnabled(false);
-        mBinding.usageTonnageChart.getDescription().setText("");
-        mBinding.usageTonnageChart.getLegend().setEnabled(false);
+            //Debugging difference between info collected by the service & the usage tracked by the OS.
+//                Log.e(TAG, "UI: Tonnage difference between logged vs OS:" +
+//                        "\nCellular (Counted): " + FormattingUtils.humanReadableByteCountSI(cellularTonnage) +
+//                        "\nWi-Fi (Counted): " + FormattingUtils.humanReadableByteCountSI(wifiTonnage));
+
+        }
+
+        //Set the data to the layout
+        mBinding.setUsageData(new UsageData(cellularTonnage, wifiTonnage));
+    }
+
+    /**
+     * POJO to hold the usage information and feed the data to the layout through data binding.
+     */
+    @BindingMethods({
+                            @BindingMethod(type = com.mackhartley.roundedprogressbar.RoundedProgressBar.class,
+                                           attribute = "app:rpbProgress",
+                                           method = "setRpbProgress"),
+                    })
+    public static class UsageData {
+        private final long mCellularTonnage;
+        private final long mWifiTonnage;
+        private final long mTotalTonnage;
+
+        public UsageData(long cellularTonnage, long wifiTonnage) {
+            mCellularTonnage = cellularTonnage;
+            mWifiTonnage = wifiTonnage;
+            mTotalTonnage = cellularTonnage + wifiTonnage;
+        }
+
+        public double getCellularPercentage() {
+            return mTotalTonnage == 0 ? 0 : (100 * (double) mCellularTonnage / mTotalTonnage);
+        }
+
+        public double getWifiPercentage() {
+            return mTotalTonnage == 0 ? 0 : (100 * (double) mWifiTonnage / mTotalTonnage);
+        }
+
+        public String getCellularValue() {
+            return FormattingUtils.humanReadableByteCountSI(mCellularTonnage).replaceAll(" ", "\n");
+        }
+
+        public String getWifiValue() {
+            return FormattingUtils.humanReadableByteCountSI(mWifiTonnage).replaceAll(" ", "\n");
+        }
+
+        /**
+         * Binding adapter to match app:rpbProgress to setProgressPercentage() when using data binding in the layout.
+         */
+        @BindingAdapter("app:rpbProgress")
+        public static void setRpbProgress(RoundedProgressBar v, double progressPercentage) {
+            v.setProgressPercentage(progressPercentage, true);
+        }
     }
 }
