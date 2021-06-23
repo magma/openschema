@@ -18,7 +18,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import io.openschema.mma.helpers.SharedPreferencesHelper;
+import io.openschema.mma.utils.SharedPreferencesHelper;
 
 /**
  * Helper class used to generate and store a UUID.

@@ -21,7 +21,6 @@ import androidx.room.Ignore;
 /**
  * Entity class used by Room to store network connections locally
  */
-//TODO: javadocs
 @Entity(tableName = "cellular_connections")
 public class CellularConnectionsEntity extends NetworkConnectionsEntity {
 

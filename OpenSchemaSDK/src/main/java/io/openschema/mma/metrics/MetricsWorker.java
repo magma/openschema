@@ -33,11 +33,11 @@ import androidx.work.WorkerParameters;
 import io.openschema.mma.data.entity.MetricsEntity;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.id.Identity;
-import io.openschema.mma.networking.BackendApi;
-import io.openschema.mma.networking.CertificateManager;
-import io.openschema.mma.networking.RetrofitService;
-import io.openschema.mma.networking.request.MetricsPushRequest;
-import io.openschema.mma.networking.response.BaseResponse;
+import io.openschema.mma.backend.BackendApi;
+import io.openschema.mma.backend.CertificateManager;
+import io.openschema.mma.backend.RetrofitService;
+import io.openschema.mma.backend.request.MetricsPushRequest;
+import io.openschema.mma.backend.response.BaseResponse;
 import retrofit2.Response;
 
 /**
@@ -73,16 +73,11 @@ public class MetricsWorker extends Worker {
         mMetricsList = mMetricsRepository.getEnqueuedMetricsSync();
 
         //Identity must have been previously generated during initialization
-        try {
-            mIdentity = new Identity(context);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        mIdentity = new Identity(context);
 
         //Retrieve worker parameters
         Data data = workerParams.getInputData();
 
-        //TODO: Need to add the backend certificate again?
         CertificateManager certificateManager = new CertificateManager();
 
         RetrofitService retrofitService = RetrofitService.getService(context.getApplicationContext());

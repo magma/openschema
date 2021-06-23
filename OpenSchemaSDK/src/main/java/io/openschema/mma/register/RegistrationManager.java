@@ -21,14 +21,15 @@ import android.util.Log;
 import java.io.IOException;
 
 import androidx.annotation.WorkerThread;
-import io.openschema.mma.helpers.SharedPreferencesHelper;
+import io.openschema.mma.utils.SharedPreferencesHelper;
 import io.openschema.mma.id.Identity;
-import io.openschema.mma.networking.BackendApi;
-import io.openschema.mma.networking.request.RegisterRequest;
-import io.openschema.mma.networking.response.BaseResponse;
+import io.openschema.mma.backend.BackendApi;
+import io.openschema.mma.backend.request.RegisterRequest;
+import io.openschema.mma.backend.response.BaseResponse;
 import retrofit2.Response;
 
 /**
+ * DEPRECATED. Might get reused in the future for a more robust device registration into data lake.
  * Class in charge of registering the UE using a generated UUID and Key.
  */
 public class RegistrationManager {
@@ -63,7 +64,7 @@ public class RegistrationManager {
 
         Log.d(TAG, "MMA: Sending registration request.");
         try {
-            Response<BaseResponse> res = mBackendApi.register(new RegisterRequest(mIdentity.getUUID(), mIdentity.getPublicKey()))
+            Response<BaseResponse> res = mBackendApi.register(new RegisterRequest(mIdentity.getUUID()))
                     .execute();
 
             if (res.isSuccessful()) {

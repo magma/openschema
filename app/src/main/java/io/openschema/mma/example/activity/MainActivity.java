@@ -55,12 +55,6 @@ public class MainActivity extends AppCompatActivity {
             //Build OpenSchema agent with required data
             mMobileMetricsAgent = new MobileMetricsAgent.Builder()
                     .setAppContext(getApplicationContext())
-                    .setControllerAddress(getString(R.string.controller_address))
-                    .setControllerPort(getResources().getInteger(R.integer.controller_port))
-                    .setBootstrapperAddress(getString(R.string.bootstrapper_address))
-                    .setControllerCertificateResId(R.raw.controller)
-                    .setAuthorityHeader(getString(R.string.metrics_authority_header))
-//                .setUseAutomaticRegistration(false)
                     .setBackendBaseURL(getString(R.string.backend_base_url))
                     .setBackendCertificateResId(R.raw.backend)
                     .setBackendUsername(getString(R.string.backend_username))
@@ -68,16 +62,12 @@ public class MainActivity extends AppCompatActivity {
                     .build();
 
             //Initialize agent
-            try {
-                mMobileMetricsAgent.init();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            mMobileMetricsAgent.init();
         }
     }
 
     public void pushMetric(String metricName, List<Pair<String, String>> metricValues) {
-        mMobileMetricsAgent.pushUntypedMetric(metricName, metricValues);
+        mMobileMetricsAgent.pushMetric(metricName, metricValues);
     }
 
     private boolean checkMandatoryPermissions() {

@@ -23,7 +23,9 @@ import androidx.room.Query;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 
-//TODO: javadoc
+/**
+ * Data access object used to interact with the optional Network connections' table in the database.
+ */
 @Dao
 public interface NetworkConnectionsDAO {
 

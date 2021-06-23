@@ -31,9 +31,11 @@ import androidx.core.util.Pair;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
-import io.openschema.mma.helpers.UsageRetriever;
+import io.openschema.mma.utils.UsageRetriever;
 
-//TODO: javadocs
+/**
+ * Base class to collect metrics related to networks sessions, starting from connection to disconnection.
+ */
 public abstract class NetworkSessionMetrics extends BaseMetrics {
     private static final String TAG = "NetworkSessionMetrics";
 
@@ -57,7 +59,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     protected final LocationMetrics mLocationMetrics;
 
     private final MetricsCollectorListener mListener;
-    protected final int mTransportType; //TODO: data can get lost if OS kills app temporarily?
+    protected final int mTransportType; //TODO: can cached data get lost if OS kills app temporarily?
 
     private NetworkConnectionEntityAdapter mNetworkConnectionEntityAdapter = null;
 

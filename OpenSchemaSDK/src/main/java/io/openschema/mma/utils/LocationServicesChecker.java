@@ -1,4 +1,4 @@
-package io.openschema.mma.helpers;
+package io.openschema.mma.utils;
 
 import android.content.Context;
 import android.location.LocationManager;

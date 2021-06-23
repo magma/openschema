@@ -21,17 +21,21 @@ import java.util.List;
 import androidx.core.util.Pair;
 
 /**
- * TODO: javadocs
+ * Base class used by every metric collector in the SDK.
  */
 public abstract class BaseMetrics {
     private static final String TAG = "BaseMetrics";
 
     public BaseMetrics(Context context) { }
 
-    //Used in metrics that can be collected synchronously.
+    /**
+     * Method used in metrics that can be collected synchronously.
+     */
     public abstract List<Pair<String, String>> retrieveMetrics();
 
-    //Used in metrics that need to be collected asynchronously.
+    /**
+     * Interface used in metrics that are collected asynchronously and require a callback.
+     */
     public interface MetricsCollectorListener {
         void onMetricCollected(String metricName, List<Pair<String, String>> metricsList);
     }

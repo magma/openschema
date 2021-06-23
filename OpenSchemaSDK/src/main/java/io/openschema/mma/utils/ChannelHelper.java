@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.helpers;
+package io.openschema.mma.utils;
 
 import javax.net.ssl.SSLSocketFactory;
 
@@ -20,6 +20,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.okhttp.OkHttpChannelBuilder;
 
 /**
+ * DEPRECATED. Might get used in the future if we choose to use gRPC again.
  * Helper class to handle creation of gRPC channels.
  */
 public class ChannelHelper {

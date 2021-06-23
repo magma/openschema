@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.networking.response;
+package io.openschema.mma.backend.response;
 
 import com.google.gson.annotations.SerializedName;
 

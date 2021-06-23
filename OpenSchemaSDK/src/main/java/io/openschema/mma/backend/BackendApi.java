@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.networking;
+package io.openschema.mma.backend;
 
-import io.openschema.mma.networking.request.MetricsPushRequest;
-import io.openschema.mma.networking.request.RegisterRequest;
-import io.openschema.mma.networking.response.BaseResponse;
+import io.openschema.mma.backend.request.MetricsPushRequest;
+import io.openschema.mma.backend.request.RegisterRequest;
+import io.openschema.mma.backend.response.BaseResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -26,12 +26,14 @@ import retrofit2.http.POST;
  */
 public interface BackendApi {
     /**
-     * Calls the registration API in OpenSchema's middle box.
+     * Calls the registration API in OpenSchema ETL.
      */
     @POST("register")
     Call<BaseResponse> register(@Body RegisterRequest req);
 
-    //TODO: javadoc
+    /**
+     * Pushes the metric to OpenSchema ETL.
+     */
     @POST("metrics/push")
     Call<BaseResponse> pushMetric(@Body MetricsPushRequest req);
 }

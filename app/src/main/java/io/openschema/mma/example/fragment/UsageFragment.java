@@ -100,7 +100,7 @@ public class UsageFragment extends Fragment {
      */
     @BindingMethods({
                             @BindingMethod(type = com.mackhartley.roundedprogressbar.RoundedProgressBar.class,
-                                           attribute = "app:rpbProgress",
+                                           attribute = "rpbProgress",
                                            method = "setRpbProgress"),
                     })
     public static class UsageData {
@@ -133,7 +133,7 @@ public class UsageFragment extends Fragment {
         /**
          * Binding adapter to match app:rpbProgress to setProgressPercentage() when using data binding in the layout.
          */
-        @BindingAdapter("app:rpbProgress")
+        @BindingAdapter("rpbProgress")
         public static void setRpbProgress(RoundedProgressBar v, double progressPercentage) {
             v.setProgressPercentage(progressPercentage, true);
         }

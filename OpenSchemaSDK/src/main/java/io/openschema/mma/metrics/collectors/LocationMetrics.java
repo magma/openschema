@@ -31,7 +31,7 @@ import java.util.List;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
-import io.openschema.mma.helpers.LocationServicesChecker;
+import io.openschema.mma.utils.LocationServicesChecker;
 
 /**
  * Collects metrics related to device's location.

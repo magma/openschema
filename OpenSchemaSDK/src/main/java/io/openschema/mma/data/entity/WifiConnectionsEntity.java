@@ -22,7 +22,6 @@ import io.openschema.mma.data.pojo.Timestamp;
 /**
  * Entity class used by Room to store network connections locally
  */
-//TODO: javadocs
 @Entity(tableName = "wifi_connections")
 public class WifiConnectionsEntity extends NetworkConnectionsEntity {
 

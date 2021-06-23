@@ -22,7 +22,9 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-//TODO: javadocs
+/**
+ * Class to handle Timestamp information the way OpenSchema ETL expects to.
+ */
 public class Timestamp {
     private static final String TAG = "Timestamp";
 

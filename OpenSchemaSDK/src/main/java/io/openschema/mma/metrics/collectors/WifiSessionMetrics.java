@@ -22,7 +22,9 @@ import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 import io.openschema.mma.data.pojo.Timestamp;
 
-//TODO: javadocs
+/**
+ * Collect metrics related to Wi-Fi sessions.
+ */
 public class WifiSessionMetrics extends NetworkSessionMetrics {
 
     /**

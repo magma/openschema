@@ -18,26 +18,16 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
 import java.util.List;
 
 import androidx.core.util.Pair;
-import io.openschema.mma.helpers.SharedPreferencesHelper;
+import io.openschema.mma.utils.SharedPreferencesHelper;
 import io.openschema.mma.id.Identity;
-import io.openschema.mma.metrics.collectors.DeviceMetrics;
 import io.openschema.mma.metrics.MetricsManager;
-import io.openschema.mma.networking.CertificateManager;
-import io.openschema.mma.networking.RetrofitService;
-import io.openschema.mma.register.RegistrationManager;
+import io.openschema.mma.metrics.collectors.DeviceMetrics;
+import io.openschema.mma.backend.CertificateManager;
 
 /**
  * Main class to act as an interface to access the functionality in the library.
@@ -46,33 +36,20 @@ public class MobileMetricsAgent {
 
     private static final String TAG = "MobileMetricsAgent";
 
-    private String mControllerAddress;
-    private String mBootstrapperAddress;
-    private int mControllerCertificateResId;
-    private String mMetricsAuthorityHeader;
-    private int mControllerPort;
-    private boolean mUseAutomaticRegistration;
-    private String mBackendBaseURL;
-    private int mBackendCertificateResId;
-    private String mBackendUsername;
-    private String mBackendPassword;
-    private boolean mEnableLibraryMetrics;
+    private final String mBackendBaseURL;
+    private final int mBackendCertificateResId;
+    private final String mBackendUsername;
+    private final String mBackendPassword;
+    private final boolean mEnableLibraryMetrics;
 
-    private Context mAppContext;
+    private final Context mAppContext;
     private Identity mIdentity;
     private CertificateManager mCertificateManager;
     private boolean mIsReady = false;
 
-    private RegistrationManager mRegistrationManager = null;
     private MetricsManager mMetricsManager = null;
 
     private MobileMetricsAgent(Builder mmaBuilder) {
-        mControllerAddress = mmaBuilder.mControllerAddress;
-        mBootstrapperAddress = mmaBuilder.mBootstrapperAddress;
-        mControllerCertificateResId = mmaBuilder.mControllerCertificateResId;
-        mMetricsAuthorityHeader = mmaBuilder.mMetricsAuthorityHeader;
-        mControllerPort = mmaBuilder.mControllerPort;
-        mUseAutomaticRegistration = mmaBuilder.mUseAutomaticRegistration;
         mBackendBaseURL = mmaBuilder.mBackendBaseURL;
         mBackendCertificateResId = mmaBuilder.mBackendCertificateResId;
         mBackendUsername = mmaBuilder.mBackendUsername;
@@ -85,50 +62,25 @@ public class MobileMetricsAgent {
     /**
      * Initialize the object using the parameters supplied by the {@link Builder Builder}
      * <p>
-     * This call will register the device with a unique UUID to the cloud, if it hasn't been registered yet,
-     * and then proceed to execute the bootstrapping sequence. The {@link MobileMetricsAgent} needs to be
+     * {@link MobileMetricsAgent} needs to be
      * initialized before attempting to push information to the data lake.
      */
-    public void init() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
+    public void init() {
         Log.d(TAG, "MMA: Initializing MMA...");
 
         //Initialize identity & certificates
         mIdentity = new Identity(mAppContext);
         mCertificateManager = new CertificateManager();
         mCertificateManager.addBackendCertificate(mAppContext, mBackendCertificateResId);
-        mCertificateManager.addControllerCertificate(mAppContext, mControllerCertificateResId);
-
-        //Initialize automatic registration managers if enabled
-        if (mUseAutomaticRegistration) {
-            RetrofitService retrofitService = RetrofitService.getService(mAppContext);
-            retrofitService.initApi(mBackendBaseURL, mCertificateManager.generateSSLContext(), mBackendUsername, mBackendPassword);
-            mRegistrationManager = new RegistrationManager(mAppContext, retrofitService.getApi(), mIdentity);
-        }
 
         //Initialize managers
         mMetricsManager = new MetricsManager(mAppContext);
 
-        Handler mainHandler = new Handler(Looper.getMainLooper());
-        new Thread(() -> {
-            try {
-                // Register
-                // If automatic registration is disabled, we will assume that the UE has already been registered manually into the orc8r.
-                // Bootstrapping will fail if the registered UE can't be found.
-                boolean isRegistered = !mUseAutomaticRegistration || mRegistrationManager.registerSync();
-
-                if (isRegistered) {
-                    mainHandler.post(this::onReady);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }).start();
+        onReady();
     }
 
     /**
-     * Push a custom metric using Prometheus' {@link io.openschema.mma.metrics.Untyped Untyped} data. Will automatically use the registered
-     * UUID & timestamp values. This method required the agent to have completed the bootstrapping process by calling {@link #init()}.
+     * Push a custom metric. Will automatically use the registered UUID & timestamp values.
      *
      * <p>Example:
      * <pre>
@@ -136,7 +88,7 @@ public class MobileMetricsAgent {
      *     metricValues.add(new Pair<>("lat", "25.761681"));
      *     metricValues.add(new Pair<>("long", "-80.191788"));
      *
-     *     mma.pushUntypedMetric("location", metricValues);
+     *     mma.pushMetric("location", metricValues);
      * </pre>
      *
      * <p>Generates:
@@ -150,12 +102,12 @@ public class MobileMetricsAgent {
      * @param metricName   Root name for the group of collected metrics
      * @param metricValues List of metrics to collect with the <name, value> structure
      */
-    public void pushUntypedMetric(String metricName, List<Pair<String, String>> metricValues) {
+    public void pushMetric(String metricName, List<Pair<String, String>> metricValues) {
         mMetricsManager.collect(metricName, metricValues);
     }
 
     /**
-     * Method called once the whole bootstrapping sequence started with {@link #init()} is completed.
+     * Method called once the initialization sequence started with {@link #init()} is completed.
      */
     private void onReady() {
         mIsReady = true;
@@ -167,10 +119,13 @@ public class MobileMetricsAgent {
             mAppContext.startService(new Intent(mAppContext, MobileMetricsService.class));
         }
 
-        MetricsManager.startWorker(mAppContext, mBackendBaseURL, mBackendUsername, mBackendPassword);
+        mMetricsManager.startWorker(mAppContext, mBackendBaseURL, mBackendUsername, mBackendPassword);
     }
 
-    //TODO: javadoc
+    /**
+     * Check if this is the first time {@link MobileMetricsAgent} is initialized for this installation.
+     * Will call {@link #executeFirstTimeSetup()}
+     */
     private void attemptFirstTimeSetup() {
         //Check if this is the first time the SDK runs
         SharedPreferences sharedPref = SharedPreferencesHelper.getInstance(mAppContext);
@@ -187,7 +142,9 @@ public class MobileMetricsAgent {
         }
     }
 
-    //TODO: javadoc
+    /**
+     * Executes one-time configuration code like collecting immutable device information.
+     */
     private void executeFirstTimeSetup() {
         // Check if the library's baseline metrics are enabled
         if (mEnableLibraryMetrics) {
@@ -203,11 +160,6 @@ public class MobileMetricsAgent {
      * <pre>
      *     MobileMetricsAgent mma = new MobileMetricsAgent.Builder()
      *             .setAppContext(getApplicationContext())
-     *             .setControllerAddress(getString(R.string.controller_address))
-     *             .setControllerPort(getResources().getInteger(R.integer.controller_port))
-     *             .setBootstrapperAddress(getString(R.string.bootstrapper_address))
-     *             .setBootstrapperCertificateResId(R.raw.bootstrap)
-     *             .setAuthorityHeader(getString(R.string.metrics_authority_header))
      *             .setBackendBaseURL(getString(R.string.backend_base_url))
      *             .setBackendCertificateResId(R.raw.server)
      *             .setBackendUsername(getString(R.string.backend_username))
@@ -216,12 +168,6 @@ public class MobileMetricsAgent {
      *     </pre>
      */
     public static class Builder {
-        private String mControllerAddress;
-        private String mBootstrapperAddress;
-        private int mControllerCertificateResId;
-        private String mMetricsAuthorityHeader;
-        private int mControllerPort;
-        private boolean mUseAutomaticRegistration = true;
         private String mBackendBaseURL;
         private int mBackendCertificateResId;
         private String mBackendUsername;
@@ -230,55 +176,6 @@ public class MobileMetricsAgent {
         //TODO: add flag to disable storing metrics locally for UI
 
         private Context mAppContext;
-
-
-        /**
-         * @param address URL of Magma's controller
-         */
-        public Builder setControllerAddress(String address) {
-            mControllerAddress = address;
-            return this;
-        }
-
-        /**
-         * @param address URL of the bootstrapper's controller
-         */
-        public Builder setBootstrapperAddress(String address) {
-            mBootstrapperAddress = address;
-            return this;
-        }
-
-        /**
-         * @param certificateResId Resource ID of the magma controller's raw certificate
-         */
-        public Builder setControllerCertificateResId(int certificateResId) {
-            mControllerCertificateResId = certificateResId;
-            return this;
-        }
-
-        /**
-         * @param address URL of the metrics' controller
-         */
-        public Builder setAuthorityHeader(String address) {
-            mMetricsAuthorityHeader = address;
-            return this;
-        }
-
-        /**
-         * @param port Port used by the bootstrapper's controller
-         */
-        public Builder setControllerPort(int port) {
-            mControllerPort = port;
-            return this;
-        }
-
-        /**
-         * @param enabled Flag to enable or disable automatic registration using OpenSchema's backend
-         */
-        public Builder setUseAutomaticRegistration(boolean enabled) {
-            mUseAutomaticRegistration = enabled;
-            return this;
-        }
 
         /**
          * @param baseURL Base URL of OpenSchema's middle box

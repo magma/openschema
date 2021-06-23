@@ -36,12 +36,11 @@ import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 import io.openschema.mma.metrics.MetricsWorker;
-import io.openschema.mma.networking.BackendApi;
+import io.openschema.mma.backend.BackendApi;
 
 /**
  * Repository class to manage the metrics data.
  */
-//TODO: update javadocs
 public class MetricsRepository {
 
     private static final String TAG = "MetricsRepository";

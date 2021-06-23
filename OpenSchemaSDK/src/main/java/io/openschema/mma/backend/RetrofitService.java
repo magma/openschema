@@ -12,9 +12,8 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.networking;
+package io.openschema.mma.backend;
 
-import android.app.Application;
 import android.content.Context;
 import android.util.Base64;
 import android.util.Log;

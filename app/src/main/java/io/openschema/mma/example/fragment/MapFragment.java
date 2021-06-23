@@ -60,7 +60,7 @@ import io.openschema.mma.example.R;
 import io.openschema.mma.example.util.FormattingUtils;
 import io.openschema.mma.example.databinding.FragmentMapBinding;
 import io.openschema.mma.example.view.ConnectionReportDialog;
-import io.openschema.mma.helpers.LocationServicesChecker;
+import io.openschema.mma.utils.LocationServicesChecker;
 import io.openschema.mma.metrics.collectors.ConnectionReport;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {

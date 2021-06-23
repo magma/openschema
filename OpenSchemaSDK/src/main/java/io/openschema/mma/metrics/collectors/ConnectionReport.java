@@ -26,7 +26,8 @@ import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 
 /**
- * We are treating connection reports as another metric to be collected
+ * Class to collect information for a connection report.
+ * We are treating connection reports as another metric to be collected.
  */
 public class ConnectionReport extends BaseMetrics {
     private static final String TAG = "ConnectionReport";

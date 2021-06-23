@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.helpers;
+package io.openschema.mma.utils;
 
 import android.app.Notification;
 import android.app.NotificationChannel;

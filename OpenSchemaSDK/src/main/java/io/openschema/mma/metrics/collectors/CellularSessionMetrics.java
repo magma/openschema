@@ -22,7 +22,9 @@ import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.pojo.Timestamp;
 
-//TODO: javadocs
+/**
+ * Collect metrics related to cellular sessions.
+ */
 public class CellularSessionMetrics extends NetworkSessionMetrics {
 
     /**

@@ -58,8 +58,10 @@ public class MetricsManager {
         mMetricsRepository.queueMetric(metricsEntity);
     }
 
-    //TODO: javadoc
-    public static void startWorker(Context appContext, String backendUrl, String backendUsername, String backendPassword) {
+    /**
+     * Schedules {@link MetricsWorker} to start it's periodic upload of metrics to the data lake.
+     */
+    public void startWorker(Context appContext, String backendUrl, String backendUsername, String backendPassword) {
         //Start the background worker to periodically push saved metrics.
         MetricsWorker.enqueuePeriodicWorker(appContext, backendUrl, backendUsername, backendPassword);
     }

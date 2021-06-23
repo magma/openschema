@@ -71,7 +71,6 @@ public class WifiNetworkMetrics extends BaseMetrics {
         return metricsList;
     }
 
-    //TODO: javadocs
     public String getSSID() {
         return mSSID;
     }

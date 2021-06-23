@@ -15,7 +15,6 @@
 package io.openschema.mma.example.viewmodel;
 
 import android.app.Application;
-import android.net.NetworkCapabilities;
 import android.util.Log;
 
 import java.util.Calendar;
@@ -29,9 +28,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
-import io.openschema.mma.example.util.FormattingUtils;
-import io.openschema.mma.helpers.CalendarUtils;
-import io.openschema.mma.helpers.UsageRetriever;
+import io.openschema.mma.utils.CalendarUtils;
 
 public class UsageViewModel extends AndroidViewModel {
 

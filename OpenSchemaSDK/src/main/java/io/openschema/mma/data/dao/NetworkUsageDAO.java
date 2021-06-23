@@ -22,7 +22,9 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
 
-//TODO: javadoc
+/**
+ * Data access object used to interact with the optional Network usage table in the database.
+ */
 @Dao
 public interface NetworkUsageDAO {
 

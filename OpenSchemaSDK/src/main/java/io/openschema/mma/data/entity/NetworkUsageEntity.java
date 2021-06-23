@@ -22,7 +22,6 @@ import androidx.room.PrimaryKey;
 /**
  * Entity class used by Room to store network usage locally. Entries will be split on an hourly-basis.
  */
-//TODO: javadocs
 @Entity(tableName = "network_usage")
 public class NetworkUsageEntity {
     /**

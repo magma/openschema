@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.helpers;
+package io.openschema.mma.utils;
 
 import java.util.Calendar;
 
-//TODO: javadocs
+/**
+ * Utility class to generate {@link Calendar} objects set to specific times we commonly use.
+ */
 public class CalendarUtils {
     public static Calendar getCurrentHourCalendar() {
         Calendar cal = Calendar.getInstance();

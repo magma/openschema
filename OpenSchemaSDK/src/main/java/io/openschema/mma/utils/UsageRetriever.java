@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.helpers;
+package io.openschema.mma.utils;
 
 import android.annotation.SuppressLint;
 import android.app.AppOpsManager;
@@ -26,7 +26,9 @@ import android.telephony.TelephonyManager;
 import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.OPSTR_GET_USAGE_STATS;
 
-//TODO: javadocs
+/**
+ * Utility class to extract network usage information using Android APIs.
+ */
 public class UsageRetriever {
     private static final String TAG = "UsageRetriever";
     private NetworkStatsManager mNetworkStatsManager = null;

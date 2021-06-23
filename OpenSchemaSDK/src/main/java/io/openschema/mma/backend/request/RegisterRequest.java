@@ -12,34 +12,17 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.helpers;
+package io.openschema.mma.backend.request;
 
-import com.google.protobuf.ByteString;
+import com.google.gson.annotations.SerializedName;
 
 /**
- * Helper class for R and S byte operations.
+ * Class with the structure expected to be received in the OpenSchema's middle box registration API.
  */
-public class RandSByteString {
-    private ByteString r;
-    private ByteString s;
+public class RegisterRequest {
+    @SerializedName("uuid") private String mUUID;
 
-    public RandSByteString() {
-        this.r = null;
-        this.s = null;
-    }
-
-    public void setR(ByteString r) {
-        this.r = r;
-    }
-
-    public void setS(ByteString s) {
-        this.s = s;
-    }
-
-    public ByteString getR(){
-        return this.r;
-    }
-    public ByteString getS(){
-        return this.s;
+    public RegisterRequest(String uuid) {
+        mUUID = uuid;
     }
 }
