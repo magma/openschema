@@ -15,6 +15,7 @@
 package io.openschema.mma;
 
 import android.app.Application;
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -23,6 +24,7 @@ import android.util.Log;
 import java.util.List;
 
 import androidx.core.util.Pair;
+import io.openschema.mma.utils.PersistentNotification;
 import io.openschema.mma.utils.SharedPreferencesHelper;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metrics.MetricsManager;
@@ -43,6 +45,7 @@ public class MobileMetricsAgent {
     private final boolean mEnableLibraryMetrics;
 
     private final Context mAppContext;
+    private final Notification mCustomNotification;
     private Identity mIdentity;
     private CertificateManager mCertificateManager;
     private boolean mIsReady = false;
@@ -57,6 +60,7 @@ public class MobileMetricsAgent {
         mEnableLibraryMetrics = mmaBuilder.mEnableLibraryMetrics;
 
         mAppContext = mmaBuilder.mAppContext;
+        mCustomNotification = mmaBuilder.mCustomNotification;
     }
 
     /**
@@ -116,6 +120,13 @@ public class MobileMetricsAgent {
 
         // Check if the library's baseline metrics are enabled
         if (mEnableLibraryMetrics) {
+
+            //Set custom notification if it was set on the builder
+            if (mCustomNotification != null) {
+                PersistentNotification persistentNotification = PersistentNotification.getInstance(mAppContext);
+                persistentNotification.setCustomNotification(mCustomNotification);
+            }
+
             mAppContext.startService(new Intent(mAppContext, MobileMetricsService.class));
         }
 
@@ -176,6 +187,7 @@ public class MobileMetricsAgent {
         //TODO: add flag to disable storing metrics locally for UI
 
         private Context mAppContext;
+        private Notification mCustomNotification = null;
 
         /**
          * @param baseURL Base URL of OpenSchema's middle box
@@ -226,6 +238,14 @@ public class MobileMetricsAgent {
                 appContext = appContext.getApplicationContext();
             }
             mAppContext = appContext;
+            return this;
+        }
+
+        /**
+         * @param notification Custom notification to be used for the SDK's persistent notification
+         */
+        public Builder setCustomNotification(Notification notification) {
+            mCustomNotification = notification;
             return this;
         }
 

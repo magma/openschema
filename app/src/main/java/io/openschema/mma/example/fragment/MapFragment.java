@@ -15,6 +15,7 @@
 package io.openschema.mma.example.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,11 +30,16 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.Cluster;
+import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -48,40 +54,43 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavBackStackEntry;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
-import io.openschema.mma.example.activity.MainActivity;
 import io.openschema.mma.example.R;
-import io.openschema.mma.example.util.FormattingUtils;
+import io.openschema.mma.example.activity.MainActivity;
 import io.openschema.mma.example.databinding.FragmentMapBinding;
+import io.openschema.mma.example.util.FormattingUtils;
 import io.openschema.mma.example.view.ConnectionReportDialog;
-import io.openschema.mma.utils.LocationServicesChecker;
+import io.openschema.mma.example.viewmodel.MapViewModel;
 import io.openschema.mma.metrics.collectors.ConnectionReport;
+import io.openschema.mma.utils.LocationServicesChecker;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private static final String TAG = "MapFragment";
     private FragmentMapBinding mBinding;
+    private MapViewModel mViewModel;
+
     private GoogleMap mGoogleMap = null;
-    private MetricsRepository mMetricsRepository;
 
     //TODO: Persisted with ViewModel instead?
     private HashMap<String, NetworkConnectionsEntity> mSeenEntitiesMap = new HashMap<>();
-    private Marker mCurrentMarker = null;
+    private CustomItem mCurrentSelection = null;
 
     private int mWifiHue, mCellularHue;
+    private ClusterManager<CustomItem> mClusterManager;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mBinding = FragmentMapBinding.inflate(inflater, container, false);
-        mMetricsRepository = MetricsRepository.getRepository(requireContext().getApplicationContext());
+        mViewModel = new ViewModelProvider(this).get(MapViewModel.class);
         return mBinding.getRoot();
     }
 
@@ -104,25 +113,33 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     @SuppressLint("MissingPermission")
+    //Ignoring location permission since it's mandatory for the app
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         Log.d(TAG, "UI: Map is ready");
         mGoogleMap = googleMap;
+        mClusterManager = new ClusterManager<>(requireContext(), mGoogleMap);
 
         //Configure map object
         mGoogleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style));
-        mGoogleMap.setOnMarkerClickListener(this);
-        mGoogleMap.setOnInfoWindowCloseListener(marker -> onMarkerDeselected());
-        mGoogleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
+        mGoogleMap.setOnCameraIdleListener(mClusterManager);
+        mClusterManager.setRenderer(new CustomClusterRenderer(requireContext(), mGoogleMap, mClusterManager));
 
-        //Ignoring location permission since it's mandatory for the app
+        //Cluster markers
+        mClusterManager.setOnClusterClickListener(this::onClusterSelected);
+        mClusterManager.getClusterMarkerCollection().setInfoWindowAdapter(new CustomClusterInfoWindowAdapter(getLayoutInflater(), mViewModel));
+        //Connection markers
+        mClusterManager.setOnClusterItemClickListener(this::onMarkerSelected);
+        mClusterManager.getMarkerCollection().setInfoWindowAdapter(new CustomItemInfoWindowAdapter(getLayoutInflater()));
+
+        mGoogleMap.setOnInfoWindowCloseListener(marker -> onMarkerDeselected());
         mGoogleMap.setMyLocationEnabled(true);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
         mGoogleMap.getUiSettings().setRotateGesturesEnabled(false);
 
         //TODO: persist state in cache with a viewmodel?
         //Setup observer for network connections from SDK
-        mMetricsRepository.getAllNetworkConnections().observe(getViewLifecycleOwner(), networkConnectionsEntities -> {
+        mViewModel.getAllNetworkConnections().observe(getViewLifecycleOwner(), networkConnectionsEntities -> {
             if (networkConnectionsEntities != null) {
                 onNetworkConnectionsReceived(networkConnectionsEntities);
             }
@@ -137,7 +154,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 }
             });
         }
-
     }
 
     //Iterates through all the network connections received from observing the Room database and creates a marker in the google map instance for each unique session.
@@ -169,74 +185,49 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
         Log.d(TAG, "UI: Added " + processedCount + " new markers to the map");
+        mClusterManager.cluster();
     }
 
     //Create values to configure the data contained in each marker
     private void createMarker(NetworkConnectionsEntity currentEntity) {
-        LatLng currentLatLng = new LatLng(currentEntity.getLatitude(), currentEntity.getLongitude());
+
         float currentIconHue = currentEntity.getTransportType() == NetworkCapabilities.TRANSPORT_WIFI ? mWifiHue : mCellularHue;
 
-        //Each data point is split by a newline to be able to process it later on the custom info window
-        StringBuilder snippetBuilder = new StringBuilder();
-        snippetBuilder.append(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(currentEntity.getTimestamp())));
-        snippetBuilder.append("\n").append("Duration: ").append(FormattingUtils.humanReadableTime(currentEntity.getDuration()));
-        snippetBuilder.append("\n").append("Usage: ").append(FormattingUtils.humanReadableByteCountSI(currentEntity.getUsage()));
-        if (currentEntity.getIsReported()) {
-            snippetBuilder.append("\n").append("You reported this connection.");
-        }
-
-        //Check the network type for the connection entity and extract network-specific information
-        String currentTitle;
-        if (currentEntity instanceof WifiConnectionsEntity) {
-            WifiConnectionsEntity newEntity = (WifiConnectionsEntity) currentEntity;
-            currentTitle = String.format("Wi-Fi: %s", newEntity.getSSID());
-        } else if (currentEntity instanceof CellularConnectionsEntity) {
-            CellularConnectionsEntity newEntity = (CellularConnectionsEntity) currentEntity;
-            currentTitle = String.format("Cellular (%s): %s", newEntity.getNetworkType(), newEntity.getCellIdentity());
-        } else {
-            currentTitle = currentEntity.getTransportType() == NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi Connection" : "Cellular Connection";
-        }
-
-        //Add the Marker to the map
-        Marker newMarker = mGoogleMap.addMarker(new MarkerOptions()
-                .position(currentLatLng)
-                .title(currentTitle)
-                .snippet(snippetBuilder.toString())
-                .icon(BitmapDescriptorFactory.defaultMarker(currentIconHue))
-        );
+        CustomItem newItem = new CustomItem(currentEntity, BitmapDescriptorFactory.defaultMarker(currentIconHue));
+        mClusterManager.addItem(newItem);
 
         //Save the db entry's ID in the marker for reference
-        if (newMarker != null) {
-            newMarker.setTag(currentEntity.getCompoundId());
-            mSeenEntitiesMap.put(currentEntity.getCompoundId(), currentEntity);
-        } else {
-            Log.e(TAG, "UI: There was an error adding a marker to connection " + currentEntity.getId());
-        }
+        mSeenEntitiesMap.put(currentEntity.getCompoundId(), currentEntity);
     }
 
-    @Override
-    public boolean onMarkerClick(@NonNull Marker marker) {
+    private boolean onMarkerSelected(CustomItem item) {
         //Retrieve the db entry's ID
-        NetworkConnectionsEntity entity = mSeenEntitiesMap.get(marker.getTag());
+        NetworkConnectionsEntity entity = mSeenEntitiesMap.get(item.getId());
 
         //Check that the marker hasn't been reported already and show the reporting button.
         if (entity != null && !entity.getIsReported()) {
             mBinding.mapReportConnection.setVisibility(View.VISIBLE);
-            mCurrentMarker = marker;
+            mCurrentSelection = item;
         }
-
         return false;
     }
 
     //Clear the cached selected marker ID and hide the connection report button.
     private void onMarkerDeselected() {
-        mBinding.mapReportConnection.setVisibility(View.GONE);
-        mCurrentMarker = null;
+        Log.d(TAG, "UI: onMarkerDeselected");
+        //Need to check if there is a selection since this callback occurs on either a Cluster or ClusterItem.
+        if (mCurrentSelection != null) {
+            Log.d(TAG, "UI: onMarkerDeselected: " + mCurrentSelection.getId());
+            mBinding.mapReportConnection.setVisibility(View.GONE);
+            mCurrentSelection = null;
+        }
+
+        mViewModel.setSelectedClusterData(null);
     }
 
     //Opens a report dialog and handles the result
     private void onConnectionReportOpened() {
-        if (mCurrentMarker == null) {
+        if (mCurrentSelection == null) {
             Log.e(TAG, "UI: No network connection has been selected");
             return;
         }
@@ -271,27 +262,48 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     //Generate the connection report structure and use the SDK to collect it.
     private void onConnectionReported(String reportDescription) {
-        final NetworkConnectionsEntity connectionEntity = mSeenEntitiesMap.get(mCurrentMarker.getTag());
+        final NetworkConnectionsEntity connectionEntity = mSeenEntitiesMap.get(mCurrentSelection.getId());
         final ConnectionReport connectionReport = new ConnectionReport(requireContext(), connectionEntity, reportDescription);
 
         //Collect metric into SDK's buffer.
         ((MainActivity) requireActivity()).pushMetric(ConnectionReport.METRIC_NAME, connectionReport.retrieveMetrics());
 
         //Mark the network connection locally as reported to prevent reporting the same connection multiple times.
-        mMetricsRepository.flagNetworkConnectionReported(connectionEntity);
+        mViewModel.flagNetworkConnectionReported(connectionEntity);
 
         //Remove the marker from both the hashmap and map view for it to be updated.
-        mSeenEntitiesMap.remove(mCurrentMarker.getTag());
-        mCurrentMarker.remove();
+        mSeenEntitiesMap.remove(mCurrentSelection.getId());
+        mClusterManager.removeItem(mCurrentSelection);
+    }
+
+    //Calculate the cluster's aggregated values and store them to show in the info window
+    private boolean onClusterSelected(Cluster<CustomItem> cluster) {
+        List<CustomItem> clusterItems = (List<CustomItem>) cluster.getItems();
+        long totalCellularUsage = 0, totalWifiUsage = 0;
+        long totalCellularDuration = 0, totalWifiDuration = 0;
+
+        for (int i = 0; i < clusterItems.size(); i++) {
+            CustomItem currentItem = clusterItems.get(i);
+            if (currentItem.getEntity().getTransportType() == NetworkCapabilities.TRANSPORT_CELLULAR) {
+                totalCellularUsage += currentItem.getEntity().getUsage();
+                totalCellularDuration += currentItem.getEntity().getDuration();
+            } else if (currentItem.getEntity().getTransportType() == NetworkCapabilities.TRANSPORT_WIFI) {
+                totalWifiUsage += currentItem.getEntity().getUsage();
+                totalWifiDuration += currentItem.getEntity().getDuration();
+            }
+        }
+
+        mViewModel.setSelectedClusterData(new ClusterData(cluster.getSize(), totalCellularUsage, totalCellularDuration, totalWifiUsage, totalWifiDuration));
+        return false;
     }
 
     //Class to handle customized view when opening a marker within the map.
-    class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+    private static class CustomItemInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         private final View mContents;
 
-        CustomInfoWindowAdapter() {
-            mContents = getLayoutInflater().inflate(R.layout.view_custom_info_window, null);
+        CustomItemInfoWindowAdapter(LayoutInflater layoutInflater) {
+            mContents = layoutInflater.inflate(R.layout.view_custom_item_info_window, null);
         }
 
         @Nullable
@@ -327,6 +339,147 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             }
 
             return mContents;
+        }
+    }
+
+    //Class to handle customized view when opening a marker within the map.
+    private static class CustomClusterInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+
+        private final View mContents;
+        private MapViewModel mViewModel;
+
+        CustomClusterInfoWindowAdapter(LayoutInflater layoutInflater, MapViewModel viewModel) {
+            mContents = layoutInflater.inflate(R.layout.view_custom_cluster_info_window, null);
+            mViewModel = viewModel;
+        }
+
+        @Nullable
+        @Override
+        public View getInfoWindow(@NonNull Marker marker) {
+            return null;
+        }
+        @Nullable
+        @Override
+        public View getInfoContents(@NonNull Marker marker) {
+            ClusterData clusterData = mViewModel.getSelectedClusterData();
+            TextView titleTxt = mContents.findViewById(R.id.info_title);
+            titleTxt.setText(String.format("%d Connections", clusterData.getItemCount()));
+
+            TextView cellularUsageTxt = mContents.findViewById(R.id.info_cellular_usage);
+            cellularUsageTxt.setText(String.format("Cellular Usage: %s", FormattingUtils.humanReadableByteCountSI(clusterData.getTotalCellularUsage())));
+
+            TextView cellularDurationTxt = mContents.findViewById(R.id.info_cellular_duration);
+            cellularDurationTxt.setText(String.format("Cellular Duration: %s", FormattingUtils.humanReadableTime(clusterData.getTotalCellularDuration())));
+
+            TextView wifiUsageTxt = mContents.findViewById(R.id.info_wifi_usage);
+            wifiUsageTxt.setText(String.format("Wi-Fi Usage: %s", FormattingUtils.humanReadableByteCountSI(clusterData.getTotalWifiUsage())));
+
+            TextView wifiDurationTxt = mContents.findViewById(R.id.info_wifi_duration);
+            wifiDurationTxt.setText(String.format("Wi-Fi Duration: %s", FormattingUtils.humanReadableTime(clusterData.getTotalWifiDuration())));
+
+            return mContents;
+        }
+    }
+
+    //POJO to handle a cluster's information for it's custom info window
+    public static class ClusterData {
+        private final long mItemCount;
+        private final long mTotalCellularUsage;
+        private final long mTotalCellularDuration;
+        private final long mTotalWifiUsage;
+        private final long mTotalWifiDuration;
+
+        public ClusterData(int itemCount, long totalCellularUsage, long totalCellularDuration, long totalWifiUsage, long totalWifiDuration) {
+            mItemCount = itemCount;
+            mTotalCellularUsage = totalCellularUsage;
+            mTotalCellularDuration = totalCellularDuration;
+            mTotalWifiUsage = totalWifiUsage;
+            mTotalWifiDuration = totalWifiDuration;
+        }
+
+        public long getItemCount() { return mItemCount; }
+        public long getTotalCellularUsage() { return mTotalCellularUsage; }
+        public long getTotalCellularDuration() { return mTotalCellularDuration; }
+        public long getTotalWifiUsage() { return mTotalWifiUsage; }
+        public long getTotalWifiDuration() { return mTotalWifiDuration; }
+
+    }
+
+    //Class to handle clustered markers on the map
+    private static class CustomItem implements ClusterItem {
+        private final NetworkConnectionsEntity mEntity;
+        private final LatLng mPosition;
+        private final String mTitle;
+        private final String mSnippet;
+        private final BitmapDescriptor mIcon;
+
+        public CustomItem(NetworkConnectionsEntity networkConnectionsEntity, BitmapDescriptor icon) {
+            //Each data point is split by a newline to be able to process it later on the custom info window
+            StringBuilder snippetBuilder = new StringBuilder();
+            snippetBuilder.append(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(networkConnectionsEntity.getTimestamp())));
+            snippetBuilder.append("\n").append("Duration: ").append(FormattingUtils.humanReadableTime(networkConnectionsEntity.getDuration()));
+            snippetBuilder.append("\n").append("Usage: ").append(FormattingUtils.humanReadableByteCountSI(networkConnectionsEntity.getUsage()));
+            if (networkConnectionsEntity.getIsReported()) {
+                snippetBuilder.append("\n").append("You reported this connection.");
+            }
+
+            //Check the network type for the connection entity and extract network-specific information
+            String title;
+            if (networkConnectionsEntity instanceof WifiConnectionsEntity) {
+                WifiConnectionsEntity newEntity = (WifiConnectionsEntity) networkConnectionsEntity;
+                title = String.format("Wi-Fi: %s", newEntity.getSSID());
+            } else if (networkConnectionsEntity instanceof CellularConnectionsEntity) {
+                CellularConnectionsEntity newEntity = (CellularConnectionsEntity) networkConnectionsEntity;
+                title = String.format("Cellular (%s): %s", newEntity.getNetworkType(), newEntity.getCellIdentity());
+            } else {
+                title = networkConnectionsEntity.getTransportType() == NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi Connection" : "Cellular Connection";
+            }
+
+            mEntity = networkConnectionsEntity;
+            mPosition = new LatLng(networkConnectionsEntity.getLatitude(), networkConnectionsEntity.getLongitude());
+            mTitle = title;
+            mSnippet = snippetBuilder.toString();
+            mIcon = icon;
+        }
+
+        public NetworkConnectionsEntity getEntity() { return mEntity;}
+
+        public String getId() { return mEntity.getCompoundId(); }
+
+        @Override
+        public LatLng getPosition() { return mPosition; }
+
+        @Override
+        public String getTitle() { return mTitle; }
+
+        @Override
+        public String getSnippet() { return mSnippet; }
+
+        public BitmapDescriptor getIcon() { return mIcon; }
+    }
+
+    //Class to handle custom markers on the map when using the clustering classes
+    private static class CustomClusterRenderer extends DefaultClusterRenderer<CustomItem> {
+
+        public CustomClusterRenderer(Context context, GoogleMap map, ClusterManager<CustomItem> clusterManager) {
+            super(context, map, clusterManager);
+        }
+
+        @Override
+        protected void onBeforeClusterItemRendered(@NonNull CustomItem item, @NonNull MarkerOptions markerOptions) {
+            markerOptions
+                    .position(item.getPosition())
+                    .title(item.getTitle())
+                    .snippet(item.getSnippet())
+                    .icon(item.getIcon());
+        }
+
+        @Override
+        protected void onClusterItemUpdated(@NonNull CustomItem item, @NonNull Marker marker) {
+            marker.setPosition(item.getPosition());
+            marker.setTitle(item.getTitle());
+            marker.setSnippet(item.getSnippet());
+            marker.setIcon(item.getIcon());
         }
     }
 }

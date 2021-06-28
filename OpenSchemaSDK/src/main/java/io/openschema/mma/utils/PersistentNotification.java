@@ -32,11 +32,14 @@ import io.openschema.mma.R;
 public class PersistentNotification {
 
     private static final String TAG = "PersistentNotification";
-    private static PersistentNotification _instance = null;
     public static final int SERVICE_NOTIFICATION_ID = 1;
+    public static final String SERVICE_NOTIFICATION_CHANNEL_ID = "SERVICE_NOTIFICATION_CHANNEL";
+
+    private static PersistentNotification _instance = null;
+
+    private Notification mPersistentNotification = null;
 
     public static PersistentNotification getInstance(Context context) {
-//        Log.d(TAG, "UI: Fetching PersistentNotification");
         if (_instance == null) {
             synchronized (PersistentNotification.class) {
                 if (_instance == null) {
@@ -52,10 +55,6 @@ public class PersistentNotification {
         initNotificationChannel(context);
         initNotificationBuilder(context);
     }
-
-    //Persistent Notification
-    private static final String SERVICE_NOTIFICATION_CHANNEL_ID = "SERVICE_NOTIFICATION_CHANNEL";
-    private NotificationCompat.Builder mPersistentNotificationBuilder = null;
 
     private void initNotificationChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -76,7 +75,7 @@ public class PersistentNotification {
         intent.setData(Uri.fromParts("package", context.getPackageName(), null));
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        mPersistentNotificationBuilder = new NotificationCompat.Builder(context, SERVICE_NOTIFICATION_CHANNEL_ID)
+        mPersistentNotification = new NotificationCompat.Builder(context, SERVICE_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.persistent_notification_icon)
                 .setContentTitle("OpenSchema is running")
                 .setContentText("Tap here for more information.")
@@ -84,12 +83,13 @@ public class PersistentNotification {
                 .setShowWhen(false)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setContentIntent(pendingIntent);
+                .setContentIntent(pendingIntent)
+                .build();
     }
 
     public void show(Context context) {
         NotificationManagerCompat.from(context)
-                .notify(SERVICE_NOTIFICATION_ID, mPersistentNotificationBuilder.build());
+                .notify(SERVICE_NOTIFICATION_ID, mPersistentNotification);
     }
 
     public void hide(Context context) {
@@ -97,7 +97,11 @@ public class PersistentNotification {
                 .cancel(SERVICE_NOTIFICATION_ID);
     }
 
+    public void setCustomNotification(Notification notification) {
+        mPersistentNotification = notification;
+    }
+
     public Notification getNotification() {
-        return mPersistentNotificationBuilder.build();
+        return mPersistentNotification;
     }
 }
