@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020, The Magma Authors
+  ~ All rights reserved.
+  ~
+  ~ This source code is licensed under the BSD-style license found in the
+  ~ LICENSE file in the root directory of this source tree.
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_main"
+    app:startDestination="@id/nav_usage"
+    >
+
+    <fragment
+        android:id="@+id/nav_usage"
+        android:name="io.openschema.mma.example.fragment.UsageFragment"
+        android:label="@string/app_name"
+        />
+
+    <fragment
+        android:id="@+id/nav_map"
+        android:name="io.openschema.mma.example.fragment.MapFragment"
+        android:label="@string/app_name"
+        >
+        <action
+            android:id="@+id/action_nav_map_to_dialog_connection_report"
+            app:destination="@id/dialog_connection_report"
+            />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_metric_logs"
+        android:name="io.openschema.mma.example.fragment.MetricLogsFragment"
+        android:label="@string/app_name"
+        />
+
+    <dialog
+        android:id="@+id/dialog_connection_report"
+        android:name="io.openschema.mma.example.view.ConnectionReportDialog"
+        android:label="Connection Report"
+        />
+
+    <activity
+        android:id="@+id/activity_onboarding"
+        android:name="io.openschema.mma.example.activity.OnboardingActivity"
+        />
+    <action
+        android:id="@+id/action_to_onboarding"
+        app:destination="@id/activity_onboarding"
+        />
+</navigation>

@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright (c) 2020, The Magma Authors
+  ~ All rights reserved.
+  ~
+  ~ This source code is licensed under the BSD-style license found in the
+  ~ LICENSE file in the root directory of this source tree.
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="io.openschema.mma"
+    >
+
+    <!--Used to retrieve Wi-Fi SSID, BSSID & location-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!--Used to retrieve information specific to the Wi-Fi network-->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!--Used to retrieve information specific to the cellular network-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <!--Used to retrieve usage information-->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions"
+        />
+
+    <!--Used to track network changes-->
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+
+    <!--Used to allow using a foreground service to collect data from the background-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!--TODO: research using this permission to avoid being killed in the background-->
+<!--    <uses-permission android:name="REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />-->
+</manifest>

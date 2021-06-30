@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020, The Magma Authors
+  ~ All rights reserved.
+  ~
+  ~ This source code is licensed under the BSD-style license found in the
+  ~ LICENSE file in the root directory of this source tree.
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <color name="primaryColor">#5602a4</color>
+    <color name="primaryLightColor">#8a3ed6</color>
+    <color name="primaryDarkColor">#1b0074</color>
+    <color name="primaryTextColor">#ffffff</color>
+
+    <color name="surfaceColor">#FFFFFF</color>
+    <color name="surfaceTextColor">#000000</color>
+
+    <color name="backgroundColor">#FFFFFF</color>
+    <color name="backgroundTextColor">#000000</color>
+
+    <color name="errorColor">#B00020</color>
+    <color name="errorTextColor">#FFFFFF</color>
+
+    <color name="wifiColor">#a40250</color>
+    <color name="cellularColor">#a45602</color>
+</resources>
