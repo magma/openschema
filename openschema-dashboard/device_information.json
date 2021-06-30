@@ -1,0 +1,221 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 4,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": null,
+            "filterable": false
+          },
+          "mappings": [],
+          "noValue": "No Data Available",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaDeviceInfo.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$sort\" : { \"ts\" : 1} },\n{ \"$project\" : {\"UUID\" : \"$identifier.uuid\", \"Android ID\": \"$metrics.androidId\",  \"OS Version\" : \"$metrics.osVersion\", \"Device Model\" : \"$metrics.model\",  \"Device Manufacturer\" : \"$metrics.manufacturer\", \"Device Brand\" : \"$metrics.brand\" } }\n] )",
+          "type": "table"
+        }
+      ],
+      "title": "Device List",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "_id": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "_id": ""
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "circleMaxSize": "5",
+      "circleMinSize": "5",
+      "colors": [
+        "rgba(245, 54, 54, 0.9)",
+        "#5794F2",
+        "#5794F2"
+      ],
+      "datasource": null,
+      "decimals": 0,
+      "description": "",
+      "esGeoPoint": "value",
+      "esLocationName": "",
+      "esMetric": "Count",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 13,
+        "x": 0,
+        "y": 6
+      },
+      "hideEmpty": false,
+      "hideZero": false,
+      "id": 2,
+      "initialZoom": "1",
+      "locationData": "table",
+      "mapCenter": "(0°, 0°)",
+      "mapCenterLatitude": 0,
+      "mapCenterLongitude": 0,
+      "maxDataPoints": 1,
+      "mouseWheelZoom": true,
+      "pluginVersion": "7.5.7",
+      "showLegend": true,
+      "stickyLabels": true,
+      "tableQueryOptions": {
+        "geohashField": "geohash",
+        "labelField": "Device",
+        "latitudeField": "latitude",
+        "longitudeField": "longitude",
+        "metricField": "osVersion",
+        "queryType": "coordinates"
+      },
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaDeviceInfo.aggregate([\n{ \"$lookup\": { \"from\": \"openschemaWifiSession\", \"localField\": \"identifier.uuid\", \"foreignField\": \"identifier.uuid\", \"as\": \"Wifi_Info\" } },\n{ \"$addFields\": { \"Wifi_Info\": { \"$arrayElemAt\": [\"$Wifi_Info\", -1] } } },\n{ \"$project\": { \"metrics\": \"$metrics\", \"identifier\": \"$identifier\", \"timestamp\": \"$timestamp\", \"location\": \"$Wifi_Info.metrics.location\" } },\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$unwind\": \"$location\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\": { \"Device\": { \"$concat\": [ \"Device Model: \", \"$metrics.model\", \" - OS Version\"] }, \"latitude\": \"$location.latitude\", \"longitude\": \"$location.longitude\", \"osVersion\" : \"$metrics.osVersion\" } }\n] )",
+          "type": "table"
+        }
+      ],
+      "thresholds": "0,1",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Devices Location",
+      "type": "grafana-worldmap-panel",
+      "unitPlural": "",
+      "unitSingle": "",
+      "unitSingular": "",
+      "valueName": "total"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 11,
+        "x": 13,
+        "y": 6
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaDeviceInfo.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$group\" : {  \"_id\" :  \"$identifier.uuid\", \"myCount\" : { \"$sum\" : 1 }, \"ts\" : { \"$last\"  : \"$timestamp.timestamp\"} } },\n{ \"$group\" : {  \"_id\" :  \"$_id\", \"myCount\" : { \"$sum\" : 1 }, \"ts\" : { \"$last\"  : \"$ts\"} } },\n{ \"$project\" : { \"name\" : \"Unique UUID's\", \"value\" :  \"$myCount\" , \"ts\" : \"$ts\" } }\n] )",
+          "type": "timeserie"
+        }
+      ],
+      "title": "Device Count",
+      "type": "stat"
+    }
+  ],
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Device Information",
+  "uid": "KGCz3ZeMz",
+  "version": 17
+}

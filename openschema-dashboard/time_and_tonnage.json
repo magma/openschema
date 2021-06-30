@@ -1,0 +1,520 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "min": 0,
+          "noValue": "No Data Available",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9,
+      "options": {
+        "displayLabels": [
+          "value",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaWifiSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"time\" : \"$timestamp.timestamp\",  \"totalBytes\" : { \"$sum\" :  [\"$metrics.rxBytes\", \"$metrics.txBytes\" ] } } },\n{ \"$group\" : {  \"_id\" :  \"$time\", \"totalBytes\" :  { \"$sum\" : \"$totalBytes\" } } },\n{ \"$sort\" : {\"_id\" : 1}  },\n{ \"$project\" : { \"name\" : \"Total GB on Wi-Fi\", \"value\" :  { \"$divide\" : [ \"$totalBytes\", 1000000000] } , \"ts\" : \"$_id\" } }\n] )",
+          "type": "timeserie"
+        },
+        {
+          "hide": false,
+          "rawQuery": true,
+          "refId": "B",
+          "target": "db.openschemaCellularSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"time\" : \"$timestamp.timestamp\",  \"totalBytes\" : { \"$sum\" :  [\"$metrics.rxBytes\", \"$metrics.txBytes\" ] } } },\n{ \"$group\" : {  \"_id\" :  \"$time\", \"totalBytes\" :  { \"$sum\" : \"$totalBytes\" } } },\n{ \"$sort\" : {\"_id\" : 1}  },\n{ \"$project\" : { \"name\" : \"Total GB on Cellular\", \"value\" :  { \"$divide\" : [ \"$totalBytes\", 1000000000] } , \"ts\" : \"$_id\" } }\n] )",
+          "type": "timeserie"
+        }
+      ],
+      "title": "Total Cellular vs Wi-fi GB",
+      "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Unique UUID's$/",
+          "values": false
+        },
+        "text": {},
+        "textMode": "value"
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaWifiSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$group\" : {  \"_id\" :  \"$identifier.uuid\", \"myCount\" : { \"$sum\" : 1 }, \"ts\" : { \"$last\"  : \"$timestamp.timestamp\"} } },\n{ \"$group\" : {  \"_id\" :  \"$_id\", \"myCount\" : { \"$sum\" : 1 }, \"ts\" : { \"$last\"  : \"$ts\"} } },\n{ \"$project\" : { \"name\" : \"Unique UUID's\", \"value\" :  \"$myCount\" , \"ts\" : \"$ts\" } }\n] )",
+          "type": "timeserie"
+        }
+      ],
+      "title": "Unique UUID's",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "hiddenSeries": false,
+      "id": 6,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": false
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.7",
+      "pointradius": 3,
+      "points": true,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:533",
+          "alias": "Total GB on Wi-Fi",
+          "yaxis": 2
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaWifiSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"year\" : { \"$year\" : \"$timestamp.timestamp\" }, \"month\": { \"$month\" : \"$timestamp.timestamp\" }, \"day\" : { \"$dayOfMonth\" : \"$timestamp.timestamp\" }, \"hour\" : { \"$hour\" : \"$timestamp.timestamp\" },  \"sessionDurationMillis\" :  \"$metrics.sessionDurationMillis\",  \"ts\": \"$timestamp.timestamp\"} },\n{ \"$group\" : {  \"_id\" :  { \"year\":\"$year\",\"month\":\"$month\",\"day\":\"$day\",\"hour\":\"$hour\"}, \"totalMilliseconds\" : { \"$sum\" : \"$sessionDurationMillis\" }, \"ts\": { \"$last\" : \"$ts\" } } },\n{ \"$sort\" : {\"ts\" : 1}},  \n{ \"$project\" : { \"name\" : \"Wi-Fi Connection Duration Hours\", \"value\" :  { \"$divide\" : [ \"$totalMilliseconds\", 3600000] } , \"ts\" : \"$ts\" } }\n] )",
+          "type": "timeserie"
+        },
+        {
+          "hide": false,
+          "rawQuery": true,
+          "refId": "B",
+          "target": "db.openschemaWifiSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"year\" : { \"$year\" : \"$timestamp.timestamp\" }, \"month\": { \"$month\" : \"$timestamp.timestamp\" }, \"day\" : { \"$dayOfMonth\" : \"$timestamp.timestamp\" }, \"hour\" : { \"$hour\" : \"$timestamp.timestamp\" },  \"totalBytes\" : { \"$sum\" :  [\"$metrics.rxBytes\", \"$metrics.txBytes\" ] },  \"ts\": \"$timestamp.timestamp\"} },\n{ \"$group\" : {  \"_id\" :  { \"year\":\"$year\",\"month\":\"$month\",\"day\":\"$day\",\"hour\":\"$hour\"}, \"totalBytes\" :  { \"$sum\" : \"$totalBytes\" }, \"ts\": { \"$last\" : \"$ts\" } } },\n{ \"$sort\" : {\"ts\" : 1}}, \n{ \"$project\" : { \"name\" : \"Total GB on Wi-Fi\", \"value\" :  { \"$divide\" : [ \"$totalBytes\", 1000000000] } , \"ts\" : \"$ts\" } }\n] )",
+          "type": "timeserie"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Session Duration vs Data Usage - Wi-Fi",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:1343",
+          "format": "short",
+          "label": "Hours",
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:1344",
+          "format": "short",
+          "label": "GB",
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": 1
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "hiddenSeries": false,
+      "id": 7,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.7",
+      "pointradius": 2,
+      "points": true,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:611",
+          "alias": "Total GB on Cellular",
+          "yaxis": 2
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaCellularSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"year\" : { \"$year\" : \"$timestamp.timestamp\" }, \"month\": { \"$month\" : \"$timestamp.timestamp\" }, \"day\" : { \"$dayOfMonth\" : \"$timestamp.timestamp\" }, \"hour\" : { \"$hour\" : \"$timestamp.timestamp\" },  \"sessionDurationMillis\" :  \"$metrics.sessionDurationMillis\",  \"ts\": \"$timestamp.timestamp\"} },\n{ \"$group\" : {  \"_id\" :  { \"year\":\"$year\",\"month\":\"$month\",\"day\":\"$day\",\"hour\":\"$hour\"}, \"totalMilliseconds\" : { \"$sum\" : \"$sessionDurationMillis\" }, \"ts\": { \"$last\" : \"$ts\" } } },\n{ \"$sort\" : {\"ts\" : 1} },\n{ \"$project\" : { \"name\" : \"Cellular Connection Duration Hours\", \"value\" :  { \"$divide\" : [ \"$totalMilliseconds\", 3600000] } , \"ts\" : \"$ts\" } }\n] )",
+          "type": "timeserie"
+        },
+        {
+          "hide": false,
+          "rawQuery": true,
+          "refId": "B",
+          "target": "db.openschemaCellularSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"year\" : { \"$year\" : \"$timestamp.timestamp\" }, \"month\": { \"$month\" : \"$timestamp.timestamp\" }, \"day\" : { \"$dayOfMonth\" : \"$timestamp.timestamp\" }, \"hour\" : { \"$hour\" : \"$timestamp.timestamp\" },  \"totalBytes\" : { \"$sum\" :  [\"$metrics.rxBytes\", \"$metrics.txBytes\" ] },  \"ts\": \"$timestamp.timestamp\"} },\n{ \"$group\" : {  \"_id\" :  { \"year\":\"$year\",\"month\":\"$month\",\"day\":\"$day\",\"hour\":\"$hour\"}, \"totalBytes\" :  { \"$sum\" : \"$totalBytes\" }, \"ts\": { \"$last\" : \"$ts\" } } },\n{ \"$sort\" : {\"ts\" : 1} },\n{ \"$project\" : { \"name\" : \"Total GB on Cellular\", \"value\" :  { \"$divide\" : [ \"$totalBytes\", 1000000000] } , \"ts\" : \"$ts\" } }\n] )",
+          "type": "timeserie"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Session Duration vs Data Usage - Cellular",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:1343",
+          "format": "short",
+          "label": "Hours",
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:1344",
+          "format": "short",
+          "label": "GB",
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "noValue": "No Data Available",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "displayLabels": [
+          "value",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaWifiSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"name\" : \"Wi-Fi Rx GB\", \"value\" : { \"$divide\": [ \"$metrics.rxBytes\", 1000000000  ] } , \"ts\" : \"$timestamp.timestamp\" } }\n] )",
+          "type": "timeserie"
+        },
+        {
+          "hide": false,
+          "rawQuery": true,
+          "refId": "B",
+          "target": "db.openschemaWifiSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"identifier.clientType\" : \"android\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"name\" : \"Wi-Fi Tx GB\", \"value\" : { \"$divide\": [ \"$metrics.txBytes\", 1000000000  ] } , \"ts\" : \"$timestamp.timestamp\" } }\n] )",
+          "type": "timeserie"
+        }
+      ],
+      "title": "Wi-Fi Data Usage",
+      "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "noValue": "No Data Available",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 13,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "rawQuery": true,
+          "refId": "A",
+          "target": "db.openschemaCellularSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"metrics.networkType\" : \"4G\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"time\" : \"$timestamp.timestamp\",  \"totalBytes\" : { \"$sum\" :  [\"$metrics.rxBytes\", \"$metrics.txBytes\" ] } } },\n{ \"$project\" : { \"name\" : \"4G\", \"value\" :  { \"$divide\" : [ \"$totalBytes\", 1000000000] } , \"ts\" : \"$time\" } }\n] )",
+          "type": "timeserie"
+        },
+        {
+          "hide": false,
+          "rawQuery": true,
+          "refId": "B",
+          "target": "db.openschemaCellularSession.aggregate([\n{ \"$unwind\": \"$metrics\"},\n{ \"$unwind\": \"$identifier\"},\n{ \"$unwind\": \"$timestamp\"},\n{ \"$match\" : {  \"metrics.networkType\" : \"3G\", \"timestamp.timestamp\" : { \"$gte\" : \"$from\", \"$lte\" : \"$to\" } } },\n{ \"$project\" : { \"time\" : \"$timestamp.timestamp\",  \"totalBytes\" : { \"$sum\" :  [\"$metrics.rxBytes\", \"$metrics.txBytes\" ] } } },\n{ \"$project\" : { \"name\" : \"3G\", \"value\" :  { \"$divide\" : [ \"$totalBytes\", 1000000000] } , \"ts\" : \"$time\" } }\n] )",
+          "type": "timeserie"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Cellular Data by Network Type",
+      "type": "piechart"
+    }
+  ],
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Tonnage and Time",
+  "uid": "JTSfmBqGk",
+  "version": 18
+}
