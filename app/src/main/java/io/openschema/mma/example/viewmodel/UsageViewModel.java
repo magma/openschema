@@ -15,11 +15,8 @@
 package io.openschema.mma.example.viewmodel;
 
 import android.app.Application;
-import android.util.Log;
 
-import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -28,43 +25,21 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
-import io.openschema.mma.utils.CalendarUtils;
+import io.openschema.mma.example.view.TimeSelector;
 
 public class UsageViewModel extends AndroidViewModel {
 
     private static final String TAG = "UsageViewModel";
     private final MetricsRepository mMetricsRepository;
 
-    private final MutableLiveData<UsageWindow> mCurrentWindow = new MutableLiveData<>(UsageWindow.DAY);
-    private final LiveData<String> mCurrentWindowTxt = Transformations.map(mCurrentWindow, UsageWindow::toString);
+    private final MutableLiveData<TimeSelector.TimeWindow> mCurrentWindow = new MutableLiveData<>(TimeSelector.TimeWindow.DAY);
     private final LiveData<List<NetworkUsageEntity>> mCurrentWindowEntities;
 
     public UsageViewModel(@NonNull Application application) {
         super(application);
         mMetricsRepository = MetricsRepository.getRepository(application.getApplicationContext());
         mCurrentWindowEntities = Transformations.switchMap(mCurrentWindow, currentWindow -> {
-            final long windowStart;
-            final long windowEnd;
-            switch (currentWindow) {
-                case HOUR:
-                    Calendar hourCal = CalendarUtils.getCurrentHourCalendar();
-                    windowStart = hourCal.getTimeInMillis();
-                    windowEnd = windowStart + TimeUnit.HOURS.toMillis(1);
-                    break;
-                case DAY:
-                    Calendar dayCal = CalendarUtils.getCurrentDayCalendar();
-                    windowStart = dayCal.getTimeInMillis();
-                    windowEnd = windowStart + TimeUnit.DAYS.toMillis(1);
-                    break;
-                default: //Month
-                    Calendar monthCal = CalendarUtils.getCurrentMonthCalendar();
-                    Calendar nextMonthCal = Calendar.getInstance();
-                    nextMonthCal.setTimeInMillis(monthCal.getTimeInMillis());
-                    nextMonthCal.add(Calendar.MONTH, 1);
-                    windowStart = monthCal.getTimeInMillis();
-                    windowEnd = nextMonthCal.getTimeInMillis();
-                    break;
-            }
+            currentWindow.calculateWindow();
 
             //Debugging difference between info collected by the service & the usage tracked by the OS.
 //            UsageRetriever usageRetriever = new UsageRetriever(getApplication().getApplicationContext());
@@ -75,37 +50,13 @@ public class UsageViewModel extends AndroidViewModel {
 //                    "\nCellular (OS): " + FormattingUtils.humanReadableByteCountSI(cellularTonnageOS) +
 //                    "\nWi-Fi (OS): " + FormattingUtils.humanReadableByteCountSI(wifiTonnageOS));
 
-            return mMetricsRepository.getUsageEntities(windowStart, windowEnd);
+            return mMetricsRepository.getUsageEntities(currentWindow.getWindowStart(), currentWindow.getWindowEnd());
         });
     }
 
-    public void moveUsageWindow(int delta) {
-        if (delta == 0) return;
-
-        UsageWindow[] enumValues = UsageWindow.values();
-        int currentValue = mCurrentWindow.getValue().ordinal();
-        currentValue += delta;
-
-        if (currentValue < 0 || currentValue >= enumValues.length) return;
-
-        UsageWindow newValue = enumValues[currentValue];
-        Log.d(TAG, "UI: Usage window has changed to: " + newValue.name());
-        mCurrentWindow.setValue(newValue);
+    public void setCurrentTimeWindow(TimeSelector.TimeWindow newWindow) {
+        mCurrentWindow.setValue(newWindow);
     }
-
-    public LiveData<String> getCurrentWindowTxt() { return mCurrentWindowTxt;}
 
     public LiveData<List<NetworkUsageEntity>> getUsageEntities() { return mCurrentWindowEntities; }
-
-    private enum UsageWindow {
-        HOUR,
-        DAY,
-        MONTH;
-
-        @NonNull
-        @Override
-        public String toString() {
-            return this.name().substring(0, 1) + this.name().substring(1).toLowerCase();
-        }
-    }
 }

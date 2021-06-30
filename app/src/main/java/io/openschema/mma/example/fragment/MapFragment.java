@@ -100,12 +100,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         mBinding.mapReportConnectionBtn.setOnClickListener(v -> onConnectionReportOpened());
 
+        mBinding.mapTimeSelector.setOnTimeWindowChangedListener(newWindow -> {
+            mViewModel.setCurrentTimeWindow(newWindow);
+            //Clear mSeenEntitiesMap since connections might be entirely different after window change
+            mClusterManager.clearItems();
+            mSeenEntitiesMap.clear();
+        });
+
         float[] hsl = new float[3];
         ColorUtils.colorToHSL(ContextCompat.getColor(requireContext(), R.color.wifiColor), hsl);
         mWifiHue = (int) hsl[0];
         ColorUtils.colorToHSL(ContextCompat.getColor(requireContext(), R.color.cellularColor), hsl);
         mCellularHue = (int) hsl[0];
-
 
         //Start loading map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(mBinding.mapContainer.getId());
@@ -137,9 +143,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
         mGoogleMap.getUiSettings().setRotateGesturesEnabled(false);
 
-        //TODO: persist state in cache with a viewmodel?
         //Setup observer for network connections from SDK
-        mViewModel.getAllNetworkConnections().observe(getViewLifecycleOwner(), networkConnectionsEntities -> {
+        mViewModel.getConnectionEntities().observe(getViewLifecycleOwner(), networkConnectionsEntities -> {
             if (networkConnectionsEntities != null) {
                 onNetworkConnectionsReceived(networkConnectionsEntities);
             }

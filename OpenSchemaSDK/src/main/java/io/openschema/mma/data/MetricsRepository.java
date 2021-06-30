@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import io.openschema.mma.backend.BackendApi;
 import io.openschema.mma.data.dao.MetricsDAO;
 import io.openschema.mma.data.dao.NetworkConnectionsDAO;
 import io.openschema.mma.data.dao.NetworkUsageDAO;
@@ -36,7 +37,6 @@ import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 import io.openschema.mma.metrics.MetricsWorker;
-import io.openschema.mma.backend.BackendApi;
 
 /**
  * Repository class to manage the metrics data.
@@ -140,8 +140,8 @@ public class MetricsRepository {
     }
 
     //TODO: only expose UI related calls and hide the rest?
-    public LiveData<List<NetworkConnectionsEntity>> getAllNetworkConnections() {
-        return new NetworkConnectionsLiveData(mNetworkConnectionsDAO.getAllWifiConnections(), mNetworkConnectionsDAO.getAllCellularConnections());
+    public LiveData<List<NetworkConnectionsEntity>> getAllNetworkConnections(long startTime, long endTime) {
+        return new NetworkConnectionsLiveData(mNetworkConnectionsDAO.getWifiConnections(startTime, endTime), mNetworkConnectionsDAO.getCellularConnections(startTime, endTime));
     }
 
     public void flagNetworkConnectionReported(NetworkConnectionsEntity entity) {

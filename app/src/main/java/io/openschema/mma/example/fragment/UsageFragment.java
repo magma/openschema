@@ -58,10 +58,9 @@ public class UsageFragment extends Fragment {
 
         mViewModel.getUsageEntities().observe(getViewLifecycleOwner(), this::updateTonnageChart);
 
-        mBinding.usageWindowLeft.setOnClickListener(v -> mViewModel.moveUsageWindow(-1));
-        mBinding.usageWindowRight.setOnClickListener(v -> mViewModel.moveUsageWindow(1));
-
-        mViewModel.getCurrentWindowTxt().observe(getViewLifecycleOwner(), s -> mBinding.setCurrentWindowTxt(s));
+        mBinding.usageTimeSelector.setOnTimeWindowChangedListener(newWindow -> {
+            mViewModel.setCurrentTimeWindow(newWindow);
+        });
     }
 
     private void updateTonnageChart(List<NetworkUsageEntity> networkUsageEntities) {

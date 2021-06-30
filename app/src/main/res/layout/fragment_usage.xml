@@ -25,11 +25,6 @@
         <import type="io.openschema.mma.example.fragment.UsageFragment.UsageData" />
 
         <variable
-            name="currentWindowTxt"
-            type="String"
-            />
-
-        <variable
             name="usageData"
             type="UsageData"
             />
@@ -40,53 +35,15 @@
         android:layout_height="match_parent"
         >
 
-        <ImageButton
-            android:id="@+id/usage_window_left"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="4dp"
-            android:layout_marginBottom="8dp"
-            android:background="?android:selectableItemBackground"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_chevron_left"
+        <io.openschema.mma.example.view.TimeSelector
+            android:id="@+id/usage_time_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toTopOf="@id/usage_cellular_tonnage_chart"
-            app:layout_constraintEnd_toStartOf="@id/usage_window_title"
-            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
-            />
-
-        <ImageButton
-            android:id="@+id/usage_window_right"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="8dp"
-            android:background="?android:selectableItemBackground"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_chevron_right"
-            app:layout_constraintBottom_toBottomOf="@id/usage_window_left"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/usage_window_title"
-            app:layout_constraintTop_toTopOf="@id/usage_window_left"
-            />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/usage_window_title"
-            style="@style/TextAppearance.MaterialComponents.Headline6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="@{currentWindowTxt}"
-            app:layout_constraintBottom_toBottomOf="@id/usage_window_left"
-            app:layout_constraintEnd_toStartOf="@id/usage_window_right"
-            app:layout_constraintStart_toEndOf="@id/usage_window_left"
-            app:layout_constraintTop_toTopOf="@id/usage_window_left"
-            tools:text="Today"
             />
 
         <ImageView
@@ -127,7 +84,7 @@
             app:layout_constraintBottom_toTopOf="@id/usage_cellular_tonnage_txt"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/usage_cellular_tonnage_header"
-            app:layout_constraintTop_toBottomOf="@id/usage_window_left"
+            app:layout_constraintTop_toBottomOf="@id/usage_time_selector"
             app:rpbBackgroundColor="#f5f5f5"
             app:rpbBackgroundTextColor="@color/surfaceTextColor"
             app:rpbCornerRadiusTopRight="@dimen/usage_bar_radius"

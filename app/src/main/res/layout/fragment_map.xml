@@ -22,6 +22,16 @@
         android:layout_height="match_parent"
         >
 
+        <io.openschema.mma.example.view.TimeSelector
+            android:id="@+id/map_time_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/map_container"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/map_container"
             android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -30,7 +40,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/map_time_selector"
             />
 
         <androidx.constraintlayout.widget.ConstraintLayout

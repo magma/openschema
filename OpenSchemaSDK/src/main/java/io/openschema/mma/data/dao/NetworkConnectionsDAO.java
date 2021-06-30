@@ -21,6 +21,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
+import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 
 /**
@@ -36,12 +37,22 @@ public interface NetworkConnectionsDAO {
     @Query("SELECT * FROM wifi_connections")
     LiveData<List<WifiConnectionsEntity>> getAllWifiConnections();
 
+    @Query("SELECT * from wifi_connections " +
+                   "WHERE timestamp >= :startTime " +
+                   "AND timestamp < :endTime")
+    LiveData<List<WifiConnectionsEntity>> getWifiConnections(long startTime, long endTime);
+
     @Query("UPDATE wifi_connections SET is_reported = 1 WHERE id=:id")
     void setWifiReported(int id);
 
     //Cellular calls
     @Query("SELECT * FROM cellular_connections")
     LiveData<List<CellularConnectionsEntity>> getAllCellularConnections();
+
+    @Query("SELECT * from cellular_connections " +
+                   "WHERE timestamp >= :startTime " +
+                   "AND timestamp < :endTime")
+    LiveData<List<CellularConnectionsEntity>> getCellularConnections(long startTime, long endTime);
 
     @Insert
     void insert(CellularConnectionsEntity newEntity);
