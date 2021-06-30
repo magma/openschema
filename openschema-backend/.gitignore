@@ -1,0 +1,8 @@
+# Environment variables
+.env
+
+# Dependency directories
+node_modules/
+
+# Private keys not to be commited
+keys/
