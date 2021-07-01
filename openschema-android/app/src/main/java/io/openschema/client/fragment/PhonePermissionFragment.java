@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.fragment;
+package io.openschema.client.fragment;
 
 import android.Manifest;
 import android.content.Intent;
@@ -29,9 +29,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
-import io.openschema.mma.example.R;
-import io.openschema.mma.example.databinding.FragmentPhonePermissionBinding;
-import io.openschema.mma.example.util.PermissionManager;
+import io.openschema.client.R;
+import io.openschema.client.databinding.FragmentPhonePermissionBinding;
+import io.openschema.client.util.PermissionManager;
 
 public class PhonePermissionFragment extends Fragment {
 

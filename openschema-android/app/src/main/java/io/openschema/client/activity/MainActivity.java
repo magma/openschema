@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.activity;
+package io.openschema.client.activity;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -32,8 +32,8 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import io.openschema.mma.MobileMetricsAgent;
-import io.openschema.mma.example.R;
-import io.openschema.mma.example.util.PermissionManager;
+import io.openschema.client.R;
+import io.openschema.client.util.PermissionManager;
 import io.openschema.mma.utils.PersistentNotification;
 
 public class MainActivity extends AppCompatActivity {

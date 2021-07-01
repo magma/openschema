@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.activity;
+package io.openschema.client.activity;
 
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.Navigation;
-import io.openschema.mma.example.R;
-import io.openschema.mma.example.util.PermissionManager;
+import io.openschema.client.R;
+import io.openschema.client.util.PermissionManager;
 
 public class OnboardingActivity extends AppCompatActivity {
 

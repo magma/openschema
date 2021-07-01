@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.fragment;
+package io.openschema.client.fragment;
 
 import android.net.NetworkCapabilities;
 import android.os.Bundle;
@@ -33,9 +33,9 @@ import androidx.databinding.BindingMethods;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
-import io.openschema.mma.example.databinding.FragmentUsageBinding;
-import io.openschema.mma.example.util.FormattingUtils;
-import io.openschema.mma.example.viewmodel.UsageViewModel;
+import io.openschema.client.databinding.FragmentUsageBinding;
+import io.openschema.client.util.FormattingUtils;
+import io.openschema.client.viewmodel.UsageViewModel;
 
 public class UsageFragment extends Fragment {
 

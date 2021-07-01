@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.openschema;
+package io.openschema.mma;
 
 import org.junit.Test;
 

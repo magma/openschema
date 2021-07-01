@@ -12,21 +12,18 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.view;
+package io.openschema.client.view;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import java.util.Collections;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.navigation.fragment.NavHostFragment;
-import io.openschema.mma.example.databinding.ViewConnectionReportDialogBinding;
+import io.openschema.client.databinding.ViewConnectionReportDialogBinding;
 
 public class ConnectionReportDialog extends DialogFragment {
 

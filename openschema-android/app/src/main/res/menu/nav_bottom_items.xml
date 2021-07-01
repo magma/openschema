@@ -16,14 +16,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/nav_usage"
         android:title="Usage"
-        android:icon="@drawable/persistent_notification_icon"
+        android:icon="@drawable/ic_nav_usage"
         />
     <item android:id="@+id/nav_map"
         android:title="Map"
-        android:icon="@drawable/persistent_notification_icon"
+        android:icon="@drawable/ic_nav_map"
         />
     <item android:id="@+id/nav_metric_logs"
         android:title="Metric Logs"
-        android:icon="@drawable/persistent_notification_icon"
+        android:icon="@drawable/ic_nav_metric_logs"
         />
 </menu>

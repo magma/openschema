@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.fragment;
+package io.openschema.client.fragment;
 
 import android.Manifest;
 import android.content.Intent;
@@ -30,9 +30,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import io.openschema.mma.example.activity.OnboardingActivity;
-import io.openschema.mma.example.databinding.FragmentLocationPermissionBinding;
-import io.openschema.mma.example.util.PermissionManager;
+import io.openschema.client.activity.OnboardingActivity;
+import io.openschema.client.databinding.FragmentLocationPermissionBinding;
+import io.openschema.client.util.PermissionManager;
 
 public class LocationPermissionFragment extends Fragment {
 
@@ -49,6 +49,18 @@ public class LocationPermissionFragment extends Fragment {
             }
         } else {
             if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                //User selected the "Don't ask again" option when denying the permission
+                openAppDetails();
+            }
+        }
+    });
+
+    //Only used for Android 10
+    private final ActivityResultLauncher<String[]> mBackgroundLocationPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+        if (result.get(Manifest.permission.ACCESS_FINE_LOCATION) && result.get(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+            continueToNextPage();
+        } else {
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                 //User selected the "Don't ask again" option when denying the permission
                 openAppDetails();
             }
@@ -75,7 +87,12 @@ public class LocationPermissionFragment extends Fragment {
     private void requestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (!PermissionManager.isLocationPermissionGranted(requireContext())) {
-                mLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+                if (Build.VERSION.SDK_INT == 29) {
+                    //When first introduced on Android 10, background location permission was able to be requested directly from a single OS dialog
+                    mBackgroundLocationPermissionLauncher.launch(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION});
+                } else {
+                    mLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+                }
             } else {
                 //Using a custom dialog to explain better the need for background location. Using registerForActivityResult() for ACCESS_BACKGROUND_LOCATION has a different behavior.
                 if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {

@@ -41,7 +41,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:gravity="center"
-            android:text="There is no data available yet."
+            android:text="There are currently no pending metrics."
             android:visibility="@{isDataAvailable ? View.GONE  : View.VISIBLE}"
             app:layout_constraintBottom_toBottomOf="@id/metric_logs_list"
             app:layout_constraintEnd_toEndOf="@id/metric_logs_list"

@@ -22,7 +22,7 @@
 
         <import type="android.view.View" />
 
-        <import type="io.openschema.mma.example.fragment.UsageFragment.UsageData" />
+        <import type="io.openschema.client.fragment.UsageFragment.UsageData" />
 
         <variable
             name="usageData"
@@ -35,7 +35,7 @@
         android:layout_height="match_parent"
         >
 
-        <io.openschema.mma.example.view.TimeSelector
+        <io.openschema.client.view.TimeSelector
             android:id="@+id/usage_time_selector"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

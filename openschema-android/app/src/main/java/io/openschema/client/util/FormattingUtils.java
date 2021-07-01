@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.util;
+package io.openschema.client.util;
 
 import java.sql.Timestamp;
 import java.text.CharacterIterator;

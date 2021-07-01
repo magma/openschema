@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.viewmodel;
+package io.openschema.client.viewmodel;
 
 import android.app.Application;
 
@@ -25,8 +25,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
-import io.openschema.mma.example.fragment.MapFragment;
-import io.openschema.mma.example.view.TimeSelector;
+import io.openschema.client.fragment.MapFragment;
+import io.openschema.client.view.TimeSelector;
 
 public class MapViewModel extends AndroidViewModel {
 

@@ -22,15 +22,33 @@
         android:layout_height="match_parent"
         >
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/location_description"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="This app requires location access"
-            app:layout_constraintBottom_toTopOf="@id/location_continue_btn"
+        <ImageView
+            android:id="@+id/location_icon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_permission_location"
+            app:layout_constraintBottom_toTopOf="@id/location_description"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:tint="@color/primaryColor"
+            />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/location_description"
+            style="@style/TextAppearance.MaterialComponents.Body1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginEnd="48dp"
+            android:gravity="center"
+            android:text="@string/location_permission_txt"
+            app:layout_constraintBottom_toTopOf="@id/location_continue_btn"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/location_icon"
             />
 
         <com.google.android.material.button.MaterialButton

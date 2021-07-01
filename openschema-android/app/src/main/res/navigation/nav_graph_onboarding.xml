@@ -21,7 +21,7 @@
 
     <fragment
         android:id="@+id/nav_usage_permission"
-        android:name="io.openschema.mma.example.fragment.UsagePermissionFragment"
+        android:name="io.openschema.client.fragment.UsagePermissionFragment"
         android:label="Usage Permission"
         />
     <!--TODO: add transition animation-->
@@ -34,7 +34,7 @@
 
     <fragment
         android:id="@+id/nav_phone_permission"
-        android:name="io.openschema.mma.example.fragment.PhonePermissionFragment"
+        android:name="io.openschema.client.fragment.PhonePermissionFragment"
         android:label="Phone Permission"
         />
     <!--TODO: add transition animation-->
@@ -47,7 +47,7 @@
 
     <fragment
         android:id="@+id/nav_location_permission"
-        android:name="io.openschema.mma.example.fragment.LocationPermissionFragment"
+        android:name="io.openschema.client.fragment.LocationPermissionFragment"
         android:label="Location Permission"
         />
     <!--TODO: add transition animation-->
@@ -60,7 +60,7 @@
 
     <activity
         android:id="@+id/activity_main"
-        android:name="io.openschema.mma.example.activity.MainActivity"
+        android:name="io.openschema.client.activity.MainActivity"
         />
     <action
         android:id="@+id/action_to_main"

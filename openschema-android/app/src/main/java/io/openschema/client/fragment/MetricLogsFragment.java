@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.fragment;
+package io.openschema.client.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -28,8 +28,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.MetricsEntity;
-import io.openschema.mma.example.databinding.FragmentMetricLogsBinding;
-import io.openschema.mma.example.databinding.ViewMetricLogListEntryBinding;
+import io.openschema.client.databinding.FragmentMetricLogsBinding;
+import io.openschema.client.databinding.ViewMetricLogListEntryBinding;
 
 public class MetricLogsFragment extends Fragment {
 

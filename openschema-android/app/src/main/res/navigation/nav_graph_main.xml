@@ -21,13 +21,13 @@
 
     <fragment
         android:id="@+id/nav_usage"
-        android:name="io.openschema.mma.example.fragment.UsageFragment"
+        android:name="io.openschema.client.fragment.UsageFragment"
         android:label="@string/app_name"
         />
 
     <fragment
         android:id="@+id/nav_map"
-        android:name="io.openschema.mma.example.fragment.MapFragment"
+        android:name="io.openschema.client.fragment.MapFragment"
         android:label="@string/app_name"
         >
         <action
@@ -38,19 +38,19 @@
 
     <fragment
         android:id="@+id/nav_metric_logs"
-        android:name="io.openschema.mma.example.fragment.MetricLogsFragment"
+        android:name="io.openschema.client.fragment.MetricLogsFragment"
         android:label="@string/app_name"
         />
 
     <dialog
         android:id="@+id/dialog_connection_report"
-        android:name="io.openschema.mma.example.view.ConnectionReportDialog"
+        android:name="io.openschema.client.view.ConnectionReportDialog"
         android:label="Connection Report"
         />
 
     <activity
         android:id="@+id/activity_onboarding"
-        android:name="io.openschema.mma.example.activity.OnboardingActivity"
+        android:name="io.openschema.client.activity.OnboardingActivity"
         />
     <action
         android:id="@+id/action_to_onboarding"

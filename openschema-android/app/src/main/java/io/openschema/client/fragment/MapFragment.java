@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.fragment;
+package io.openschema.client.fragment;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -61,12 +61,12 @@ import androidx.navigation.fragment.NavHostFragment;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
-import io.openschema.mma.example.R;
-import io.openschema.mma.example.activity.MainActivity;
-import io.openschema.mma.example.databinding.FragmentMapBinding;
-import io.openschema.mma.example.util.FormattingUtils;
-import io.openschema.mma.example.view.ConnectionReportDialog;
-import io.openschema.mma.example.viewmodel.MapViewModel;
+import io.openschema.client.R;
+import io.openschema.client.activity.MainActivity;
+import io.openschema.client.databinding.FragmentMapBinding;
+import io.openschema.client.util.FormattingUtils;
+import io.openschema.client.view.ConnectionReportDialog;
+import io.openschema.client.viewmodel.MapViewModel;
 import io.openschema.mma.metrics.collectors.ConnectionReport;
 import io.openschema.mma.utils.LocationServicesChecker;
 

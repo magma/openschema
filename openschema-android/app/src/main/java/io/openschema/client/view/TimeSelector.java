@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.mma.example.view;
+package io.openschema.client.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import io.openschema.mma.example.R;
-import io.openschema.mma.example.databinding.ViewTimeSelectorBinding;
+import io.openschema.client.R;
+import io.openschema.client.databinding.ViewTimeSelectorBinding;
 import io.openschema.mma.utils.CalendarUtils;
 
 
