@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import io.openschema.client.R;
 import io.openschema.client.activity.OnboardingActivity;
 import io.openschema.client.databinding.FragmentLocationPermissionBinding;
 import io.openschema.client.util.PermissionManager;
@@ -78,16 +79,21 @@ public class LocationPermissionFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mBinding.locationContinueBtn.setOnClickListener(v -> requestPermission());
+
+        //Background location access doesn't exist pre android 10
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            mBinding.locationDescription.setText(getString(R.string.location_permission_txt_pre_10));
+        }
     }
 
     private void continueToNextPage() {
-        ((OnboardingActivity) requireActivity()).continueToMain();
+        ((OnboardingActivity) requireActivity()).loadNextPage();
     }
 
     private void requestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (!PermissionManager.isLocationPermissionGranted(requireContext())) {
-                if (Build.VERSION.SDK_INT == 29) {
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
                     //When first introduced on Android 10, background location permission was able to be requested directly from a single OS dialog
                     mBackgroundLocationPermissionLauncher.launch(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION});
                 } else {

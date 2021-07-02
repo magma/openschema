@@ -31,7 +31,7 @@ public class OnboardingActivity extends AppCompatActivity {
         loadNextPage();
     }
 
-    private void loadNextPage() {
+    public void loadNextPage() {
         //TODO: Need a ToS page to disclose data collection?
         //TODO: Add battery optimization whitelisting as requirement?
 

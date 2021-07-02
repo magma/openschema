@@ -16,5 +16,6 @@
     <string name="app_name">OpenSchema</string>
     <string name="usage_permission_txt">This app requires Usage Access to be able to measure the amount of data used by your network connections.\n\nPlease enable the permission for \"%s\".</string>
     <string name="phone_permission_txt">This app requires Phone Access to be able to check your cellular network\'s information from your SIM card. We won\'t make any calls or check your contacts.</string>
-    <string name="location_permission_txt">This app requires Location Access to be able to track the areas where connections were made. This will help your carrier improve places where their coverage is weak.\n\nPlease select the \"Allow all the time\" option.</string>
+    <string name="location_permission_txt">This app requires Location Access to be able to track the areas where connections were made. This will help your carrier improve places where their coverage is weak.\n\n<b>Please select the \"Allow all the time\" option.</b></string>
+    <string name="location_permission_txt_pre_10">This app requires Location Access to be able to track the areas where connections were made. This will help your carrier improve places where their coverage is weak.</string>
 </resources>

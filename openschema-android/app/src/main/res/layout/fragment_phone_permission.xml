@@ -45,21 +45,31 @@
             android:layout_marginEnd="48dp"
             android:gravity="center"
             android:text="@string/phone_permission_txt"
-            app:layout_constraintBottom_toTopOf="@id/phone_continue_btn"
+            app:layout_constraintBottom_toTopOf="@id/phone_permission_status"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/phone_icon"
+            />
+
+        <io.openschema.client.view.PermissionProgress
+            android:id="@+id/phone_permission_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@id/phone_continue_btn"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/phone_continue_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="32dp"
             android:layout_marginBottom="16dp"
             android:text="Continue"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

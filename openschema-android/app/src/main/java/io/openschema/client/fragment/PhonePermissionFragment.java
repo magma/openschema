@@ -28,8 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
-import io.openschema.client.R;
+import io.openschema.client.activity.OnboardingActivity;
 import io.openschema.client.databinding.FragmentPhonePermissionBinding;
 import io.openschema.client.util.PermissionManager;
 
@@ -64,8 +63,7 @@ public class PhonePermissionFragment extends Fragment {
     }
 
     private void continueToNextPage() {
-        NavHostFragment.findNavController(this)
-                .navigate(R.id.action_to_location_permission);
+        ((OnboardingActivity) requireActivity()).loadNextPage();
     }
 
     private void requestPermission() {
