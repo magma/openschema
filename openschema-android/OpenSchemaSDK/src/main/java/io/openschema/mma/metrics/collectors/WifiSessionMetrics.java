@@ -45,7 +45,7 @@ public class WifiSessionMetrics extends NetworkSessionMetrics {
             if (lastLocation != null) {
 
                 long sessionDuration = mSessionEndTimestamp - mSessionStartTimestamp;
-                long sessionUsage = mUsageRetriever.getDeviceTonnage(mTransportType, mSessionStartTimestamp, mSessionEndTimestamp);
+                long sessionUsage = mTotalBytes;
 
                 WifiNetworkMetrics wifiNetworkMetrics = (WifiNetworkMetrics) mNetworkMetrics;
                 return new WifiConnectionsEntity(mTransportType, wifiNetworkMetrics.getSSID(), wifiNetworkMetrics.getBSSID(), sessionDuration, sessionUsage, lastLocation.getLongitude(), lastLocation.getLatitude(), mSessionStartTimestamp);

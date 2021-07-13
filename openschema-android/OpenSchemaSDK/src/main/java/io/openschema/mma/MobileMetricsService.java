@@ -23,11 +23,11 @@ import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
-import io.openschema.mma.utils.PersistentNotification;
+import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.metrics.collectors.BaseMetrics;
 import io.openschema.mma.metrics.collectors.CellularSessionMetrics;
-import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.metrics.collectors.WifiSessionMetrics;
+import io.openschema.mma.utils.PersistentNotification;
 
 /**
  * Foreground service used to keep the app running in the background and collect information.

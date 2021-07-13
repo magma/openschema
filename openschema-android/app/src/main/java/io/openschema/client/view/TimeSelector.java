@@ -38,7 +38,7 @@ public class TimeSelector extends ConstraintLayout {
     private static final String TAG = "TimeSelector";
 
     public enum TimeWindow {
-        HOUR,
+//        HOUR,
         DAY,
         MONTH;
 
@@ -55,12 +55,13 @@ public class TimeSelector extends ConstraintLayout {
             //TODO: consider using a different logic for start and end. (use dates closer to the user's data plan?)
             //Currently
             switch (this) {
-                case HOUR:
-                    //Calculates time window for the LAST hour. E.g. At 4:35pm, we will get 4:00pm - 5:00pm
-                    Calendar hourCal = CalendarUtils.getCurrentHourCalendar();
-                    mWindowStart = hourCal.getTimeInMillis();
-                    mWindowEnd = mWindowStart + TimeUnit.HOURS.toMillis(1);
-                    break;
+                //TODO: remove
+//                case HOUR:
+//                    //Calculates time window for the LAST hour. E.g. At 4:35pm, we will get 4:00pm - 5:00pm
+//                    Calendar hourCal = CalendarUtils.getCurrentHourCalendar();
+//                    mWindowStart = hourCal.getTimeInMillis();
+//                    mWindowEnd = mWindowStart + TimeUnit.HOURS.toMillis(1);
+//                    break;
                 case DAY:
                     //Calculates time window for TODAY. E.g. At 4:35pm 7/10, we will get 12:00am 7/10 - 12:00am 7/11
                     Calendar dayCal = CalendarUtils.getCurrentDayCalendar();

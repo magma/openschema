@@ -45,7 +45,7 @@ public class CellularSessionMetrics extends NetworkSessionMetrics {
             if (lastLocation != null) {
 
                 long sessionDuration = mSessionEndTimestamp - mSessionStartTimestamp;
-                long sessionUsage = mUsageRetriever.getDeviceTonnage(mTransportType, mSessionStartTimestamp, mSessionEndTimestamp);
+                long sessionUsage = mTotalBytes;
 
                 CellularNetworkMetrics cellularNetworkMetrics = (CellularNetworkMetrics) mNetworkMetrics;
                 return new CellularConnectionsEntity(mTransportType, cellularNetworkMetrics.getNetworkType(), cellularNetworkMetrics.getCellIdentity(), sessionDuration, sessionUsage, lastLocation.getLongitude(), lastLocation.getLatitude(), mSessionStartTimestamp);

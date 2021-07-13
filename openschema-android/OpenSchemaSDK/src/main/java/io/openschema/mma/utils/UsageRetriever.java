@@ -20,6 +20,7 @@ import android.app.usage.NetworkStats;
 import android.app.usage.NetworkStatsManager;
 import android.content.Context;
 import android.net.NetworkCapabilities;
+import android.net.TrafficStats;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 
@@ -108,6 +109,7 @@ public class UsageRetriever {
         return 0;
     }
 
+    //TODO: need to be called from worker thread instead?
     private NetworkStats.Bucket getDeviceWifiBucket(long startTime, long endTime) {
         if (mNetworkStatsManager != null) {
             NetworkStats.Bucket wifiBucket = null;
@@ -168,5 +170,30 @@ public class UsageRetriever {
 
         //Error
         return null;
+    }
+
+    public long getRxBytes(int transportType) {
+        switch (transportType) {
+            case NetworkCapabilities.TRANSPORT_WIFI:
+                //TODO: test if data retrieved is correct. Seems to be gathering data even when wifi was OFF.
+                return TrafficStats.getTotalRxBytes() - TrafficStats.getMobileRxBytes();
+            case NetworkCapabilities.TRANSPORT_CELLULAR:
+                return TrafficStats.getMobileRxBytes();
+            default:
+                //Error
+                return 0;
+        }
+    }
+
+    public long getTxBytes(int transportType) {
+        switch (transportType) {
+            case NetworkCapabilities.TRANSPORT_WIFI:
+                return TrafficStats.getTotalTxBytes() - TrafficStats.getMobileTxBytes();
+            case NetworkCapabilities.TRANSPORT_CELLULAR:
+                return TrafficStats.getMobileTxBytes();
+            default:
+                //Error
+                return 0;
+        }
     }
 }

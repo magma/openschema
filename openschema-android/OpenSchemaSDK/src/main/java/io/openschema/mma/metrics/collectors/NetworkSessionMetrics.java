@@ -14,16 +14,14 @@
 
 package io.openschema.mma.metrics.collectors;
 
-import android.app.usage.NetworkStats;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkRequest;
+import android.os.Handler;
 import android.util.Log;
 
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -50,7 +48,11 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     //Session data
     protected List<Pair<String, String>> mCurrentSession;
     protected long mSessionStartTimestamp, mSessionEndTimestamp;
+    protected long mLastReportedSegmentTimestamp;
     protected boolean mIsExpectingLocation;
+    protected long mLastRxBytes, mTotalRxBytes;
+    protected long mLastTxBytes, mTotalTxBytes;
+    protected long mTotalBytes;
 
     //Metrics sources
     protected final ConnectivityManager mConnectivityManager;
@@ -60,8 +62,11 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
 
     private final MetricsCollectorListener mListener;
     protected final int mTransportType; //TODO: can cached data get lost if OS kills app temporarily?
-
     private NetworkConnectionEntityAdapter mNetworkConnectionEntityAdapter = null;
+
+    protected Handler mHandler;
+    private static final long FREQUENCE_BYTE_MEASUREMENT = 1000 * 60; //1 min
+    private static final long FREQUENCE_SEGMENT_LOGGING = 1000 * 60 * 60; //60 min
 
     private final MetricsRepository mMetricsRepository;
 
@@ -75,6 +80,8 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         mUsageRetriever = new UsageRetriever(context);
         mLocationMetrics = new LocationMetrics(context, (locationMetricName, metricsList) -> onLocationReceived(metricsList));
         mMetricsRepository = MetricsRepository.getRepository(context.getApplicationContext());
+
+        mHandler = new Handler();
     }
 
     private final ConnectivityManager.NetworkCallback mNetworkCallBack = new ConnectivityManager.NetworkCallback() {
@@ -99,11 +106,16 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     //Called when a network connection is detected
     protected void onSessionStart() {
         mSessionStartTimestamp = System.currentTimeMillis();
+        mLastReportedSegmentTimestamp = mSessionStartTimestamp;
         mCurrentSession = mNetworkMetrics.retrieveMetrics();
         mIsExpectingLocation = true;
         mLocationMetrics.requestLocation();
         //TODO: Persist the current session in SharedPrefs to avoid losing data in case app is killed temporarily.
 
+        mLastRxBytes = mLastTxBytes = -1;
+        mTotalRxBytes = mTotalTxBytes = mTotalBytes = 0;
+        mHandler.post(mMeasureCurrentBytes);
+        mHandler.postDelayed(mFlushSessionSegment, FREQUENCE_SEGMENT_LOGGING);
     }
 
     //Called when a network disconnection is detected.
@@ -111,19 +123,62 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     protected void onSessionEnd() {
         mSessionEndTimestamp = System.currentTimeMillis();
 
-        processConnectionSession();
+        storeNetworkConnection();
+
+        processSessionSegment(mLastReportedSegmentTimestamp, mSessionEndTimestamp);
 
         //Reset session-tracking variables
         mCurrentSession = null;
         mSessionStartTimestamp = -1;
         mSessionEndTimestamp = -1;
+        mLastReportedSegmentTimestamp = -1;
         if (mIsExpectingLocation) {
             //TODO: We should monitor the data reaching the data lake. If too many instances are missing location information,
-                //maybe we should consider waiting for the request to complete rather than ignoring.
+            //maybe we should consider waiting for the request to complete rather than ignoring.
             mLocationMetrics.cancelLocationRequest();
             mIsExpectingLocation = false;
         }
+        mHandler.removeCallbacks(mMeasureCurrentBytes);
+        mHandler.removeCallbacks(mFlushSessionSegment);
     }
+
+    private final Runnable mMeasureCurrentBytes = new Runnable() {
+        @Override
+        public void run() {
+            long newRxBytes = mUsageRetriever.getRxBytes(mTransportType);
+            long newTxBytes = mUsageRetriever.getTxBytes(mTransportType);
+
+            //Measure bytes received since last call
+            if (mLastRxBytes != -1) {
+                if (mLastRxBytes <= newRxBytes) {
+                    long diff = newRxBytes - mLastRxBytes;
+                    mTotalRxBytes += diff;
+                    mTotalBytes += diff;
+                } else {
+                    //TODO: Apparently counter can hold a big enough value (uint64_t) that it might not reset.
+                    Log.e(TAG, "MMA: Internal RxBytes counter was reset");
+                }
+            }
+
+            //Measure bytes transmitted since last call
+            if (mLastTxBytes != -1) {
+                if (mLastTxBytes <= newTxBytes) {
+                    long diff = newTxBytes - mLastTxBytes;
+                    mTotalTxBytes += diff;
+                    mTotalBytes += diff;
+                } else {
+                    Log.e(TAG, "MMA: Internal TxBytes counter was reset");
+                }
+            }
+
+            //Save current value for next call
+            mLastRxBytes = newRxBytes;
+            mLastTxBytes = newTxBytes;
+
+            //Run every 60 seconds
+            mHandler.postDelayed(this, FREQUENCE_BYTE_MEASUREMENT);
+        }
+    };
 
     //Called when the LocationMetrics object finishes calculating the device's location.
     protected void onLocationReceived(List<Pair<String, String>> metricsList) {
@@ -134,100 +189,26 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         }
     }
 
-    //Retroactively calculate the time & tonnage spent on the network session. The session is split into hourly segments.
-    //TODO: Provide example
-    protected void processConnectionSession() {
-
-        //Attempt to store the network connection in the optional local table
-        storeNetworkConnection();
-
-        //Calculate the amount of hour segments included in our session.
-        long hourSegments = getIterationHours();
-        Log.d(TAG, "MMA: Hour segments included in this session: " + hourSegments);
-
-        Calendar currentSegmentStart = Calendar.getInstance();
-        currentSegmentStart.setTimeInMillis(mSessionStartTimestamp);
-        for (int i = 0; i < hourSegments; i++) {
-            Calendar segmentStart = Calendar.getInstance();
-            Calendar segmentEnd = Calendar.getInstance();
-
-            segmentStart.setTimeInMillis(currentSegmentStart.getTimeInMillis());
-
-            //Check if we are currently on the last segment
-            if (i == hourSegments - 1) {
-                //Set window end to session end instead
-                segmentEnd.setTimeInMillis(mSessionEndTimestamp);
-            } else {
-                segmentEnd.setTimeInMillis(segmentStart.getTimeInMillis());
-                segmentEnd.set(Calendar.MINUTE, 0);
-                segmentEnd.set(Calendar.SECOND, 0);
-                segmentEnd.set(Calendar.MILLISECOND, 0);
-                segmentEnd.add(Calendar.HOUR_OF_DAY, 1);
-            }
-
-            //Retrieve stats within this segment and push it
-            processSessionSegment(segmentStart, segmentEnd);
-
-            //Configure variables for next iteration
-            currentSegmentStart.setTimeInMillis(segmentEnd.getTimeInMillis());
-        }
-    }
-
-    //TODO: come up with a better term for "clock hours"
-    //Calculate the amount of hour segments included in our session. The segments are based on clock hours.
-    // (e.g. A session that ocurred at 4:37pm - 5:22pm would include 2 hour iterations, 4:00pm - 5:00pm and 5:00pm - 6:00pm.)
-    protected long getIterationHours() {
-        //Setup the session's start & end time
-        //The "calculation" refers to the clock hours where the session took place.
-        Calendar calculationStart = Calendar.getInstance();
-        calculationStart.setTimeInMillis(mSessionStartTimestamp);
-        Calendar calculationEnd = Calendar.getInstance();
-        calculationEnd.setTimeInMillis(mSessionEndTimestamp);
-        Log.d(TAG, "MMA: Session duration: " + calculationStart.getTime().toString() + " | " + calculationEnd.getTime().toString());
-
-        //Get the clock hour starting this session
-        calculationStart.set(Calendar.MINUTE, 0);
-        calculationStart.set(Calendar.SECOND, 0);
-        calculationStart.set(Calendar.MILLISECOND, 0);
-
-        //Get the clock hour ending this session
-        calculationEnd.set(Calendar.MINUTE, 0);
-        calculationEnd.set(Calendar.SECOND, 0);
-        calculationEnd.set(Calendar.MILLISECOND, 0);
-        calculationEnd.add(Calendar.HOUR_OF_DAY, 1);
-
-        //Calculate the amount of hour segments included
-        Log.d(TAG, "MMA: Calculation window: " + calculationStart.getTime().toString() + " | " + calculationEnd.getTime().toString());
-        return ChronoUnit.HOURS.between(calculationStart.toInstant(), calculationEnd.toInstant());
-    }
-
-    //Calculate the time and tonnage spent on the time segment. This will generate an independent metric to be collected & pushed to the data lake later.
-    protected void processSessionSegment(Calendar segmentStart, Calendar segmentEnd) {
-        Log.d(TAG, "MMA: Processing Window: " + segmentStart.getTime().toString() + " | " + segmentEnd.getTime().toString());
+    protected void processSessionSegment(long segmentStart, long segmentEnd) {
+//        Log.d(TAG, "MMA: Processing Window: " + segmentStart.getTime().toString() + " | " + segmentEnd.getTime().toString());
 
         //Create an independent metric list and copy the session's shared data.
         List<Pair<String, String>> currentSegmentMetrics = new ArrayList<>();
         currentSegmentMetrics.addAll(mCurrentSession);
 
         //Set window start time & duration in milliseconds.
-        currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_START_TIME, Long.toString(segmentStart.getTimeInMillis())));
-        long sessionDuration = segmentEnd.getTimeInMillis() - segmentStart.getTimeInMillis();
+        currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_START_TIME, Long.toString(segmentStart)));
+        long sessionDuration = segmentEnd - segmentStart;
         currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_DURATION_MILLIS, Long.toString(sessionDuration)));
 
         //Set the received & transmitted bytes during this window.
-        long rxBytes = -1, txBytes = -1;
-        NetworkStats.Bucket networkBucket = mUsageRetriever.getDeviceNetworkBucket(mTransportType, segmentStart.getTimeInMillis(), segmentEnd.getTimeInMillis()); //TODO: add additional time to bucket end? *ONLY FOR THE LAST SEGMENT* windowEnd.getTimeInMillis() + 60 * 60 * 1000
-        if (networkBucket != null) {
-            rxBytes = networkBucket.getRxBytes();
-            txBytes = networkBucket.getTxBytes();
-        }
-        currentSegmentMetrics.add(new Pair<>(METRIC_RX_BYTES, Long.toString(rxBytes)));
-        currentSegmentMetrics.add(new Pair<>(METRIC_TX_BYTES, Long.toString(txBytes)));
+        currentSegmentMetrics.add(new Pair<>(METRIC_RX_BYTES, Long.toString(mTotalRxBytes)));
+        currentSegmentMetrics.add(new Pair<>(METRIC_TX_BYTES, Long.toString(mTotalTxBytes)));
 
         //TODO: Add debugging flag to enable detailed metrics
         Log.d(TAG, "MMA: Collected metrics:\n" + currentSegmentMetrics.toString());
         //Collect the metric locally to be pushed later.
-        storeSessionSegment(sessionDuration, rxBytes + txBytes, segmentStart.getTimeInMillis());
+        storeSessionSegment(sessionDuration, mTotalRxBytes + mTotalTxBytes, segmentStart);
         mListener.onMetricCollected(METRIC_NAME, currentSegmentMetrics);
     }
 
@@ -244,6 +225,24 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         //TODO: disable with flag from MMA builder? avoid extra calculations & storage
         mMetricsRepository.writeNetworkSessionSegment(new NetworkUsageEntity(mTransportType, duration, usage, timestamp));
     }
+
+    private final Runnable mFlushSessionSegment = new Runnable() {
+        @Override
+        public void run() {
+            //Check if connection exists
+            if (mCurrentSession != null) {
+                Log.d(TAG, "MMA: Flushing the networks' session information so far. (transport: " + mTransportType + ")");
+
+                long currentTimestamp = System.currentTimeMillis();
+
+                processSessionSegment(mLastReportedSegmentTimestamp, currentTimestamp);
+                mTotalRxBytes = mTotalTxBytes = 0; //Reset counter for next segment
+                mLastReportedSegmentTimestamp = currentTimestamp;
+
+                mHandler.postDelayed(this, FREQUENCE_SEGMENT_LOGGING);
+            }
+        }
+    };
 
     //Starts tracking the network's changes
     public void startTrackers() {
