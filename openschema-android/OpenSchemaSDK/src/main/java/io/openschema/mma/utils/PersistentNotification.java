@@ -76,7 +76,7 @@ public class PersistentNotification {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         mPersistentNotification = new NotificationCompat.Builder(context, SERVICE_NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.persistent_notification_icon)
+                .setSmallIcon(R.drawable.ic_persistent_notification)
                 .setContentTitle("OpenSchema is running")
                 .setContentText("Tap here for more information.")
                 .setOngoing(true) //notification can't be swiped

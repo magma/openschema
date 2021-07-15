@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- The android:opacity=”opaque” line — this is critical in preventing a flash of black as your theme transitions. -->
+<layer-list
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:opacity="opaque"
+    >
+
+    <item android:drawable="@color/primaryColor" />
+
+    <!--Logo-->
+    <item
+        android:width="45dp"
+        android:height="45dp"
+        android:left="-4dp"
+        android:drawable="@drawable/ic_openschema_logo"
+        />
+
+    <item
+        android:width="112.5dp"
+        android:height="37.5dp"
+        android:top="8dp"
+        android:left="13dp"
+        android:drawable="@drawable/ic_openschema_logo_txt2"
+        />
+
+</layer-list>

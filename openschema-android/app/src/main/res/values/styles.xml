@@ -17,6 +17,7 @@
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
 <!--        <item name="colorSecondary">@color/my_app_secondary_color</item>-->
         <item name="android:colorBackground">@color/backgroundColor</item>
         <item name="colorError">@color/errorColor</item>
@@ -31,6 +32,11 @@
         <item name="colorOnError">@color/errorTextColor</item>
         <item name="colorOnSurface">@color/surfaceTextColor</item>
 <!--        <item name="scrimBackground">@color/mtrl</item>-->
+    </style>
+
+    <style name="AppTheme.Launcher">
+        <item name="android:windowBackground">@drawable/bg_launch_screen</item>
+        <item name="android:colorPrimaryDark">@color/primaryDarkColor</item>
     </style>
 
 </resources>

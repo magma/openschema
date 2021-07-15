@@ -31,9 +31,9 @@ import androidx.navigation.NavDeepLinkBuilder;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import io.openschema.mma.MobileMetricsAgent;
 import io.openschema.client.R;
 import io.openschema.client.util.PermissionManager;
+import io.openschema.mma.MobileMetricsAgent;
 import io.openschema.mma.utils.PersistentNotification;
 
 public class MainActivity extends AppCompatActivity {
@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
             //Setup tool bar (top app bar)
             AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_usage, R.id.nav_map, R.id.nav_metric_logs).build();
             Toolbar toolbar = findViewById(R.id.main_toolbar);
+
             NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
 
             //Build OpenSchema agent with required data
@@ -99,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 .createPendingIntent();
 
         return new NotificationCompat.Builder(this, PersistentNotification.SERVICE_NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(io.openschema.mma.R.drawable.persistent_notification_icon)
+                .setSmallIcon(io.openschema.mma.R.drawable.ic_persistent_notification)
                 .setContentTitle("OpenSchema is running")
                 .setContentText("Tap here for more information.")
                 .setOngoing(true) //notification can't be swiped
