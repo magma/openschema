@@ -19,6 +19,7 @@ import android.app.PendingIntent;
 import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
 import androidx.core.util.Pair;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDeepLinkBuilder;
 import androidx.navigation.Navigation;
@@ -48,14 +50,20 @@ public class MainActivity extends AppCompatActivity {
         if (checkMandatoryPermissions()) {
             NavController navController = Navigation.findNavController(this, R.id.main_content);
 
+            //Setup navigation drawer
+            DrawerLayout navigationDrawer = findViewById(R.id.main_nav_drawer_layout);
+            NavigationView navigationView = findViewById(R.id.main_nav_drawer);
+            NavigationUI.setupWithNavController(navigationView, navController);
+
             //Setup bottom navigation
             BottomNavigationView bottomNavigationView = findViewById(R.id.main_bottom_navigation_bar);
             NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
             //Setup tool bar (top app bar)
-            AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_usage, R.id.nav_map, R.id.nav_metric_logs).build();
+            AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_usage, R.id.nav_map, R.id.nav_metric_logs)
+                    .setOpenableLayout(navigationDrawer)
+                    .build();
             Toolbar toolbar = findViewById(R.id.main_toolbar);
-
             NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
 
             //Build OpenSchema agent with required data
