@@ -14,15 +14,20 @@
 
 package io.openschema.mma.metrics.collectors;
 
+import android.app.usage.NetworkStats;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Handler;
 import android.util.Log;
 
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -67,6 +72,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     protected Handler mHandler;
     private static final long FREQUENCE_BYTE_MEASUREMENT = 1000 * 60; //1 min
     private static final long FREQUENCE_SEGMENT_LOGGING = 1000 * 60 * 60; //60 min
+    private static final long BYTES_THRESHOLD = 1000 * 1000 * 200; //500 MB
 
     private final MetricsRepository mMetricsRepository;
 
@@ -112,8 +118,11 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         mLocationMetrics.requestLocation();
         //TODO: Persist the current session in SharedPrefs to avoid losing data in case app is killed temporarily.
 
-        mLastRxBytes = mLastTxBytes = -1;
-        mTotalRxBytes = mTotalTxBytes = mTotalBytes = 0;
+        mLastRxBytes = -1;
+        mLastTxBytes = -1;
+        mTotalRxBytes = 0;
+        mTotalTxBytes = 0;
+        mTotalBytes = 0;
         mHandler.post(mMeasureCurrentBytes);
         mHandler.postDelayed(mFlushSessionSegment, FREQUENCE_SEGMENT_LOGGING);
     }
@@ -145,35 +154,38 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     private final Runnable mMeasureCurrentBytes = new Runnable() {
         @Override
         public void run() {
-            long newRxBytes = mUsageRetriever.getRxBytes(mTransportType);
-            long newTxBytes = mUsageRetriever.getTxBytes(mTransportType);
+            NetworkStats.Bucket newBucket = mUsageRetriever.getDeviceNetworkBucket(mTransportType, 0, System.currentTimeMillis());
 
-            //Measure bytes received since last call
+            long totalBytesDiff = 0;
+
             if (mLastRxBytes != -1) {
-                if (mLastRxBytes <= newRxBytes) {
-                    long diff = newRxBytes - mLastRxBytes;
-                    mTotalRxBytes += diff;
-                    mTotalBytes += diff;
-                } else {
-                    //TODO: Apparently counter can hold a big enough value (uint64_t) that it might not reset.
-                    Log.e(TAG, "MMA: Internal RxBytes counter was reset");
-                }
+                long diff = newBucket.getRxBytes() - mLastRxBytes;
+                mTotalRxBytes += diff;
+                mTotalBytes += diff;
+                totalBytesDiff += diff;
             }
 
             //Measure bytes transmitted since last call
             if (mLastTxBytes != -1) {
-                if (mLastTxBytes <= newTxBytes) {
-                    long diff = newTxBytes - mLastTxBytes;
-                    mTotalTxBytes += diff;
-                    mTotalBytes += diff;
-                } else {
-                    Log.e(TAG, "MMA: Internal TxBytes counter was reset");
-                }
+                long diff = newBucket.getTxBytes() - mLastTxBytes;
+                mTotalTxBytes += diff;
+                mTotalBytes += diff;
+                totalBytesDiff += diff;
+            }
+
+            //TODO: remove? used for accuracy testing purposes
+            if (totalBytesDiff > BYTES_THRESHOLD) {
+                Log.d(TAG, "MMA: The measurement caught an unusual amount over " + BYTES_THRESHOLD +
+                        "Current usage measurements: (transport: " + mTransportType + ")" +
+                        "\nDiff since last measurement (Total Bytes): " + totalBytesDiff +
+                        "\nTotal Bytes: " + mTotalBytes +
+                        "\nRx Bytes: " + mTotalRxBytes +
+                        "\nTx Bytes: " + mTotalTxBytes);
             }
 
             //Save current value for next call
-            mLastRxBytes = newRxBytes;
-            mLastTxBytes = newTxBytes;
+            mLastRxBytes = newBucket.getRxBytes();
+            mLastTxBytes = newBucket.getTxBytes();
 
             //Run every 60 seconds
             mHandler.postDelayed(this, FREQUENCE_BYTE_MEASUREMENT);
@@ -198,17 +210,25 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
 
         //Set window start time & duration in milliseconds.
         currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_START_TIME, Long.toString(segmentStart)));
-        long sessionDuration = segmentEnd - segmentStart;
-        currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_DURATION_MILLIS, Long.toString(sessionDuration)));
+        long segmentDuration = segmentEnd - segmentStart;
+        currentSegmentMetrics.add(new Pair<>(METRIC_SESSION_DURATION_MILLIS, Long.toString(segmentDuration)));
 
         //Set the received & transmitted bytes during this window.
         currentSegmentMetrics.add(new Pair<>(METRIC_RX_BYTES, Long.toString(mTotalRxBytes)));
         currentSegmentMetrics.add(new Pair<>(METRIC_TX_BYTES, Long.toString(mTotalTxBytes)));
+        long segmentUsage = mTotalRxBytes + mTotalTxBytes;
 
         //TODO: Add debugging flag to enable detailed metrics
         Log.d(TAG, "MMA: Collected metrics:\n" + currentSegmentMetrics.toString());
+        Log.d(TAG, "MMA: Current segment measurements: (transport: " + mTransportType + ")" +
+                "\nSegment Duration: " + segmentDuration +
+                "\nTotal Bytes: " + mTotalBytes +
+                "\nSegment Total: " + segmentUsage +
+                "\nRx Bytes: " + mTotalRxBytes +
+                "\nTx Bytes: " + mTotalTxBytes);
+
         //Collect the metric locally to be pushed later.
-        storeSessionSegment(sessionDuration, mTotalRxBytes + mTotalTxBytes, segmentStart);
+        storeSessionSegment(segmentDuration, segmentUsage, segmentStart);
         mListener.onMetricCollected(METRIC_NAME, currentSegmentMetrics);
     }
 
@@ -236,7 +256,9 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
                 long currentTimestamp = System.currentTimeMillis();
 
                 processSessionSegment(mLastReportedSegmentTimestamp, currentTimestamp);
-                mTotalRxBytes = mTotalTxBytes = 0; //Reset counter for next segment
+                //Reset counter for next segment
+                mTotalRxBytes = 0;
+                mTotalTxBytes = 0;
                 mLastReportedSegmentTimestamp = currentTimestamp;
 
                 mHandler.postDelayed(this, FREQUENCE_SEGMENT_LOGGING);
