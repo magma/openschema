@@ -24,6 +24,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import io.openschema.mma.data.MetricsRepository;
+import io.openschema.mma.data.entity.HourlyUsageEntity;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.client.view.TimeSelector;
 
@@ -34,6 +35,7 @@ public class UsageViewModel extends AndroidViewModel {
 
     private final MutableLiveData<TimeSelector.TimeWindow> mCurrentWindow = new MutableLiveData<>(TimeSelector.TimeWindow.DAY);
     private final LiveData<List<NetworkUsageEntity>> mCurrentWindowEntities;
+    private final LiveData<List<HourlyUsageEntity>> mCurrentWindowHourlyEntities;
 
     public UsageViewModel(@NonNull Application application) {
         super(application);
@@ -52,6 +54,11 @@ public class UsageViewModel extends AndroidViewModel {
 
             return mMetricsRepository.getUsageEntities(currentWindow.getWindowStart(), currentWindow.getWindowEnd());
         });
+
+        mCurrentWindowHourlyEntities = Transformations.switchMap(mCurrentWindow, currentWindow -> {
+            currentWindow.calculateWindow();
+            return mMetricsRepository.getHourlyUsageEntities(currentWindow.getWindowStart(), currentWindow.getWindowEnd());
+        });
     }
 
     public void setCurrentTimeWindow(TimeSelector.TimeWindow newWindow) {
@@ -59,4 +66,5 @@ public class UsageViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<NetworkUsageEntity>> getUsageEntities() { return mCurrentWindowEntities; }
+    public LiveData<List<HourlyUsageEntity>> getHourlyUsageEntities() { return mCurrentWindowHourlyEntities; }
 }

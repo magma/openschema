@@ -32,6 +32,7 @@ import androidx.databinding.BindingMethod;
 import androidx.databinding.BindingMethods;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import io.openschema.mma.data.entity.HourlyUsageEntity;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.client.databinding.FragmentUsageBinding;
 import io.openschema.client.util.FormattingUtils;
@@ -57,6 +58,7 @@ public class UsageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mViewModel.getUsageEntities().observe(getViewLifecycleOwner(), this::updateTonnageChart);
+        mViewModel.getHourlyUsageEntities().observe(getViewLifecycleOwner(), this::updateHourlyTonnageChart);
 
         mBinding.usageTimeSelector.setOnTimeWindowChangedListener(newWindow -> {
             mViewModel.setCurrentTimeWindow(newWindow);
@@ -92,6 +94,29 @@ public class UsageFragment extends Fragment {
 
         //Set the data to the layout
         mBinding.setUsageData(new UsageData(cellularTonnage, wifiTonnage));
+    }
+
+    private void updateHourlyTonnageChart(List<HourlyUsageEntity> hourlyUsageEntities) {
+        long cellularTonnage = 0, wifiTonnage = 0;
+
+        if (hourlyUsageEntities != null) {
+            Log.d(TAG, "UI: " + hourlyUsageEntities.size() + " entities are being used for this calculation.");
+            //Calculate tonnage for each network type
+            for (int i = 0; i < hourlyUsageEntities.size(); i++) {
+                HourlyUsageEntity currentEntity = hourlyUsageEntities.get(i);
+                switch (currentEntity.getTransportType()) {
+                    case NetworkCapabilities.TRANSPORT_CELLULAR:
+                        cellularTonnage += currentEntity.getUsage();
+                        break;
+                    case NetworkCapabilities.TRANSPORT_WIFI:
+                        wifiTonnage += currentEntity.getUsage();
+                        break;
+                }
+            }
+        }
+
+        //Set the data to the layout
+        mBinding.setHourlyData(new UsageData(cellularTonnage, wifiTonnage));
     }
 
     /**

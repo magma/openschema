@@ -43,6 +43,11 @@ public class SharedPreferencesHelper {
     public static final String KEY_FIRST_TIME_SETUP = "key_first_time_setup";
 
     /**
+     * Key used to keep track of the hours that have had their usage collected by HourlyUsageWorker.
+     */
+    public static final String KEY_LAST_HOURLY_USAGE_TIMESTAMP = "key_last_hourly_usage_timestamp";
+
+    /**
      * Get a SharedPreferences instance using the library's file key.
      */
     public static SharedPreferences getInstance(Context context) {

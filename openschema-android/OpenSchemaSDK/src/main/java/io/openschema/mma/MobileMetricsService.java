@@ -23,6 +23,7 @@ import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
+import io.openschema.mma.metrics.HourlyUsageWorker;
 import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.metrics.collectors.BaseMetrics;
 import io.openschema.mma.metrics.collectors.CellularSessionMetrics;
@@ -56,6 +57,8 @@ public class MobileMetricsService extends Service implements BaseMetrics.Metrics
 
         mCellularSessionMetrics = new CellularSessionMetrics(getApplicationContext(), this);
         mCellularSessionMetrics.startTrackers();
+
+        HourlyUsageWorker.enqueuePeriodicWorker(getApplicationContext());
     }
 
     @Override

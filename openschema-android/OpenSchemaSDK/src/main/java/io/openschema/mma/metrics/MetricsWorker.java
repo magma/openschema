@@ -134,6 +134,7 @@ public class MetricsWorker extends Worker {
      * The worker will wait until the device is connected to Wi-Fi and battery is not low.
      */
     public static void enqueuePeriodicWorker(Context context, String backendUrl, String backendUsername, String backendPassword) {
+        Log.d(TAG, "MMA: Enqueuing MetricsWorker");
         PeriodicWorkRequest.Builder workBuilder = new PeriodicWorkRequest.Builder(MetricsWorker.class, 4, TimeUnit.HOURS)
                 .addTag(WORKER_TAG)
                 .setConstraints(new Constraints.Builder()
