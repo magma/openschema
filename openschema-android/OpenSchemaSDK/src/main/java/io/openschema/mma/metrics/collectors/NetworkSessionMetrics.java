@@ -16,18 +16,15 @@ package io.openschema.mma.metrics.collectors;
 
 import android.app.usage.NetworkStats;
 import android.content.Context;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Handler;
 import android.util.Log;
 
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -57,7 +54,6 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     protected boolean mIsExpectingLocation;
     protected long mLastRxBytes, mTotalRxBytes;
     protected long mLastTxBytes, mTotalTxBytes;
-    protected long mTotalBytes;
 
     //Metrics sources
     protected final ConnectivityManager mConnectivityManager;
@@ -70,11 +66,13 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     private NetworkConnectionEntityAdapter mNetworkConnectionEntityAdapter = null;
 
     protected Handler mHandler;
-    private static final long FREQUENCE_BYTE_MEASUREMENT = 1000 * 60; //1 min
+    private static final long FREQUENCE_BYTE_MEASUREMENT = 1000 * 15; //15 seconds
     private static final long FREQUENCE_SEGMENT_LOGGING = 1000 * 60 * 60; //60 min
     private static final long BYTES_THRESHOLD = 1000 * 1000 * 200; //500 MB
 
     private final MetricsRepository mMetricsRepository;
+    private NetworkConnectionsEntity mCurrentActiveConnection = null;
+    private NetworkUsageEntity mCurrentActiveSegment = null;
 
     public NetworkSessionMetrics(Context context, String metricName, int transportType, BaseMetrics networkMetrics, MetricsCollectorListener listener) {
         super(context);
@@ -122,7 +120,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         mLastTxBytes = -1;
         mTotalRxBytes = 0;
         mTotalTxBytes = 0;
-        mTotalBytes = 0;
+        createNetworkConnection();
         mHandler.post(mMeasureCurrentBytes);
         mHandler.postDelayed(mFlushSessionSegment, FREQUENCE_SEGMENT_LOGGING);
     }
@@ -131,8 +129,6 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     // May also be called if a new connection is detected without having detected the previous session's disconnection.
     protected void onSessionEnd() {
         mSessionEndTimestamp = System.currentTimeMillis();
-
-        storeNetworkConnection();
 
         processSessionSegment(mLastReportedSegmentTimestamp, mSessionEndTimestamp);
 
@@ -147,6 +143,8 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
             mLocationMetrics.cancelLocationRequest();
             mIsExpectingLocation = false;
         }
+        mCurrentActiveConnection = null;
+        mCurrentActiveSegment = null;
         mHandler.removeCallbacks(mMeasureCurrentBytes);
         mHandler.removeCallbacks(mFlushSessionSegment);
     }
@@ -161,7 +159,6 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
             if (mLastRxBytes != -1) {
                 long diff = newBucket.getRxBytes() - mLastRxBytes;
                 mTotalRxBytes += diff;
-                mTotalBytes += diff;
                 totalBytesDiff += diff;
             }
 
@@ -169,16 +166,15 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
             if (mLastTxBytes != -1) {
                 long diff = newBucket.getTxBytes() - mLastTxBytes;
                 mTotalTxBytes += diff;
-                mTotalBytes += diff;
                 totalBytesDiff += diff;
             }
 
             //TODO: remove? used for accuracy testing purposes
-            if (totalBytesDiff > BYTES_THRESHOLD) {
-                Log.d(TAG, "MMA: The measurement caught an unusual amount over " + BYTES_THRESHOLD +
+            if (totalBytesDiff > BYTES_THRESHOLD || totalBytesDiff < 0) {
+                Log.e(TAG, "MMA: The measurement caught an unusual amount over " + BYTES_THRESHOLD +
                         "Current usage measurements: (transport: " + mTransportType + ")" +
                         "\nDiff since last measurement (Total Bytes): " + totalBytesDiff +
-                        "\nTotal Bytes: " + mTotalBytes +
+                        "\nTotal Bytes: " + (mTotalRxBytes + mTotalTxBytes) +
                         "\nRx Bytes: " + mTotalRxBytes +
                         "\nTx Bytes: " + mTotalTxBytes);
             }
@@ -186,6 +182,9 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
             //Save current value for next call
             mLastRxBytes = newBucket.getRxBytes();
             mLastTxBytes = newBucket.getTxBytes();
+
+            long duration = System.currentTimeMillis() - mLastReportedSegmentTimestamp;
+            updateSessionSegment(duration, mTotalRxBytes + mTotalTxBytes);
 
             //Run every 60 seconds
             mHandler.postDelayed(this, FREQUENCE_BYTE_MEASUREMENT);
@@ -198,6 +197,12 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
             Log.d(TAG, "MMA: Location received");
             mCurrentSession.addAll(metricsList);
             mIsExpectingLocation = false;
+
+            //Connection was written to DB first, need to update with location
+            if (mCurrentActiveConnection != null) {
+                Log.d(TAG, "MMA: Network connection already existing, updating location values. (transport: " + mTransportType + ")");
+                updateNetworkConnection(mLocationMetrics.getLastLocation());
+            }
         }
     }
 
@@ -222,28 +227,59 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
         Log.d(TAG, "MMA: Collected metrics:\n" + currentSegmentMetrics.toString());
         Log.d(TAG, "MMA: Current segment measurements: (transport: " + mTransportType + ")" +
                 "\nSegment Duration: " + segmentDuration +
-                "\nTotal Bytes: " + mTotalBytes +
+                "\nTotal Bytes: " + (mTotalRxBytes + mTotalTxBytes) +
                 "\nSegment Total: " + segmentUsage +
                 "\nRx Bytes: " + mTotalRxBytes +
                 "\nTx Bytes: " + mTotalTxBytes);
 
+        //Update segment entry with final values
+        updateSessionSegment(segmentDuration, segmentUsage);
+
         //Collect the metric locally to be pushed later.
-        storeSessionSegment(segmentDuration, segmentUsage, segmentStart);
         mListener.onMetricCollected(METRIC_NAME, currentSegmentMetrics);
     }
 
     //Save connection information into an optional local table to be used in UI
-    protected void storeNetworkConnection() {
+    protected void createNetworkConnection() {
         //TODO: disable with flag from MMA builder? avoid extra calculations & storage
+        Log.d(TAG, "MMA: Creating new database entry for network connection. (transport: " + mTransportType + ")");
+        mCurrentActiveConnection = null;
         if (mNetworkConnectionEntityAdapter != null) {
-            mMetricsRepository.writeNetworkConnection(mNetworkConnectionEntityAdapter.getEntity());
+            mMetricsRepository.writeNetworkConnection(mNetworkConnectionEntityAdapter.getEntity())
+                    .thenAccept(entity -> {
+                        mCurrentActiveConnection = entity;
+                        createSessionSegment(mLastReportedSegmentTimestamp);
+                    });
         }
     }
 
-    //Save usage information into an optional local table to be used in UI
-    protected void storeSessionSegment(long duration, long usage, long timestamp) {
+    //Updates the location values of the current connection's entry.
+    protected void updateNetworkConnection(Location location) {
         //TODO: disable with flag from MMA builder? avoid extra calculations & storage
-        mMetricsRepository.writeNetworkSessionSegment(new NetworkUsageEntity(mTransportType, duration, usage, timestamp));
+        if (mCurrentActiveConnection != null) {
+            Log.d(TAG, "MMA: Updating database entry for network connection. (transport: " + mTransportType + ")");
+            mCurrentActiveConnection.setLocation(location);
+            mMetricsRepository.updateNetworkConnection(mCurrentActiveConnection);
+        }
+    }
+
+    //Creates an initial database entry to be updated over the duration of a segment. This is an optional local table to be used in UI.
+    protected void createSessionSegment(long timestamp) {
+        //TODO: disable with flag from MMA builder? avoid extra calculations & storage
+        Log.d(TAG, "MMA: Creating new database entry for network usage segment. (transport: " + mTransportType + ")");
+        mCurrentActiveSegment = null;
+        mMetricsRepository.writeNetworkSessionSegment(new NetworkUsageEntity(mCurrentActiveConnection.getId(), mTransportType, 0, 0, timestamp))
+                .thenAccept(networkUsageEntity -> mCurrentActiveSegment = networkUsageEntity);
+    }
+
+    //Updates the duration and usage values of the current segment's entry.
+    protected void updateSessionSegment(long duration, long usage) {
+        //TODO: disable with flag from MMA builder? avoid extra calculations & storage
+        if (mCurrentActiveSegment != null) {
+            mCurrentActiveSegment.setDuration(duration);
+            mCurrentActiveSegment.setUsage(usage);
+            mMetricsRepository.updateNetworkSessionSegment(mCurrentActiveSegment);
+        }
     }
 
     private final Runnable mFlushSessionSegment = new Runnable() {
@@ -261,6 +297,8 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
                 mTotalTxBytes = 0;
                 mLastReportedSegmentTimestamp = currentTimestamp;
 
+                //Start new segment
+                createSessionSegment(mLastReportedSegmentTimestamp);
                 mHandler.postDelayed(this, FREQUENCE_SEGMENT_LOGGING);
             }
         }

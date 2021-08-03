@@ -16,10 +16,12 @@ package io.openschema.mma.data.dao;
 
 import java.util.List;
 
+import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
 
 /**
@@ -29,7 +31,21 @@ import io.openschema.mma.data.entity.NetworkUsageEntity;
 public interface NetworkUsageDAO {
 
     @Insert
-    void insert(NetworkUsageEntity newEntity);
+    long insert(NetworkUsageEntity newEntity);
+
+    @Update
+    void update(NetworkUsageEntity entity);
+
+    @WorkerThread
+    @Query("SELECT * from network_usage " +
+                   "WHERE id == :rowId")
+    NetworkUsageEntity getSingle(int rowId);
+
+    @WorkerThread
+    @Query("SELECT * from network_usage " +
+                   "WHERE network_connection_id == :networkConnectionId " +
+                   "AND transport_type == :transportType")
+    List<NetworkUsageEntity> getEntitiesForNetworkConnection(int networkConnectionId, int transportType);
 
     @Query("SELECT * from network_usage " +
                    "WHERE timestamp >= :startTime " +

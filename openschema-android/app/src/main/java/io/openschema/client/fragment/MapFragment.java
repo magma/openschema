@@ -179,6 +179,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
             //Use a hashmap to cache connections that have been processed in previous observer events
             if (mSeenEntitiesMap.get(currentEntity.getCompoundId()) == null) {
+
+                //Only use entries that have a valid location valuec
+                if (currentEntity.getLatitude() == Double.MAX_VALUE || currentEntity.getLongitude() == Double.MAX_VALUE) {
+                    continue;
+                }
+
                 processedCount++;
                 createMarker(currentEntity);
             }

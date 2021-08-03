@@ -16,12 +16,13 @@ package io.openschema.mma.data.dao;
 
 import java.util.List;
 
+import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
-import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 
 /**
@@ -32,30 +33,40 @@ public interface NetworkConnectionsDAO {
 
     //Wi-Fi calls
     @Insert
-    void insert(WifiConnectionsEntity newEntity);
+    long insert(WifiConnectionsEntity newEntity);
 
-    @Query("SELECT * FROM wifi_connections")
-    LiveData<List<WifiConnectionsEntity>> getAllWifiConnections();
+    @Update
+    void update(WifiConnectionsEntity entity);
 
     @Query("SELECT * from wifi_connections " +
                    "WHERE timestamp >= :startTime " +
                    "AND timestamp < :endTime")
     LiveData<List<WifiConnectionsEntity>> getWifiConnections(long startTime, long endTime);
 
+    @WorkerThread
+    @Query("SELECT * from wifi_connections " +
+                   "WHERE id == :rowId")
+    WifiConnectionsEntity getWifiSingle(int rowId);
+
     @Query("UPDATE wifi_connections SET is_reported = 1 WHERE id=:id")
     void setWifiReported(int id);
 
     //Cellular calls
-    @Query("SELECT * FROM cellular_connections")
-    LiveData<List<CellularConnectionsEntity>> getAllCellularConnections();
+    @Insert
+    long insert(CellularConnectionsEntity newEntity);
+
+    @Update
+    void update(CellularConnectionsEntity entity);
 
     @Query("SELECT * from cellular_connections " +
                    "WHERE timestamp >= :startTime " +
                    "AND timestamp < :endTime")
     LiveData<List<CellularConnectionsEntity>> getCellularConnections(long startTime, long endTime);
 
-    @Insert
-    void insert(CellularConnectionsEntity newEntity);
+    @WorkerThread
+    @Query("SELECT * from cellular_connections " +
+                   "WHERE id == :rowId")
+    CellularConnectionsEntity getCellularSingle(int rowId);
 
     @Query("UPDATE cellular_connections SET is_reported = 1 WHERE id=:id")
     void setCellularReported(int id);

@@ -32,12 +32,12 @@ public class WifiConnectionsEntity extends NetworkConnectionsEntity {
     private String BSSID;
 
     @Ignore
-    public WifiConnectionsEntity(int transportType, String SSID, String BSSID, long duration, long usage, double longitude, double latitude, long timestamp) {
-        this(0, transportType, SSID, BSSID, duration, usage, longitude, latitude, timestamp, false);
+    public WifiConnectionsEntity(int transportType, String SSID, String BSSID, double longitude, double latitude, long timestamp) {
+        this(0, transportType, SSID, BSSID, longitude, latitude, timestamp, false);
     }
 
-    public WifiConnectionsEntity(int id, int transportType, String SSID, String BSSID, long duration, long usage, double longitude, double latitude, long timestamp, boolean reported) {
-        super(id, transportType, duration, usage, longitude, latitude, timestamp, reported);
+    public WifiConnectionsEntity(int id, int transportType, String SSID, String BSSID, double longitude, double latitude, long timestamp, boolean reported) {
+        super(id, transportType, 0, 0, longitude, latitude, timestamp, reported);
         this.SSID = SSID;
         this.BSSID = BSSID;
     }
