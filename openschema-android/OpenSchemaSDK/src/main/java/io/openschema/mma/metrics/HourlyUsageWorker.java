@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.NetworkCapabilities;
 import android.util.Log;
 
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +43,7 @@ public class HourlyUsageWorker extends Worker {
 
     private void collectData() {
         //Get last collected timestamp from persistent storage
+        //Ideally we would only count from the instant the app was installed, but we are limited to hour-level granularity with NetworkStatsManager
         long lastCollectedTimestamp = mSharedPreferences.getLong(SharedPreferencesHelper.KEY_LAST_HOURLY_USAGE_TIMESTAMP, -1);
         if (lastCollectedTimestamp == -1) {
             //First time worker is called after installation
@@ -49,19 +51,15 @@ public class HourlyUsageWorker extends Worker {
             lastCollectedTimestamp = CalendarUtils.getCurrentHourCalendar().getTimeInMillis();
         }
 
-        //Convert to Calendar object
-        Calendar lastCollectedCal = Calendar.getInstance();
-        lastCollectedCal.setTimeInMillis(lastCollectedTimestamp);
-        Log.d(TAG, "MMA: Last collected hour: " + lastCollectedCal.getTime().toString());
-
         //Calculate amount of iterations pending
-        Calendar currentHourCal = CalendarUtils.getCurrentHourCalendar();
-        long hourSegments = ChronoUnit.HOURS.between(lastCollectedCal.toInstant(), currentHourCal.toInstant());
-
+        Instant lastCollectedInstant = Instant.ofEpochMilli(lastCollectedTimestamp);
+        Log.d(TAG, "MMA: Last collected hour: " + lastCollectedInstant.toString());
+        long hourSegments = ChronoUnit.HOURS.between(lastCollectedInstant, Instant.ofEpochMilli(System.currentTimeMillis()));
         Log.d(TAG, "MMA: Collecting " + hourSegments + " hours: ");
 
+        //Iterate over each hour missing from DB
         Calendar currentSegmentStart = Calendar.getInstance();
-        currentSegmentStart.setTimeInMillis(lastCollectedCal.getTimeInMillis());
+        currentSegmentStart.setTimeInMillis(lastCollectedTimestamp);
         for (int i = 0; i < hourSegments; i++) {
             Calendar segmentStart = Calendar.getInstance();
             Calendar segmentEnd = Calendar.getInstance();

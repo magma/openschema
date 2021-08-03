@@ -68,7 +68,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     protected Handler mHandler;
     private static final long FREQUENCE_BYTE_MEASUREMENT = 1000 * 15; //15 seconds
     private static final long FREQUENCE_SEGMENT_LOGGING = 1000 * 60 * 60; //60 min
-    private static final long BYTES_THRESHOLD = 1000 * 1000 * 200; //500 MB
+    private static final long BYTES_THRESHOLD = 1000 * 1000 * 200; //200 MB
 
     private final MetricsRepository mMetricsRepository;
     private NetworkConnectionsEntity mCurrentActiveConnection = null;
