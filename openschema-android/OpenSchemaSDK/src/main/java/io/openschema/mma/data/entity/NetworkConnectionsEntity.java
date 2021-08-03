@@ -14,8 +14,9 @@
 
 package io.openschema.mma.data.entity;
 
+import android.location.Location;
+
 import androidx.room.ColumnInfo;
-import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /**
@@ -32,6 +33,7 @@ public class NetworkConnectionsEntity {
     @ColumnInfo(name = "transport_type")
     private int transportType;
 
+    //Storing a duplicate of aggregated duration & usage for easy access & live updates for map UI
     //Stored in milliseconds
     @ColumnInfo(name = "duration")
     private long duration;
@@ -76,6 +78,14 @@ public class NetworkConnectionsEntity {
     public double getLatitude() {return latitude;}
     public long getTimestamp() {return timestamp;}
     public boolean getIsReported() {return isReported;}
+
+    public void setDuration(long duration) { this.duration = duration;}
+    public void setUsage(long usage) { this.usage = usage;}
+
+    public void setLocation(Location location) {
+        longitude = location.getLongitude();
+        latitude = location.getLatitude();
+    }
 
 //    public void setReported(boolean reported) { this.reported = reported;}
 }

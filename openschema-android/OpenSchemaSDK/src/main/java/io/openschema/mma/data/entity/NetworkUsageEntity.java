@@ -31,6 +31,11 @@ public class NetworkUsageEntity {
     @ColumnInfo(name = "id")
     private int id = 0;
 
+    //Need to look for network connection ID + transport type as a composite key
+    //Network connection ID can cause issues due to ID duplicating in WiFiConnectionsEntity and CellularConnectionsEntity
+    @ColumnInfo(name = "network_connection_id")
+    private int networkConnectionId;
+
     @ColumnInfo(name = "transport_type")
     private int transportType;
 
@@ -46,15 +51,16 @@ public class NetworkUsageEntity {
     private long timestamp;
 
     @Ignore
-    public NetworkUsageEntity(int transportType, long duration, long usage, long timestamp) {
-        this(0, transportType, duration, usage, timestamp);
+    public NetworkUsageEntity(int networkConnectionId, int transportType, long duration, long usage, long timestamp) {
+        this(0, networkConnectionId, transportType, duration, usage, timestamp);
     }
 
     /**
      * Constructor with all fields. Required for Android Room.
      */
-    public NetworkUsageEntity(int id, int transportType, long duration, long usage, long timestamp) {
+    public NetworkUsageEntity(int id, int networkConnectionId, int transportType, long duration, long usage, long timestamp) {
         this.id = id;
+        this.networkConnectionId = networkConnectionId;
         this.transportType = transportType;
         this.duration = duration;
         this.usage = usage;
@@ -62,8 +68,12 @@ public class NetworkUsageEntity {
     }
 
     public int getId() { return id;}
+    public int getNetworkConnectionId() { return networkConnectionId;}
     public int getTransportType() {return transportType;}
     public long getDuration() {return duration;}
     public long getUsage() {return usage;}
     public long getTimestamp() {return timestamp;}
+
+    public void setDuration(long duration) { this.duration = duration;}
+    public void setUsage(long usage) { this.usage = usage;}
 }

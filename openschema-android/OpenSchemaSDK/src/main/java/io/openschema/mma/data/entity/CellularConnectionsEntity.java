@@ -31,12 +31,12 @@ public class CellularConnectionsEntity extends NetworkConnectionsEntity {
     private long cellIdentity;
 
     @Ignore
-    public CellularConnectionsEntity(int transportType, String networkType, long cellIdentity, long duration, long usage, double longitude, double latitude, long timestamp) {
-        this(0, transportType, networkType, cellIdentity, duration, usage, longitude, latitude, timestamp, false);
+    public CellularConnectionsEntity(int transportType, String networkType, long cellIdentity, double longitude, double latitude, long timestamp) {
+        this(0, transportType, networkType, cellIdentity, longitude, latitude, timestamp, false);
     }
 
-    public CellularConnectionsEntity(int id, int transportType, String networkType, long cellIdentity, long duration, long usage, double longitude, double latitude, long timestamp, boolean reported) {
-        super(id, transportType, duration, usage, longitude, latitude, timestamp, reported);
+    public CellularConnectionsEntity(int id, int transportType, String networkType, long cellIdentity, double longitude, double latitude, long timestamp, boolean reported) {
+        super(id, transportType, 0, 0, longitude, latitude, timestamp, reported);
         this.networkType = networkType;
         this.cellIdentity = cellIdentity;
     }

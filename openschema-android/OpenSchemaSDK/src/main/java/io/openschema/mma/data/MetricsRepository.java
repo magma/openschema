@@ -20,6 +20,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -115,15 +116,43 @@ public class MetricsRepository {
     }
 
     //Local metrics for UI
-    public void writeNetworkConnection(NetworkConnectionsEntity entity) {
+    public CompletableFuture<NetworkConnectionsEntity> writeNetworkConnection(NetworkConnectionsEntity entity) {
+        CompletableFuture<NetworkConnectionsEntity> completableFuture = new CompletableFuture<>();
+
         if (entity != null) {
             //TODO: disable with flag from MMA builder
             Log.d(TAG, "MMA: Writing network connection to DB");
 
             if (entity instanceof WifiConnectionsEntity) {
-                mExecutor.execute(() -> mNetworkConnectionsDAO.insert((WifiConnectionsEntity) entity));
+                mExecutor.execute(() -> {
+                    long rowId = mNetworkConnectionsDAO.insert((WifiConnectionsEntity) entity);
+                    WifiConnectionsEntity newEntity = mNetworkConnectionsDAO.getWifiSingle((int) rowId);
+                    completableFuture.complete(newEntity);
+                });
             } else if (entity instanceof CellularConnectionsEntity) {
-                mExecutor.execute(() -> mNetworkConnectionsDAO.insert((CellularConnectionsEntity) entity));
+                mExecutor.execute(() -> {
+                    long rowId = mNetworkConnectionsDAO.insert((CellularConnectionsEntity) entity);
+                    CellularConnectionsEntity newEntity = mNetworkConnectionsDAO.getCellularSingle((int) rowId);
+                    completableFuture.complete(newEntity);
+                });
+            } else {
+                Log.e(TAG, "MMA: The connection entity didn't have a valid class");
+                completableFuture.complete(null);
+            }
+        } else {
+            completableFuture.complete(null);
+        }
+
+        return completableFuture;
+    }
+
+    public void updateNetworkConnection(NetworkConnectionsEntity entity) {
+        if (entity != null) {
+            Log.d(TAG, "MMA: Updating network connection in DB");
+            if (entity instanceof WifiConnectionsEntity) {
+                mExecutor.execute(() -> mNetworkConnectionsDAO.update((WifiConnectionsEntity) entity));
+            } else if (entity instanceof CellularConnectionsEntity) {
+                mExecutor.execute(() -> mNetworkConnectionsDAO.update((CellularConnectionsEntity) entity));
             } else {
                 Log.e(TAG, "MMA: The connection entity didn't have a valid class");
             }
@@ -131,11 +160,50 @@ public class MetricsRepository {
     }
 
     //Local metrics for UI
-    public void writeNetworkSessionSegment(NetworkUsageEntity entity) {
+    public CompletableFuture<NetworkUsageEntity> writeNetworkSessionSegment(NetworkUsageEntity entity) {
+        CompletableFuture<NetworkUsageEntity> completableFuture = new CompletableFuture<>();
         if (entity != null) {
             //TODO: disable with flag from MMA builder
             Log.d(TAG, "MMA: Writing network usage session to DB");
-            mExecutor.execute(() -> mNetworkUsageDAO.insert(entity));
+            mExecutor.execute(() -> {
+                long rowId = mNetworkUsageDAO.insert(entity);
+                NetworkUsageEntity newEntity = mNetworkUsageDAO.getSingle((int) rowId);
+                completableFuture.complete(newEntity);
+            });
+        } else {
+            completableFuture.complete(null);
+        }
+        return completableFuture;
+    }
+
+    public void updateNetworkSessionSegment(NetworkUsageEntity entity) {
+        if (entity != null) {
+            Log.d(TAG, "MMA: Updating network usage session in DB");
+            mExecutor.execute(() -> {
+                mNetworkUsageDAO.update(entity);
+
+                //Update parent NetworkConnectionEntity with aggregated duration & usage values for easy access from UI
+                List<NetworkUsageEntity> networkUsageEntities = mNetworkUsageDAO.getEntitiesForNetworkConnection(entity.getNetworkConnectionId(), entity.getTransportType());
+                long duration = 0;
+                long usage = 0;
+                for (int i = 0; i < networkUsageEntities.size(); i++) {
+                    NetworkUsageEntity currentEntity = networkUsageEntities.get(i);
+                    duration += currentEntity.getDuration();
+                    usage += currentEntity.getUsage();
+                }
+
+                if (entity.getTransportType() == NetworkCapabilities.TRANSPORT_CELLULAR) {
+                    CellularConnectionsEntity networkConnection = mNetworkConnectionsDAO.getCellularSingle(entity.getNetworkConnectionId());
+                    networkConnection.setDuration(duration);
+                    networkConnection.setUsage(usage);
+                    mNetworkConnectionsDAO.update(networkConnection);
+                } else if (entity.getTransportType() == NetworkCapabilities.TRANSPORT_WIFI) {
+                    WifiConnectionsEntity networkConnection = mNetworkConnectionsDAO.getWifiSingle(entity.getNetworkConnectionId());
+                    networkConnection.setDuration(duration);
+                    networkConnection.setUsage(usage);
+                    mNetworkConnectionsDAO.update(networkConnection);
+                }
+            });
         }
     }
 

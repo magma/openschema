@@ -17,15 +17,16 @@ package io.openschema.mma.metrics.collectors;
 import android.content.Context;
 import android.location.Location;
 import android.net.NetworkCapabilities;
+import android.util.Log;
 
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
-import io.openschema.mma.data.pojo.Timestamp;
 
 /**
  * Collect metrics related to cellular sessions.
  */
 public class CellularSessionMetrics extends NetworkSessionMetrics {
+    private static final String TAG = "CellularSessionMetrics";
 
     /**
      * Metric name to be used for the collected information.
@@ -42,15 +43,17 @@ public class CellularSessionMetrics extends NetworkSessionMetrics {
         @Override
         public NetworkConnectionsEntity getEntity() {
             Location lastLocation = mLocationMetrics.getLastLocation();
+            //Initializing at MAX_VALUE since longitude ranges from -180 to 180 and latitude from -90 to 90
+            double longitude = Double.MAX_VALUE, latitude = Double.MAX_VALUE;
+
             if (lastLocation != null) {
-
-                long sessionDuration = mSessionEndTimestamp - mSessionStartTimestamp;
-                long sessionUsage = mTotalBytes;
-
-                CellularNetworkMetrics cellularNetworkMetrics = (CellularNetworkMetrics) mNetworkMetrics;
-                return new CellularConnectionsEntity(mTransportType, cellularNetworkMetrics.getNetworkType(), cellularNetworkMetrics.getCellIdentity(), sessionDuration, sessionUsage, lastLocation.getLongitude(), lastLocation.getLatitude(), mSessionStartTimestamp);
+                Log.d(TAG, "MMA: Location was ready, creating entry with correct values. (transport: " + mTransportType + ")");
+                longitude = lastLocation.getLongitude();
+                latitude = lastLocation.getLatitude();
             }
-            return null;
+
+            CellularNetworkMetrics cellularNetworkMetrics = (CellularNetworkMetrics) mNetworkMetrics;
+            return new CellularConnectionsEntity(mTransportType, cellularNetworkMetrics.getNetworkType(), cellularNetworkMetrics.getCellIdentity(), longitude, latitude, mSessionStartTimestamp);
         }
     }
 }

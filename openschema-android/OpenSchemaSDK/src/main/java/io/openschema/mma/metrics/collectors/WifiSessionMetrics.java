@@ -17,15 +17,16 @@ package io.openschema.mma.metrics.collectors;
 import android.content.Context;
 import android.location.Location;
 import android.net.NetworkCapabilities;
+import android.util.Log;
 
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
-import io.openschema.mma.data.pojo.Timestamp;
 
 /**
  * Collect metrics related to Wi-Fi sessions.
  */
 public class WifiSessionMetrics extends NetworkSessionMetrics {
+    private static final String TAG = "WifiSessionMetrics";
 
     /**
      * Metric name to be used for the collected information.
@@ -42,15 +43,17 @@ public class WifiSessionMetrics extends NetworkSessionMetrics {
         @Override
         public NetworkConnectionsEntity getEntity() {
             Location lastLocation = mLocationMetrics.getLastLocation();
+            //Initializing at MAX_VALUE since longitude ranges from -180 to 180 and latitude from -90 to 90
+            double longitude = Double.MAX_VALUE, latitude = Double.MAX_VALUE;
+
             if (lastLocation != null) {
-
-                long sessionDuration = mSessionEndTimestamp - mSessionStartTimestamp;
-                long sessionUsage = mTotalBytes;
-
-                WifiNetworkMetrics wifiNetworkMetrics = (WifiNetworkMetrics) mNetworkMetrics;
-                return new WifiConnectionsEntity(mTransportType, wifiNetworkMetrics.getSSID(), wifiNetworkMetrics.getBSSID(), sessionDuration, sessionUsage, lastLocation.getLongitude(), lastLocation.getLatitude(), mSessionStartTimestamp);
+                Log.d(TAG, "MMA: Location was ready, creating entry with correct values. (transport: " + mTransportType + ")");
+                longitude = lastLocation.getLongitude();
+                latitude = lastLocation.getLatitude();
             }
-            return null;
+
+            WifiNetworkMetrics wifiNetworkMetrics = (WifiNetworkMetrics) mNetworkMetrics;
+            return new WifiConnectionsEntity(mTransportType, wifiNetworkMetrics.getSSID(), wifiNetworkMetrics.getBSSID(), longitude, latitude, mSessionStartTimestamp);
         }
     }
 
