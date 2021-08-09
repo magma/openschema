@@ -14,7 +14,9 @@
 
 package io.openschema.mma;
 
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
@@ -27,6 +29,7 @@ import io.openschema.mma.metrics.HourlyUsageWorker;
 import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.metrics.collectors.BaseMetrics;
 import io.openschema.mma.metrics.collectors.CellularSessionMetrics;
+import io.openschema.mma.metrics.collectors.DeviceMetrics;
 import io.openschema.mma.metrics.collectors.WifiSessionMetrics;
 import io.openschema.mma.utils.PersistentNotification;
 
@@ -59,6 +62,9 @@ public class MobileMetricsService extends Service implements BaseMetrics.Metrics
         mCellularSessionMetrics.startTrackers();
 
         HourlyUsageWorker.enqueuePeriodicWorker(getApplicationContext());
+
+        //Collecting device metrics every time the service starts. Using this to let us know when the service might've stopped working on a device.
+        mMetricsManager.collect(DeviceMetrics.METRIC_NAME, new DeviceMetrics(this).retrieveMetrics());
     }
 
     @Override
@@ -82,5 +88,16 @@ public class MobileMetricsService extends Service implements BaseMetrics.Metrics
     @Override
     public void onMetricCollected(String metricName, List<Pair<String, String>> metricsList) {
         mMetricsManager.collect(metricName, metricsList);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static boolean isServiceRunning(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (MobileMetricsService.class.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

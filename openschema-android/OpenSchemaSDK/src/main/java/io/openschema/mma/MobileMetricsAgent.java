@@ -18,18 +18,15 @@ import android.app.Application;
 import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import java.util.List;
 
 import androidx.core.util.Pair;
-import io.openschema.mma.utils.PersistentNotification;
-import io.openschema.mma.utils.SharedPreferencesHelper;
+import io.openschema.mma.backend.CertificateManager;
 import io.openschema.mma.id.Identity;
 import io.openschema.mma.metrics.MetricsManager;
-import io.openschema.mma.metrics.collectors.DeviceMetrics;
-import io.openschema.mma.backend.CertificateManager;
+import io.openschema.mma.utils.PersistentNotification;
 
 /**
  * Main class to act as an interface to access the functionality in the library.
@@ -116,8 +113,6 @@ public class MobileMetricsAgent {
     private void onReady() {
         mIsReady = true;
 
-        attemptFirstTimeSetup();
-
         // Check if the library's baseline metrics are enabled
         if (mEnableLibraryMetrics) {
 
@@ -131,36 +126,6 @@ public class MobileMetricsAgent {
         }
 
         mMetricsManager.startWorker(mAppContext, mBackendBaseURL, mBackendUsername, mBackendPassword);
-    }
-
-    /**
-     * Check if this is the first time {@link MobileMetricsAgent} is initialized for this installation.
-     * Will call {@link #executeFirstTimeSetup()}
-     */
-    private void attemptFirstTimeSetup() {
-        //Check if this is the first time the SDK runs
-        SharedPreferences sharedPref = SharedPreferencesHelper.getInstance(mAppContext);
-        boolean isFirstTime = sharedPref.getBoolean(SharedPreferencesHelper.KEY_FIRST_TIME_SETUP, true);
-
-        if (isFirstTime) {
-            //Run any code required only the first time the SDK is started
-            executeFirstTimeSetup();
-
-            //Save sharedpref to prevent this code from running any subsequent start
-            sharedPref.edit()
-                    .putBoolean(SharedPreferencesHelper.KEY_FIRST_TIME_SETUP, false)
-                    .apply();
-        }
-    }
-
-    /**
-     * Executes one-time configuration code like collecting immutable device information.
-     */
-    private void executeFirstTimeSetup() {
-        // Check if the library's baseline metrics are enabled
-        if (mEnableLibraryMetrics) {
-            mMetricsManager.collect(DeviceMetrics.METRIC_NAME, new DeviceMetrics(mAppContext).retrieveMetrics());
-        }
     }
 
     /**

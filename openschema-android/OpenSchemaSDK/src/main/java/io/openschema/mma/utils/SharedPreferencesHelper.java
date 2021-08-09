@@ -38,11 +38,6 @@ public class SharedPreferencesHelper {
     public static final String KEY_UE_REGISTERED = "key_ue_registered";
 
     /**
-     * Key used to keep track whether this is the first time the app has been opened.
-     */
-    public static final String KEY_FIRST_TIME_SETUP = "key_first_time_setup";
-
-    /**
      * Key used to keep track of the hours that have had their usage collected by HourlyUsageWorker.
      */
     public static final String KEY_LAST_HOURLY_USAGE_TIMESTAMP = "key_last_hourly_usage_timestamp";
