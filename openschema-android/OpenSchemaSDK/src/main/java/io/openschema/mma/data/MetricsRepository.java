@@ -178,7 +178,7 @@ public class MetricsRepository {
 
     public void updateNetworkSessionSegment(NetworkUsageEntity entity) {
         if (entity != null) {
-            Log.d(TAG, "MMA: Updating network usage session in DB");
+//            Log.d(TAG, "MMA: Updating network usage session in DB");
             mExecutor.execute(() -> {
                 mNetworkUsageDAO.update(entity);
 
