@@ -5,6 +5,7 @@ const WifiSession = require('../models/wifi-session')
 const CellularSession = require('../models/cellular-session')
 const DeviceInfo = require('../models/device-info')
 const ConnectionReport = require('../models/connection-report')
+const UsageHourly = require('../models/usage-hourly')
 const CustomMetric = require('../models/custom-metric')
 var router = express.Router()
 
@@ -62,6 +63,8 @@ function checkKnownMetrics(metricName) {
             return handleDeviceInfo
         case ConnectionReport.metricName:
             return handleConnectionReport
+        case UsageHourly.metricName:
+            return handleUsageHourly
         default:
             return handleCustomMetric
     }
@@ -133,6 +136,24 @@ async function handleConnectionReport(body) {
     console.log(`Saving entry...`)
 
     let storedEntry = await new ConnectionReport.model(newEntry)
+        .save()
+        .catch(e => console.log('Error: ', e.message));
+
+    return storedEntry != null
+}
+
+async function handleUsageHourly(body) {
+    let newEntry = {
+        metrics: body.metrics,
+        identifier: body.identifier,
+        timestamp: body.timestamp
+    }
+
+    //TODO: remove
+    console.log(newEntry)
+    console.log(`Saving entry...`)
+
+    let storedEntry = await new UsageHourly.model(newEntry)
         .save()
         .catch(e => console.log('Error: ', e.message));
 
