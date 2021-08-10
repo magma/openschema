@@ -15,6 +15,7 @@
 package io.openschema.mma.metrics.collectors;
 
 import android.content.Context;
+import android.net.NetworkCapabilities;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import androidx.core.util.Pair;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
+import io.openschema.mma.utils.TransportType;
 
 /**
  * Class to collect information for a connection report.
@@ -38,11 +40,6 @@ public class ConnectionReport extends BaseMetrics {
     public static final String METRIC_NAME = "openschemaConnectionReport";
 
     public static final String METRIC_REPORT_DESCRIPTION = "reportDescription";
-    public static final String METRIC_TRANSPORT_TYPE = "transportType";
-
-    //Internal static enums used in OpenSchema ETL
-    private static final String TRANSPORT_WIFI = "wifi";
-    private static final String TRANSPORT_CELLULAR = "cellular";
 
     private final NetworkConnectionsEntity mConnectionEntity;
     private final String mReportDescription;
@@ -66,12 +63,12 @@ public class ConnectionReport extends BaseMetrics {
         //Extract network specific information
         if (mConnectionEntity instanceof WifiConnectionsEntity) {
             WifiConnectionsEntity entity = (WifiConnectionsEntity) mConnectionEntity;
-            metricsList.add(new Pair<>(METRIC_TRANSPORT_TYPE, TRANSPORT_WIFI));
+            metricsList.add(new Pair<>(TransportType.METRIC_TRANSPORT_TYPE, TransportType.getTransportString(NetworkCapabilities.TRANSPORT_WIFI)));
             metricsList.add(new Pair<>(WifiNetworkMetrics.METRIC_SSID, entity.getSSID()));
             metricsList.add(new Pair<>(WifiNetworkMetrics.METRIC_BSSID, entity.getBSSID()));
         } else if (mConnectionEntity instanceof CellularConnectionsEntity) {
             CellularConnectionsEntity entity = (CellularConnectionsEntity) mConnectionEntity;
-            metricsList.add(new Pair<>(METRIC_TRANSPORT_TYPE, TRANSPORT_CELLULAR));
+            metricsList.add(new Pair<>(TransportType.METRIC_TRANSPORT_TYPE, TransportType.getTransportString(NetworkCapabilities.TRANSPORT_CELLULAR)));
             metricsList.add(new Pair<>(CellularNetworkMetrics.METRIC_NETWORK_TYPE, entity.getNetworkType()));
             metricsList.add(new Pair<>(CellularNetworkMetrics.METRIC_CELL_ID, Long.toString(entity.getCellIdentity())));
         }

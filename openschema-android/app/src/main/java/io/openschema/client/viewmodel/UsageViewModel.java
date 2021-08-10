@@ -115,7 +115,6 @@ public class UsageViewModel extends AndroidViewModel {
             List<HourlyUsageEntity> newList = new ArrayList<>();
             if (mDatabaseEntries != null) newList.addAll(mDatabaseEntries);
             newList.addAll(Objects.requireNonNull(mDummyEntry.getValue()));
-//            newList.sort((o1, o2) -> Long.compare(o1.getTimestamp(), o2.getTimestamp()));
             setValue(newList);
         }
 
@@ -134,9 +133,9 @@ public class UsageViewModel extends AndroidViewModel {
                     long cellularUsage = mUsageRetriever.getDeviceTonnage(NetworkCapabilities.TRANSPORT_CELLULAR, lastCollectedTimestamp, endTime);
                     long wifiUsage = mUsageRetriever.getDeviceTonnage(NetworkCapabilities.TRANSPORT_WIFI, lastCollectedTimestamp, endTime);
 
-                    Log.d(TAG, "UI: Generating dummy entry for missing data since: " + lastCollectedTimestamp +
-                            "\nCellular usage: " + cellularUsage +
-                            "\nWi-Fi usage: " + wifiUsage);
+//                    Log.d(TAG, "UI: Generating dummy entry for missing data since: " + lastCollectedTimestamp +
+//                            "\nCellular usage: " + cellularUsage +
+//                            "\nWi-Fi usage: " + wifiUsage);
 
                     //TODO: Can optimize with fixed list that only changes usage values to avoid instantiating over and over
                     List<HourlyUsageEntity> dummyList = new ArrayList<>();

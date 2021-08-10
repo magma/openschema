@@ -18,6 +18,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.HourlyUsageEntity;
+import io.openschema.mma.metrics.collectors.NetworkHourlyMetrics;
 import io.openschema.mma.utils.CalendarUtils;
 import io.openschema.mma.utils.SharedPreferencesHelper;
 import io.openschema.mma.utils.UsageRetriever;
@@ -32,6 +33,8 @@ public class HourlyUsageWorker extends Worker {
     private final SharedPreferences mSharedPreferences;
     private final UsageRetriever mUsageRetriever;
     private final MetricsRepository mMetricsRepository;
+    private final NetworkHourlyMetrics mNetworkHourlyMetrics;
+    private MetricsManager mMetricsManager;
 
     public HourlyUsageWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -39,6 +42,8 @@ public class HourlyUsageWorker extends Worker {
         mSharedPreferences = SharedPreferencesHelper.getInstance(context);
         mUsageRetriever = new UsageRetriever(context);
         mMetricsRepository = MetricsRepository.getRepository(context.getApplicationContext());
+        mNetworkHourlyMetrics = new NetworkHourlyMetrics(context);
+        mMetricsManager = new MetricsManager(getApplicationContext());
     }
 
     private void collectData() {
@@ -85,8 +90,13 @@ public class HourlyUsageWorker extends Worker {
 
     private void collectSegment(Calendar segmentStart, Calendar segmentEnd) {
         Log.d(TAG, "MMA: Collecting Segment: " + segmentStart.getTime().toString() + " | " + segmentEnd.getTime().toString());
+        //Collect information to write to local db for UI
         mMetricsRepository.writeHourlyUsage(getUsageEntity(NetworkCapabilities.TRANSPORT_WIFI, segmentStart, segmentEnd));
         mMetricsRepository.writeHourlyUsage(getUsageEntity(NetworkCapabilities.TRANSPORT_CELLULAR, segmentStart, segmentEnd));
+
+        //Collect information to write to metrics db for uploading
+        mMetricsManager.collect(NetworkHourlyMetrics.METRIC_NAME, mNetworkHourlyMetrics.retrieveMetrics(NetworkCapabilities.TRANSPORT_WIFI, segmentStart.getTimeInMillis(), segmentEnd.getTimeInMillis()));
+        mMetricsManager.collect(NetworkHourlyMetrics.METRIC_NAME, mNetworkHourlyMetrics.retrieveMetrics(NetworkCapabilities.TRANSPORT_CELLULAR, segmentStart.getTimeInMillis(), segmentEnd.getTimeInMillis()));
     }
 
     private HourlyUsageEntity getUsageEntity(int transportType, Calendar segmentStart, Calendar segmentEnd) {
