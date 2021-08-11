@@ -6,5 +6,6 @@ Many confluence pages will be converted into ghmd readme files like this one.
 
 ##### Directories
 - openschema-android
+- openschema-ios
 - openschema-backend
 - openschema-dashboard
