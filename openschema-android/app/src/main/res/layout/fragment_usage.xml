@@ -25,11 +25,6 @@
         <import type="io.openschema.client.fragment.UsageFragment.UsageData" />
 
         <variable
-            name="usageData"
-            type="UsageData"
-            />
-
-        <variable
             name="hourlyData"
             type="UsageData"
             />
@@ -44,134 +39,11 @@
             android:id="@+id/usage_time_selector"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/usage_cellular_tonnage_chart"
+            app:layout_constraintBottom_toTopOf="@id/usage_cellular_hourly_tonnage_chart"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
-            />
-
-        <ImageView
-            android:id="@+id/usage_cellular_tonnage_header"
-            android:layout_width="50dp"
-            android:layout_height="@dimen/usage_bar_height"
-            android:layout_marginStart="64dp"
-            android:src="@drawable/bg_usage_txt"
-            app:layout_constraintBottom_toBottomOf="@id/usage_cellular_tonnage_chart"
-            app:layout_constraintEnd_toStartOf="@id/usage_cellular_tonnage_chart"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/usage_cellular_tonnage_chart"
-            app:tint="@color/cellularColor"
-            />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/usage_cellular_tonnage_value"
-            style="@style/TextAppearance.MaterialComponents.Body2"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:gravity="center"
-            android:text="@{usageData.cellularValue}"
-            android:textColor="@color/primaryTextColor"
-            app:layout_constraintBottom_toBottomOf="@id/usage_cellular_tonnage_header"
-            app:layout_constraintEnd_toEndOf="@id/usage_cellular_tonnage_header"
-            app:layout_constraintStart_toStartOf="@id/usage_cellular_tonnage_header"
-            app:layout_constraintTop_toTopOf="@id/usage_cellular_tonnage_header"
-            tools:text="0\nB"
-            />
-
-        <com.mackhartley.roundedprogressbar.RoundedProgressBar
-            android:id="@+id/usage_cellular_tonnage_chart"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/usage_bar_height"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="64dp"
-            app:layout_constraintBottom_toTopOf="@id/usage_cellular_tonnage_txt"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/usage_cellular_tonnage_header"
-            app:layout_constraintTop_toBottomOf="@id/usage_time_selector"
-            app:rpbBackgroundColor="#f5f5f5"
-            app:rpbBackgroundTextColor="@color/surfaceTextColor"
-            app:rpbCornerRadiusTopRight="@dimen/usage_bar_radius"
-            app:rpbProgress="@{usageData.cellularPercentage}"
-            app:rpbProgressColor="@color/cellularColor"
-            app:rpbProgressTextColor="@color/primaryTextColor"
-            app:rpbShowProgressText="false"
-            app:rpbTextSize="20sp"
-            tools:rpbProgress="0"
-            />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/usage_cellular_tonnage_txt"
-            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cellular"
-            app:layout_constraintBottom_toTopOf="@id/usage_wifi_tonnage_chart"
-            app:layout_constraintEnd_toEndOf="@id/usage_cellular_tonnage_chart"
-            app:layout_constraintTop_toBottomOf="@id/usage_cellular_tonnage_chart"
-            />
-
-        <ImageView
-            android:id="@+id/usage_wifi_tonnage_header"
-            android:layout_width="50dp"
-            android:layout_height="@dimen/usage_bar_height"
-            android:layout_marginStart="64dp"
-            android:src="@drawable/bg_usage_txt"
-            app:layout_constraintBottom_toBottomOf="@id/usage_wifi_tonnage_chart"
-            app:layout_constraintEnd_toStartOf="@id/usage_wifi_tonnage_chart"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/usage_wifi_tonnage_chart"
-            app:tint="@color/wifiColor"
-            />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/usage_wifi_tonnage_value"
-            style="@style/TextAppearance.MaterialComponents.Body2"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:gravity="center"
-            android:text="@{usageData.wifiValue}"
-            android:textColor="@color/primaryTextColor"
-            app:layout_constraintBottom_toBottomOf="@id/usage_wifi_tonnage_header"
-            app:layout_constraintEnd_toEndOf="@id/usage_wifi_tonnage_header"
-            app:layout_constraintStart_toStartOf="@id/usage_wifi_tonnage_header"
-            app:layout_constraintTop_toTopOf="@id/usage_wifi_tonnage_header"
-            tools:text="200\nGB"
-            />
-
-        <com.mackhartley.roundedprogressbar.RoundedProgressBar
-            android:id="@+id/usage_wifi_tonnage_chart"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/usage_bar_height"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="64dp"
-            app:layout_constraintBottom_toTopOf="@id/usage_wifi_tonnage_txt"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/usage_wifi_tonnage_header"
-            app:layout_constraintTop_toBottomOf="@id/usage_cellular_tonnage_txt"
-            app:rpbBackgroundColor="#f5f5f5"
-            app:rpbBackgroundTextColor="@color/surfaceTextColor"
-            app:rpbCornerRadiusTopRight="@dimen/usage_bar_radius"
-            app:rpbProgress="@{usageData.wifiPercentage}"
-            app:rpbProgressColor="@color/wifiColor"
-            app:rpbProgressTextColor="@color/primaryTextColor"
-            app:rpbShowProgressText="false"
-            app:rpbTextSize="20sp"
-            tools:rpbProgress="70"
-            />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/usage_wifi_tonnage_txt"
-            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text='Wi-Fi'
-            app:layout_constraintBottom_toTopOf="@id/usage_cellular_hourly_tonnage_chart"
-            app:layout_constraintEnd_toEndOf="@id/usage_cellular_tonnage_chart"
-            app:layout_constraintTop_toBottomOf="@id/usage_wifi_tonnage_chart"
             />
 
         <ImageView
@@ -211,8 +83,8 @@
             android:layout_marginEnd="64dp"
             app:layout_constraintBottom_toTopOf="@id/usage_cellular_hourly_tonnage_txt"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/usage_cellular_tonnage_header"
-            app:layout_constraintTop_toBottomOf="@id/usage_wifi_tonnage_txt"
+            app:layout_constraintStart_toEndOf="@id/usage_cellular_hourly_tonnage_header"
+            app:layout_constraintTop_toBottomOf="@id/usage_time_selector"
             app:rpbBackgroundColor="#f5f5f5"
             app:rpbBackgroundTextColor="@color/surfaceTextColor"
             app:rpbCornerRadiusTopRight="@dimen/usage_bar_radius"
@@ -229,9 +101,9 @@
             style="@style/TextAppearance.MaterialComponents.Subtitle1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cellular (Collected Hourly)"
+            android:text="Cellular"
             app:layout_constraintBottom_toTopOf="@id/usage_wifi_hourly_tonnage_chart"
-            app:layout_constraintEnd_toEndOf="@id/usage_cellular_tonnage_chart"
+            app:layout_constraintEnd_toEndOf="@id/usage_cellular_hourly_tonnage_chart"
             app:layout_constraintTop_toBottomOf="@id/usage_cellular_hourly_tonnage_chart"
             />
 
@@ -272,7 +144,7 @@
             android:layout_marginEnd="64dp"
             app:layout_constraintBottom_toTopOf="@id/usage_wifi_hourly_tonnage_txt"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/usage_wifi_tonnage_header"
+            app:layout_constraintStart_toEndOf="@id/usage_wifi_hourly_tonnage_header"
             app:layout_constraintTop_toBottomOf="@id/usage_cellular_hourly_tonnage_txt"
             app:rpbBackgroundColor="#f5f5f5"
             app:rpbBackgroundTextColor="@color/surfaceTextColor"
@@ -291,9 +163,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text='Wi-Fi (Collected Hourly)'
+            android:text='Wi-Fi'
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@id/usage_cellular_tonnage_chart"
+            app:layout_constraintEnd_toEndOf="@id/usage_cellular_hourly_tonnage_chart"
             app:layout_constraintTop_toBottomOf="@id/usage_wifi_hourly_tonnage_chart"
             />
 

@@ -32,11 +32,10 @@ import androidx.databinding.BindingMethod;
 import androidx.databinding.BindingMethods;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import io.openschema.mma.data.entity.HourlyUsageEntity;
-import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.client.databinding.FragmentUsageBinding;
 import io.openschema.client.util.FormattingUtils;
 import io.openschema.client.viewmodel.UsageViewModel;
+import io.openschema.mma.data.entity.HourlyUsageEntity;
 
 public class UsageFragment extends Fragment {
 
@@ -57,7 +56,6 @@ public class UsageFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mViewModel.getUsageEntities().observe(getViewLifecycleOwner(), this::updateTonnageChart);
         mViewModel.getHourlyUsageEntities().observe(getViewLifecycleOwner(), this::updateHourlyTonnageChart);
 
         mBinding.usageTimeSelector.setOnTimeWindowChangedListener(newWindow -> {
@@ -65,38 +63,9 @@ public class UsageFragment extends Fragment {
         });
     }
 
-    private void updateTonnageChart(List<NetworkUsageEntity> networkUsageEntities) {
+    private void updateHourlyTonnageChart(List<HourlyUsageEntity> hourlyUsageEntities) {
         //TODO: optimize to prevent recalculating entries we've already seen when new entries are received.
         // Will only be able to optimize while the current window is still the same. Not urgent since most people wouldn't stay constantly looking at this page.
-        long cellularTonnage = 0, wifiTonnage = 0;
-
-        if (networkUsageEntities != null) {
-            Log.d(TAG, "UI: " + networkUsageEntities.size() + " entities are being used for this calculation.");
-            //Calculate tonnage for each network type
-            for (int i = 0; i < networkUsageEntities.size(); i++) {
-                NetworkUsageEntity currentEntity = networkUsageEntities.get(i);
-                switch (currentEntity.getTransportType()) {
-                    case NetworkCapabilities.TRANSPORT_CELLULAR:
-                        cellularTonnage += currentEntity.getUsage();
-                        break;
-                    case NetworkCapabilities.TRANSPORT_WIFI:
-                        wifiTonnage += currentEntity.getUsage();
-                        break;
-                }
-            }
-
-            //Debugging difference between info collected by the service & the usage tracked by the OS.
-//                Log.e(TAG, "UI: Tonnage difference between logged vs OS:" +
-//                        "\nCellular (Counted): " + FormattingUtils.humanReadableByteCountSI(cellularTonnage) +
-//                        "\nWi-Fi (Counted): " + FormattingUtils.humanReadableByteCountSI(wifiTonnage));
-
-        }
-
-        //Set the data to the layout
-        mBinding.setUsageData(new UsageData(cellularTonnage, wifiTonnage));
-    }
-
-    private void updateHourlyTonnageChart(List<HourlyUsageEntity> hourlyUsageEntities) {
         long cellularTonnage = 0, wifiTonnage = 0;
 
         if (hourlyUsageEntities != null) {
