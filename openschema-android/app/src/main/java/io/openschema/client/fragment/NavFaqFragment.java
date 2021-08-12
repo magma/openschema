@@ -27,11 +27,7 @@ public class NavFaqFragment extends Fragment {
     private void openFAQ() {
         //Create intent for opening a url in a browser
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.shoelacewireless.com/os/faq"));
-
         Log.d(TAG, "UI: Opening FAQ in browser");
-        //Check if there is any app capable of handling the intent first
-        if (browserIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-            startActivity(browserIntent);
-        }
+        startActivity(browserIntent);
     }
 }

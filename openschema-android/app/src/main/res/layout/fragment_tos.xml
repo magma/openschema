@@ -23,12 +23,12 @@
         >
 
         <ImageView
-            android:id="@+id/location_icon"
+            android:id="@+id/tos_icon"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_permission_location"
-            app:layout_constraintBottom_toTopOf="@id/location_description"
+            android:src="@drawable/ic_openschema_logo"
+            app:layout_constraintBottom_toTopOf="@id/tos_description"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -37,49 +37,22 @@
             />
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/location_description"
+            android:id="@+id/tos_description"
             style="@style/TextAppearance.MaterialComponents.Body1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
             android:layout_marginEnd="48dp"
-            android:layout_marginBottom="12dp"
             android:gravity="center"
-            android:text="@string/location_permission_txt"
-            app:layout_constraintBottom_toTopOf="@id/location_description_background"
+            android:text="@string/terms_of_service_txt"
+            app:layout_constraintBottom_toTopOf="@id/tos_continue_btn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/location_icon"
-            />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/location_description_background"
-            style="@style/TextAppearance.MaterialComponents.Body1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="48dp"
-            android:gravity="center"
-            android:text="@string/location_permission_txt_background"
-            app:layout_constraintBottom_toTopOf="@id/location_permission_status"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/location_description"
-            />
-
-        <io.openschema.client.view.PermissionProgress
-            android:id="@+id/location_permission_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toTopOf="@id/location_continue_btn"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tos_icon"
             />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/location_continue_btn"
+            android:id="@+id/tos_continue_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"

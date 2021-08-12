@@ -14,6 +14,7 @@
 
 package io.openschema.client.activity;
 
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -21,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.Navigation;
 import io.openschema.client.R;
 import io.openschema.client.util.PermissionManager;
+import io.openschema.client.util.SharedPreferencesHelper;
 
 public class OnboardingActivity extends AppCompatActivity {
 
@@ -48,6 +50,11 @@ public class OnboardingActivity extends AppCompatActivity {
 
         if (!PermissionManager.isUsagePermissionGranted(this)) {
             targetDestination = R.id.action_to_usage_permission;
+        }
+
+        SharedPreferences sharedPreferences = SharedPreferencesHelper.getInstance(this);
+        if (!sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_TOS_ACCEPTED, false)) {
+            targetDestination = R.id.action_to_tos;
         }
 
         if (targetDestination != -1) {

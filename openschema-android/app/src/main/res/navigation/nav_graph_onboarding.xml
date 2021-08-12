@@ -20,6 +20,19 @@
     >
 
     <fragment
+        android:id="@+id/nav_tos"
+        android:name="io.openschema.client.fragment.TosFragment"
+        android:label="Terms of Service"
+        />
+    <!--TODO: add transition animation-->
+    <action
+        android:id="@+id/action_to_tos"
+        app:destination="@id/nav_tos"
+        app:popUpTo="@id/nav_graph_main"
+        app:popUpToInclusive="true"
+        />
+
+    <fragment
         android:id="@+id/nav_usage_permission"
         android:name="io.openschema.client.fragment.UsagePermissionFragment"
         android:label="Usage Permission"

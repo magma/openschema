@@ -82,7 +82,7 @@ public class LocationPermissionFragment extends Fragment {
 
         //Background location access doesn't exist pre android 10
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            mBinding.locationDescription.setText(getString(R.string.location_permission_txt_pre_10));
+            mBinding.locationDescriptionBackground.setVisibility(View.GONE);
         }
     }
 
@@ -105,8 +105,8 @@ public class LocationPermissionFragment extends Fragment {
                     //TODO: Listen to user changing the location settings to "all the time" to automatically return to the app, similar to usage permission behavior.
                     new AlertDialog.Builder(requireContext())
                             .setTitle("Background Location Permission")
-                            .setMessage("This application requires accessing location from the background. Please set the permission to \"Allow all the time\".")
-                            .setPositiveButton("Allow in Settings", (dialog, which) -> {
+                            .setMessage(getString(R.string.location_permission_txt_background))
+                            .setPositiveButton("Change in Settings", (dialog, which) -> {
                                 requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, 0);
                             })
                             .setNegativeButton("Deny", (dialog, which) -> {
