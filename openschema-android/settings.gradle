@@ -14,4 +14,4 @@
 
 include ':OpenSchemaSDK'
 include ':app'
-rootProject.name = "OpenSchema MMA Example"
+rootProject.name = "OpenSchema"
