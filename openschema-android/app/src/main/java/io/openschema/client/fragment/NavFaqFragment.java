@@ -43,7 +43,7 @@ public class NavFaqFragment extends Fragment {
 
         SignalStrength signalStrength = new SignalStrength(getContext());
         Log.d("RSSI", "Wifi RSSI: " + signalStrength.getWifiRSSI());
-        //Log.d("RSSI", "Cell RSSI" + signalStrength.getCellularRSSI());
+        Log.d("RSSI", "Cell RSSI" + signalStrength.getCellularRSSI());
 
         //Check if there is any app capable of handling the intent first
         if (browserIntent.resolveActivity(getActivity().getPackageManager()) != null) {
