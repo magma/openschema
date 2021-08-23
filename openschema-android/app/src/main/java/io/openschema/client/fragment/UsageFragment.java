@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 
 import com.mackhartley.roundedprogressbar.RoundedProgressBar;
 
+import java.io.IOException;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -36,6 +37,7 @@ import io.openschema.client.databinding.FragmentUsageBinding;
 import io.openschema.client.util.FormattingUtils;
 import io.openschema.client.viewmodel.UsageViewModel;
 import io.openschema.mma.data.entity.HourlyUsageEntity;
+
 
 public class UsageFragment extends Fragment {
 
