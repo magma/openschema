@@ -28,7 +28,7 @@ import io.openschema.mma.metrics.MetricsManager;
 /**
  * Collects metrics related to the device.
  */
-public class DeviceMetrics extends BaseMetrics {
+public class DeviceMetrics extends SyncMetrics {
     private static final String TAG = "DeviceMetrics";
 
     /**

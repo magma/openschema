@@ -31,7 +31,7 @@ import io.openschema.mma.utils.TransportType;
  * Class to collect information for a connection report.
  * We are treating connection reports as another metric to be collected.
  */
-public class ConnectionReport extends BaseMetrics {
+public class ConnectionReport extends SyncMetrics {
     private static final String TAG = "ConnectionReport";
 
     /**

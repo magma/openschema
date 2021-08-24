@@ -16,11 +16,22 @@ package io.openschema.mma.metrics.collectors;
 
 import android.content.Context;
 
-/**
- * Base class used by every metric collector in the SDK.
- */
-public abstract class BaseMetrics {
-    private static final String TAG = "BaseMetrics";
+import java.util.List;
 
-    public BaseMetrics(Context context) { }
+import androidx.core.util.Pair;
+
+/**
+ * Base class used metrics that can be collected synchronously.
+ */
+public abstract class SyncMetrics extends BaseMetrics {
+    private static final String TAG = "SyncMetrics";
+
+    public SyncMetrics(Context context) {
+        super(context);
+    }
+
+    /**
+     * Method used in metrics that can be collected synchronously.
+     */
+    public abstract List<Pair<String, String>> retrieveMetrics();
 }

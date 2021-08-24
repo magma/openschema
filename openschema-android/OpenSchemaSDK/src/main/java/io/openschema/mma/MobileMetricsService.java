@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import io.openschema.mma.metrics.HourlyUsageWorker;
 import io.openschema.mma.metrics.MetricsManager;
+import io.openschema.mma.metrics.collectors.AsyncMetrics;
 import io.openschema.mma.metrics.collectors.BaseMetrics;
 import io.openschema.mma.metrics.collectors.CellularSessionMetrics;
 import io.openschema.mma.metrics.collectors.DeviceMetrics;
@@ -36,7 +37,7 @@ import io.openschema.mma.utils.PersistentNotification;
 /**
  * Foreground service used to keep the app running in the background and collect information.
  */
-public class MobileMetricsService extends Service implements BaseMetrics.MetricsCollectorListener {
+public class MobileMetricsService extends Service implements AsyncMetrics.MetricsCollectorListener {
 
     private static final String TAG = "MobileMetricsService";
 

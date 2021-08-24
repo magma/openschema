@@ -36,7 +36,7 @@ import io.openschema.mma.utils.UsageRetriever;
 /**
  * Base class to collect metrics related to networks sessions, starting from connection to disconnection.
  */
-public abstract class NetworkSessionMetrics extends BaseMetrics {
+public abstract class NetworkSessionMetrics extends AsyncMetrics {
     private static final String TAG = "NetworkSessionMetrics";
 
     private final String METRIC_NAME;
@@ -57,7 +57,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
 
     //Metrics sources
     protected final ConnectivityManager mConnectivityManager;
-    protected final BaseMetrics mNetworkMetrics;
+    protected final SyncMetrics mNetworkMetrics;
     protected final UsageRetriever mUsageRetriever;
     protected final LocationMetrics mLocationMetrics;
 
@@ -74,7 +74,7 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     private NetworkConnectionsEntity mCurrentActiveConnection = null;
     private NetworkUsageEntity mCurrentActiveSegment = null;
 
-    public NetworkSessionMetrics(Context context, String metricName, int transportType, BaseMetrics networkMetrics, MetricsCollectorListener listener) {
+    public NetworkSessionMetrics(Context context, String metricName, int transportType, SyncMetrics networkMetrics, MetricsCollectorListener listener) {
         super(context);
         METRIC_NAME = metricName;
         mTransportType = transportType;
@@ -316,11 +316,6 @@ public abstract class NetworkSessionMetrics extends BaseMetrics {
     //Stops tracking the network's changes
     public void stopTrackers() {
         mConnectivityManager.unregisterNetworkCallback(mNetworkCallBack);
-    }
-
-
-    public List<Pair<String, String>> retrieveMetrics() {
-        return null;
     }
 
     public void setNetworkConnectionEntityAdapter(NetworkConnectionEntityAdapter adapter) {

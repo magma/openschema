@@ -45,7 +45,7 @@ import io.openschema.mma.metrics.MetricsManager;
 /**
  * Collects metrics related to cellular networks.
  */
-public class CellularNetworkMetrics extends BaseMetrics {
+public class CellularNetworkMetrics extends SyncMetrics {
 
     private static final String TAG = "CellularNetworkMetrics";
 

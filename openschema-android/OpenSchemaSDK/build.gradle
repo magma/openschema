@@ -13,7 +13,6 @@
  */
 
 apply plugin: 'com.android.library'
-apply plugin: 'com.google.protobuf'
 
 android {
     compileSdkVersion 29
@@ -41,45 +40,12 @@ android {
     }
 }
 
-protobuf {
-    protoc {
-        artifact = 'com.google.protobuf:protoc:3.12.0'
-    }
-    plugins {
-        grpc { artifact = 'io.grpc:protoc-gen-grpc-java:1.30.2'
-        }
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.builtins {
-                java { option 'lite' }
-            }
-            task.plugins {
-                grpc {
-                    option 'lite' }
-            }
-        }
-    }
-}
-
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
-    //GRPC
-    def grpc_version = "1.33.1"
-    implementation "io.grpc:grpc-netty-shaded:$grpc_version"
-    implementation "io.grpc:grpc-okhttp:$grpc_version"
-    implementation "io.grpc:grpc-protobuf:$grpc_version"
-    implementation "io.grpc:grpc-stub:$grpc_version"
-    implementation "io.grpc:grpc-cronet:$grpc_version"
-    implementation 'com.google.android.gms:play-services-cronet:16.0.0'
-    compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // necessary for Java 9+
-    implementation 'com.madgag.spongycastle:core:1.51.0.0'
-    implementation 'com.madgag.spongycastle:pkix:1.51.0.0'
 
     //REST
     implementation 'com.google.code.gson:gson:2.8.6'

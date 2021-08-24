@@ -28,7 +28,7 @@ import io.openschema.mma.utils.UsageRetriever;
 /**
  * Wi-Fi and Cellular usage collected on an hourly basis.
  */
-public class NetworkHourlyMetrics extends BaseMetrics {
+public class NetworkHourlyMetrics extends SyncMetrics {
     private static final String TAG = "WifiHourlyMetrics";
 
     /**

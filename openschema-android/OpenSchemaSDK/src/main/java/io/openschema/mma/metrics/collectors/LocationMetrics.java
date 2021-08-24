@@ -36,7 +36,7 @@ import io.openschema.mma.utils.LocationServicesChecker;
 /**
  * Collects metrics related to device's location.
  */
-public class LocationMetrics extends BaseMetrics {
+public class LocationMetrics extends AsyncMetrics {
     private static final String TAG = "LocationMetrics";
 
     /**
@@ -128,6 +128,4 @@ public class LocationMetrics extends BaseMetrics {
         Log.d(TAG, "MMA: Collected metrics:\n" + metricsList.toString());
         return metricsList;
     }
-
-    public List<Pair<String, String>> retrieveMetrics() {return null; }
 }

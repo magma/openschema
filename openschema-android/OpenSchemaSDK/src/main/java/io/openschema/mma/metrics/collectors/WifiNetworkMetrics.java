@@ -28,7 +28,7 @@ import io.openschema.mma.metrics.MetricsManager;
 /**
  * Collects metrics related to Wi-Fi networks.
  */
-public class WifiNetworkMetrics extends BaseMetrics {
+public class WifiNetworkMetrics extends SyncMetrics {
 
     private static final String TAG = "WifiNetworkMetrics";
 
