@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import io.openschema.mma.utils.DnsPing;
+import io.openschema.mma.utils.DnsServersDetector;
 import io.openschema.mma.utils.SignalStrength;
 
 //Empty fragment used for integration with Navigation component and Navigation Drawer
@@ -35,15 +36,23 @@ public class NavFaqFragment extends Fragment {
     private void openFAQ() {
         //Create intent for opening a url in a browser
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.shoelacewireless.com/os/faq"));
+        Log.d(TAG, "UI: Opening FAQ in browser");
 
         //Testing DNS Ping
-        Log.d(TAG, "UI: Opening FAQ in browser");
+        DnsServersDetector dnsServersDetector = new DnsServersDetector(getContext());
+        String[] dns = dnsServersDetector.getServers();
+        for (int i = 0; i < dns.length; i++){
+            Log.d("DNS", "Server:" + dns[i]);
+        }
+
         DnsPing dnsPing = new DnsPing(executorService);
         dnsPing.dnsTest("1.0.0.1");
 
         SignalStrength signalStrength = new SignalStrength(getContext());
         Log.d("RSSI", "Wifi RSSI: " + signalStrength.getWifiRSSI());
         Log.d("RSSI", "Cell RSSI" + signalStrength.getCellularRSSI());
+
+
 
         //Check if there is any app capable of handling the intent first
         if (browserIntent.resolveActivity(getActivity().getPackageManager()) != null) {

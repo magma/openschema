@@ -2,19 +2,13 @@ package io.openschema.mma.utils;
 
 import android.util.Log;
 
-import com.google.common.primitives.Bytes;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
 import java.lang.NumberFormatException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.StringTokenizer;
 
@@ -23,22 +17,19 @@ public class DnsPing {
     private static final String TAG = "DNS Test";
     private static final int timeout = 5000;
     private static final int dnsPort = 53;
-    private static final Short queryType = 0x0001; //Type A
 
-    private static String[] testDomains = {"google.com", "youtube.com", "facebook.com", "youku.com", "adobe.com", "news.yandex.ru"};
-    private static byte[][] testDomainsQuestions;
-    private static byte[] requestHeader;
+    private static String[] testDomains = {"qkieASX3S9.com", "x6e077uejM.com", "zr50V1DAXx.com", "3GNnaZUwE2.com", "K4255rzaKc.com"};
+    private static byte[][] testDomainsRequests;
 
     private final Executor executor;
 
     public DnsPing(Executor executor){
 
         this.executor = executor;
-        requestHeader = getRequestHeader();
-        testDomainsQuestions = new byte[testDomains.length][0];
+        testDomainsRequests = new byte[testDomains.length][0];
         for(int i = 0; i < testDomains.length; i++) {
             try {
-                testDomainsQuestions[i] = getRequestQuestion(testDomains[i]);
+                testDomainsRequests[i] = getDnsRequest(testDomains[i]);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -46,14 +37,11 @@ public class DnsPing {
     }
 
     public void dnsTest(String dnsServer) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    requestAllDomains(dnsServer);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        executor.execute(() -> {
+            try {
+                requestAllDomains(dnsServer);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
     }
@@ -62,7 +50,7 @@ public class DnsPing {
         try {
             float result = 0f;
             for (int i = 0; i < testDomains.length; i++) {
-                result += requestDomain(dnsServer, dnsFrame(testDomains[i]));
+                result += requestDomain(dnsServer, testDomainsRequests[i]);
             }
             Log.d(TAG, "DNS Ping Result: " + Float.toString(result/testDomains.length));
             return result/testDomains.length;
@@ -75,11 +63,6 @@ public class DnsPing {
     private static float requestDomain(String dnsServer, byte[] requestQuestion) throws IOException {
         //Request
         DatagramPacket requestPacket;
-        /*ByteBuffer byteBuffer = ByteBuffer.allocate(requestHeader.length + requestQuestion.length);
-        byteBuffer.put(requestHeader);
-        byteBuffer.put(requestQuestion);*/
-
-        //requestPacket = new DatagramPacket(byteBuffer.array(), byteBuffer.array().length, InetAddress.getByAddress(getServer(dnsServer)), dnsPort);
         requestPacket = new DatagramPacket(requestQuestion, requestQuestion.length, InetAddress.getByAddress(getServer(dnsServer)), dnsPort);
 
         //Response
@@ -165,7 +148,7 @@ public class DnsPing {
         return server;
     }
 
-    private static byte[] dnsFrame(String domain) throws IOException {
+    private static byte[] getDnsRequest(String domain) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -215,43 +198,5 @@ public class DnsPing {
         byte[] dnsFrame = baos.toByteArray();
 
         return dnsFrame;
-    }
-
-    private static byte[] getRequestHeader() {
-
-        ByteBuffer header = ByteBuffer.allocate(12);
-
-        header.putShort((short)0x0000); //Transaction ID
-        header.putShort((short)0x0100); //Flags
-        header.putShort((short)0x0001); //Question RR
-        header.putShort((short)0x0000); //Answer RR
-        header.putShort((short)0x0000); //Authority RR
-        header.putShort((short)0x0000); //Additional RR
-
-        return header.array();
-    }
-
-    private static byte[] getRequestQuestion(String domain) throws IOException {
-        //TODO: Should we iterate then domain twice instead of using a List? Is it too expensive?
-        List<Byte> questionName = new ArrayList<>();
-
-        for (String word : domain.split("\\.")) {
-            questionName.add(((Integer)(word.length())).byteValue()); //length of value
-
-            for(char letter : word.toCharArray()) {
-                questionName.add((byte)letter); //value
-            }
-
-        }
-        questionName.add((byte)0x00); //Question name end
-
-        ByteBuffer question = ByteBuffer.allocate(questionName.size() + 4);
-        byte[] bytes = Bytes.toArray(questionName);
-        Log.d(TAG,"Given Array List: " + questionName.size());
-        question.put(bytes); //Question name
-        question.putShort(queryType); //Question Type
-        question.putShort((short)0x0001); //Question class
-
-        return question.array();
     }
 }
