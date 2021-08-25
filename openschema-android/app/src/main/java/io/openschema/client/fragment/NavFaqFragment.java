@@ -40,19 +40,13 @@ public class NavFaqFragment extends Fragment {
 
         //Testing DNS Ping
         DnsServersDetector dnsServersDetector = new DnsServersDetector(getContext());
-        String[] dns = dnsServersDetector.getServers();
-        for (int i = 0; i < dns.length; i++){
-            Log.d("DNS", "Server:" + dns[i]);
-        }
-
         DnsPing dnsPing = new DnsPing(executorService);
-        dnsPing.dnsTest("1.0.0.1");
+
+        dnsPing.dnsTest( dnsServersDetector.getServers());
 
         SignalStrength signalStrength = new SignalStrength(getContext());
         Log.d("RSSI", "Wifi RSSI: " + signalStrength.getWifiRSSI());
         Log.d("RSSI", "Cell RSSI" + signalStrength.getCellularRSSI());
-
-
 
         //Check if there is any app capable of handling the intent first
         if (browserIntent.resolveActivity(getActivity().getPackageManager()) != null) {

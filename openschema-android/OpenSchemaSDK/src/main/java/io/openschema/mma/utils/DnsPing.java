@@ -19,6 +19,7 @@ public class DnsPing {
     private static final int dnsPort = 53;
 
     private static String[] testDomains = {"qkieASX3S9.com", "x6e077uejM.com", "zr50V1DAXx.com", "3GNnaZUwE2.com", "K4255rzaKc.com"};
+    private static String[] testDNSs = {"8.8.8.8", "9.9.9.9", "1.1.1.1", "185.228.168.9", "76.76.19.19"};
     private static byte[][] testDomainsRequests;
 
     private final Executor executor;
@@ -36,29 +37,45 @@ public class DnsPing {
         }
     }
 
-    public void dnsTest(String dnsServer) {
+    public void dnsTest(String[] dnsServers) {
         executor.execute(() -> {
-            try {
-                requestAllDomains(dnsServer);
-            } catch (IOException e) {
-                e.printStackTrace();
+            for(int i = 0; i < testDNSs.length; i++){
+                requestAllDomains(testDNSs[i]);
+            }
+
+            for(int i = 0; i < dnsServers.length; i++){
+                requestAllDomains(dnsServers[i]);
             }
         });
     }
-    private static float requestAllDomains(String dnsServer) throws IOException {
+
+    private static QosInfo requestAllDomains(String dnsServer) {
         //TODO: Implement Retries
-        try {
-            float result = 0f;
-            for (int i = 0; i < testDomains.length; i++) {
-                result += requestDomain(dnsServer, testDomainsRequests[i]);
+
+        float[] individualValues = new float[testDomains.length];
+        float result = 0f;
+        int failures = 0;
+
+        for (int i = 0; i < testDomains.length; i++) {
+
+            try {
+                individualValues[i] = requestDomain(dnsServer, testDomainsRequests[i]);
+                Log.d(TAG, "DNS RTT Result " + dnsServer +  " on " + testDomains[i] + ": " + Float.toString(individualValues[i]));
+                result += individualValues[i];
+            } catch (IOException e) {
+                failures++;
+                Log.d(TAG, "DNS RTT Error " + dnsServer +  ": " + e);
             }
-            Log.d(TAG, "DNS Ping Result: " + Float.toString(result/testDomains.length));
-            return result/testDomains.length;
-        } catch (Exception e) {
-            Log.d(TAG, "DNS Ping Error: " + e);
-            return -1;
         }
+
+        QosInfo qosInfo = new QosInfo(dnsServer, individualValues, result/testDomains.length, failures);
+        Log.d(TAG, "DNS RTT Average Result " + qosInfo.getDnsServer() +  ": " + Float.toString(qosInfo.getMean()));
+        Log.d(TAG, "DNS RTT variance " + qosInfo.getDnsServer() + ": " + Float.toString(qosInfo.getVariance()));
+        Log.d(TAG, "DNS RTT failures " + qosInfo.getDnsServer() + ": " + Integer.toString(qosInfo.getTotalFailure()));
+        return qosInfo;
     }
+
+
 
     private static float requestDomain(String dnsServer, byte[] requestQuestion) throws IOException {
         //Request
@@ -75,12 +92,8 @@ public class DnsPing {
         socket.setSoTimeout(timeout);
 
         long startTime = System.nanoTime();
-        String packetAsString = new String(requestPacket.getData(), 0, requestPacket.getLength());
-        Log.d(TAG, "DNS Request Packet: " + packetAsString);
         socket.send(requestPacket);
         socket.receive(responsePacket);
-        packetAsString = new String(responsePacket.getData(), 0, responsePacket.getLength());
-        Log.d(TAG, "DNS Response Packet: " + packetAsString);
         long endTime = System.nanoTime();
         socket.close();
 
