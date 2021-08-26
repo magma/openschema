@@ -9,51 +9,82 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import androidx.annotation.WorkerThread;
 
 public class DnsTester {
-
     private static final String TAG = "DnsTester";
     private static final int TIMEOUT = 5000;
     private static final int DNS_PORT = 53;
     private static final Short QUERY_TYPE = 0x0001; //Type A
 
-    //Top 3 and Bottom 3 of the top 100 websites in the world based on SimilarWeb data
-    private final static String[] TEST_DOMAINS = {"google.com", "youtube.com", "facebook.com", "youku.com", "adobe.com", "news.yandex.ru"};
+    private static final String[] TEST_DNS_SERVERS = {"8.8.8.8", "9.9.9.9", "1.1.1.1", "185.228.168.9", "76.76.19.19"};
+    private static final String[] TEST_DOMAINS = {"qkieASX3S9.com", "x6e077uejM.com", "zr50V1DAXx.com", "3GNnaZUwE2.com", "K4255rzaKc.com"};
+    private static final byte[][] TEST_DOMAIN_REQUESTS;
+
+    static {
+        TEST_DOMAIN_REQUESTS = new byte[TEST_DOMAINS.length][0];
+        for (int i = 0; i < TEST_DOMAINS.length; i++) {
+            try {
+                TEST_DOMAIN_REQUESTS[i] = buildQuestion(TEST_DOMAINS[i]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @WorkerThread
-    public static double testServer(String dnsServer) {
+    public static QosInfo testServer(String dnsServer) {
         return requestAllDomains(dnsServer);
     }
 
-    private static double requestAllDomains(String dnsServer) {
-        //TODO: Implement Retries
-        try {
-            long sum = 0;
-            for (int i = 0; i < TEST_DOMAINS.length; i++) {
-                sum += requestDomain(dnsServer, buildQuestion(TEST_DOMAINS[i]));
-            }
-
-            //divide by 1000000 to get milliseconds.
-            double finalResult = (double) sum / TEST_DOMAINS.length / 1000000;
-            Log.d(TAG, "MMA: DNS Ping Result: " + finalResult + "ms");
-            return finalResult;
-        } catch (Exception e) {
-            Log.d(TAG, "MMA: DNS Ping Error: " + e);
-            return -1;
+    @WorkerThread
+    public static List<QosInfo> testServers(String[] dnsServers) {
+        List<QosInfo> testResults = new ArrayList<>();
+        for (int i = 0; i < dnsServers.length; i++) {
+            testResults.add(requestAllDomains(dnsServers[i]));
         }
+        return testResults;
+    }
+
+    @WorkerThread
+    public static List<QosInfo> testDefaultServers() {
+        List<QosInfo> testResults = new ArrayList<>();
+        for (int i = 0; i < TEST_DNS_SERVERS.length; i++) {
+            testResults.add(requestAllDomains(TEST_DNS_SERVERS[i]));
+        }
+        return testResults;
+    }
+
+    private static QosInfo requestAllDomains(String dnsServer) {
+        //TODO: Implement Retries
+
+        long[] individualValues = new long[TEST_DOMAINS.length];
+        int failures = 0;
+
+        for (int i = 0; i < TEST_DOMAINS.length; i++) {
+            try {
+                individualValues[i] = requestDomain(dnsServer, TEST_DOMAIN_REQUESTS[i]);
+                Log.d(TAG, "MMA: DNS RTT Result " + dnsServer + " on " + TEST_DOMAINS[i] + ": " + individualValues[i]);
+            } catch (IOException e) {
+                failures++;
+                Log.d(TAG, "MMA: DNS RTT Error " + dnsServer + ": " + e);
+            }
+        }
+
+        QosInfo qosInfo = new QosInfo(dnsServer, individualValues, failures);
+        Log.d(TAG, "MMA: DNS RTT Average Result " + qosInfo.getDnsServer() + ": " + qosInfo.getRttMean());
+        Log.d(TAG, "MMA: DNS RTT variance " + qosInfo.getDnsServer() + ": " + qosInfo.getRttVariance());
+        Log.d(TAG, "MMA: DNS RTT failures " + qosInfo.getDnsServer() + ": " + qosInfo.getTotalFailedRequests());
+        return qosInfo;
     }
 
     private static long requestDomain(String dnsServer, byte[] requestQuestion) throws IOException {
         //Request
         DatagramPacket requestPacket;
-        /*ByteBuffer byteBuffer = ByteBuffer.allocate(requestHeader.length + requestQuestion.length);
-        byteBuffer.put(requestHeader);
-        byteBuffer.put(requestQuestion);*/
-
-        //requestPacket = new DatagramPacket(byteBuffer.array(), byteBuffer.array().length, InetAddress.getByAddress(getServer(dnsServer)), dnsPort);
         requestPacket = new DatagramPacket(requestQuestion, requestQuestion.length, InetAddress.getByAddress(getServer(dnsServer)), DNS_PORT);
 
         //Response
@@ -65,15 +96,10 @@ public class DnsTester {
         DatagramSocket socket = new DatagramSocket();
         socket.setSoTimeout(TIMEOUT);
 
-        //TODO: would millis be enough instead?
-        long startTime = System.nanoTime();
-        String packetAsString = new String(requestPacket.getData(), 0, requestPacket.getLength());
-        Log.d(TAG, "MMA: DNS Request Packet: " + packetAsString);
+        long startTime = System.currentTimeMillis();
         socket.send(requestPacket);
         socket.receive(responsePacket);
-        packetAsString = new String(responsePacket.getData(), 0, responsePacket.getLength());
-        Log.d(TAG, "MMA: DNS Response Packet: " + packetAsString);
-        long endTime = System.nanoTime();
+        long endTime = System.currentTimeMillis();
         socket.close();
 
         return (endTime - startTime);

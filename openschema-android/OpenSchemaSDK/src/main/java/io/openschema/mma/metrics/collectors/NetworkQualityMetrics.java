@@ -124,7 +124,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
 
         //Latency
         //TODO: implement proper test using device's default server and others
-        double rtt = DnsTester.testServer("1.1.1.1");
+        double rtt = DnsTester.testServer("1.1.1.1").getRttMean();
 
         //RSSI
         int rssi = mSignalStrength.getRSSI(transportType);
