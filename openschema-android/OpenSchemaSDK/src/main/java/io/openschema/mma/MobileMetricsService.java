@@ -18,6 +18,7 @@ import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.NetworkCapabilities;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -28,9 +29,9 @@ import androidx.core.util.Pair;
 import io.openschema.mma.metrics.HourlyUsageWorker;
 import io.openschema.mma.metrics.MetricsManager;
 import io.openschema.mma.metrics.collectors.AsyncMetrics;
-import io.openschema.mma.metrics.collectors.BaseMetrics;
 import io.openschema.mma.metrics.collectors.CellularSessionMetrics;
 import io.openschema.mma.metrics.collectors.DeviceMetrics;
+import io.openschema.mma.metrics.collectors.NetworkQualityMetrics;
 import io.openschema.mma.metrics.collectors.WifiSessionMetrics;
 import io.openschema.mma.utils.PersistentNotification;
 
@@ -50,18 +51,35 @@ public class MobileMetricsService extends Service implements AsyncMetrics.Metric
     private MetricsManager mMetricsManager;
     private WifiSessionMetrics mWifiSessionMetrics;
     private CellularSessionMetrics mCellularSessionMetrics;
+    private NetworkQualityMetrics mNetworkQualityMetrics;
 
     @Override
     public void onCreate() {
         Log.d(TAG, "MMA: Creating foreground service.");
         mMetricsManager = new MetricsManager(getApplicationContext());
 
+        //Start listening to changes in wi-fi connections to measure duration and usage
         mWifiSessionMetrics = new WifiSessionMetrics(getApplicationContext(), this);
         mWifiSessionMetrics.startTrackers();
 
+        //Start listening to changes in cellular connections to measure duration and usage
         mCellularSessionMetrics = new CellularSessionMetrics(getApplicationContext(), this);
         mCellularSessionMetrics.startTrackers();
 
+        //Start listening to active network changes to measure quality
+        mNetworkQualityMetrics = new NetworkQualityMetrics(getApplicationContext(), this, transportType -> {
+            switch (transportType) {
+                case NetworkCapabilities.TRANSPORT_WIFI:
+                    return mWifiSessionMetrics.getCurrentConnectionId();
+                case NetworkCapabilities.TRANSPORT_CELLULAR:
+                    return mCellularSessionMetrics.getCurrentConnectionId();
+                default:
+                    return -1;
+            }
+        });
+        mNetworkQualityMetrics.startTrackers();
+
+        //Start periodic worker to measure network usage on a per hour basis
         HourlyUsageWorker.enqueuePeriodicWorker(getApplicationContext());
 
         //Collecting device metrics every time the service starts. Using this to let us know when the service might've stopped working on a device.
@@ -84,13 +102,16 @@ public class MobileMetricsService extends Service implements AsyncMetrics.Metric
         Log.d(TAG, "MMA: Destroying foreground service.");
         mWifiSessionMetrics.stopTrackers();
         mCellularSessionMetrics.stopTrackers();
+        mNetworkQualityMetrics.stopTrackers();
     }
 
+    //Interface implementation to write asynchronous metrics to the DB queue to be pushed later.
     @Override
     public void onMetricCollected(String metricName, List<Pair<String, String>> metricsList) {
         mMetricsManager.collect(metricName, metricsList);
     }
 
+    //Utility method to check if this service is running.
     @SuppressWarnings("deprecation")
     public static boolean isServiceRunning(Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);

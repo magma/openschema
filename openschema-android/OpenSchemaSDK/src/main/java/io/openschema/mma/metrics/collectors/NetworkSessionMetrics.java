@@ -318,6 +318,10 @@ public abstract class NetworkSessionMetrics extends AsyncMetrics {
         mConnectivityManager.unregisterNetworkCallback(mNetworkCallBack);
     }
 
+    public int getCurrentConnectionId() {
+        return mCurrentActiveConnection == null ? -1 : mCurrentActiveConnection.getId();
+    }
+
     public void setNetworkConnectionEntityAdapter(NetworkConnectionEntityAdapter adapter) {
         mNetworkConnectionEntityAdapter = adapter;
     }

@@ -35,6 +35,7 @@
         />
 
     <!--Used to track network changes-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
     <!--Used to allow using a foreground service to collect data from the background-->

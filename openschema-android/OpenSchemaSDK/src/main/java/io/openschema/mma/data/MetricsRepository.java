@@ -31,12 +31,14 @@ import io.openschema.mma.backend.BackendApi;
 import io.openschema.mma.data.dao.HourlyUsageDAO;
 import io.openschema.mma.data.dao.MetricsDAO;
 import io.openschema.mma.data.dao.NetworkConnectionsDAO;
+import io.openschema.mma.data.dao.NetworkQualityDAO;
 import io.openschema.mma.data.dao.NetworkUsageDAO;
 import io.openschema.mma.data.database.MMADatabase;
 import io.openschema.mma.data.entity.CellularConnectionsEntity;
 import io.openschema.mma.data.entity.HourlyUsageEntity;
 import io.openschema.mma.data.entity.MetricsEntity;
 import io.openschema.mma.data.entity.NetworkConnectionsEntity;
+import io.openschema.mma.data.entity.NetworkQualityEntity;
 import io.openschema.mma.data.entity.NetworkUsageEntity;
 import io.openschema.mma.data.entity.WifiConnectionsEntity;
 import io.openschema.mma.metrics.MetricsWorker;
@@ -78,6 +80,7 @@ public class MetricsRepository {
     private final NetworkConnectionsDAO mNetworkConnectionsDAO;
     private final NetworkUsageDAO mNetworkUsageDAO;
     private final HourlyUsageDAO mHourlyUsageDAO;
+    private final NetworkQualityDAO mNetworkQualityDAO;
 
     private MetricsRepository(Context appContext) {
         MMADatabase db = MMADatabase.getDatabase(appContext);
@@ -87,6 +90,7 @@ public class MetricsRepository {
         mNetworkConnectionsDAO = db.networkConnectionsDAO();
         mNetworkUsageDAO = db.networkUsageDAO();
         mHourlyUsageDAO = db.hourlyUsageDAO();
+        mNetworkQualityDAO = db.networkQualityDAO();
 
         mExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
@@ -208,6 +212,15 @@ public class MetricsRepository {
                     mNetworkConnectionsDAO.update(networkConnection);
                 }
             });
+        }
+    }
+
+    //Local metrics for UI
+    public void writeNetworkQuality(NetworkQualityEntity entity) {
+        if (entity != null) {
+            //TODO: disable with flag from MMA builder
+            Log.d(TAG, "MMA: Writing network quality to DB");
+            mExecutor.execute(() -> mNetworkQualityDAO.insert(entity));
         }
     }
 
