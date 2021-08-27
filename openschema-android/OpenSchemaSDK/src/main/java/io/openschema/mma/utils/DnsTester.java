@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import androidx.annotation.WorkerThread;
@@ -22,10 +23,11 @@ public class DnsTester {
     private static final Short QUERY_TYPE = 0x0001; //Type A
 
     private static final String[] TEST_DNS_SERVERS = {"8.8.8.8", "9.9.9.9", "1.1.1.1", "185.228.168.9", "76.76.19.19"};
-    private static final String[] TEST_DOMAINS = {"qkieASX3S9.com", "x6e077uejM.com", "zr50V1DAXx.com", "3GNnaZUwE2.com", "K4255rzaKc.com"};
+    private static final String[] TEST_DOMAINS;
     private static final byte[][] TEST_DOMAIN_REQUESTS;
 
     static {
+        TEST_DOMAINS =  randomizeTestDomains();
         TEST_DOMAIN_REQUESTS = new byte[TEST_DOMAINS.length][0];
         for (int i = 0; i < TEST_DOMAINS.length; i++) {
             try {
@@ -203,5 +205,29 @@ public class DnsTester {
         dos.writeShort(0x0001);
 
         return baos.toByteArray();
+    }
+
+    private static String[] randomizeTestDomains() {
+        String[] testDomains = new String[5];
+
+        for(int i = 0; i < testDomains.length; i++){
+            testDomains[i] = randomString();
+        }
+
+        return testDomains;
+    }
+
+    private static String randomString() {
+        int leftLimit = 97; // letter 'a'
+        int rightLimit = 122; // letter 'z'
+        Random random = new Random();
+        int targetStringLength = random.nextInt(12 - 5 + 1) + 5;
+
+        String generatedString = random.ints(leftLimit, rightLimit + 1)
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        return generatedString + ".com";
     }
 }

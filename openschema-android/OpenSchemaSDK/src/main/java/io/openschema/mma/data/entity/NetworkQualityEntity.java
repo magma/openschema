@@ -40,7 +40,7 @@ public class NetworkQualityEntity {
     private int transportType;
 
     @ColumnInfo(name = "quality_score")
-    private int qualityScore;
+    private double qualityScore;
 
     @ColumnInfo(name = "rtt")
     private double rtt;
@@ -52,14 +52,14 @@ public class NetworkQualityEntity {
     private long timestamp;
 
     @Ignore
-    public NetworkQualityEntity(int networkConnectionId, int transportType, int qualityScore, double rtt, int rssi, long timestamp) {
+    public NetworkQualityEntity(int networkConnectionId, int transportType, double qualityScore, double rtt, int rssi, long timestamp) {
         this(0, networkConnectionId, transportType, qualityScore, rtt, rssi, timestamp);
     }
 
     /**
      * Constructor with all fields. Required for Android Room.
      */
-    public NetworkQualityEntity(int id, int networkConnectionId, int transportType, int qualityScore, double rtt, int rssi, long timestamp) {
+    public NetworkQualityEntity(int id, int networkConnectionId, int transportType, double qualityScore, double rtt, int rssi, long timestamp) {
         this.id = id;
         this.networkConnectionId = networkConnectionId;
         this.transportType = transportType;
@@ -72,7 +72,7 @@ public class NetworkQualityEntity {
     public int getId() { return id;}
     public int getNetworkConnectionId() { return networkConnectionId;}
     public int getTransportType() {return transportType;}
-    public int getQualityScore() {return qualityScore;}
+    public double getQualityScore() {return qualityScore;}
     public double getRtt() {return rtt;}
     public int getRssi() {return rssi;}
     public long getTimestamp() {return timestamp;}

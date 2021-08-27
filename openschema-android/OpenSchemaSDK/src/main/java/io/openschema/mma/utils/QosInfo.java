@@ -7,6 +7,7 @@ public class QosInfo {
     private final double mRttMean;
     private final float mRttVariance;
     private final int mTotalFailedRequests;
+    private final long mMinRTTValue;
 
     public QosInfo(String dnsServer, long[] rttValues, int totalFailedRequests) {
         mDnsServer = dnsServer;
@@ -14,6 +15,17 @@ public class QosInfo {
         mRttMean = calculateMean();
         mTotalFailedRequests = totalFailedRequests;
         mRttVariance = calculateVariance();
+        mMinRTTValue = getMinRTT();
+    }
+
+    private long getMinRTT() {
+        long minValue = mRttValues[0];
+        for(int i=1;i<mRttValues.length;i++){
+            if(mRttValues[i] < minValue){
+                    minValue = mRttValues[i];
+            }
+        }
+        return minValue;
     }
 
     private double calculateMean() {
@@ -47,4 +59,6 @@ public class QosInfo {
     public int getTotalFailedRequests() {
         return mTotalFailedRequests;
     }
+
+    public long getMinRTTValue() { return mMinRTTValue; }
 }
