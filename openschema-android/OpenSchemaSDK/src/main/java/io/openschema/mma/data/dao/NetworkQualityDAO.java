@@ -14,8 +14,10 @@
 
 package io.openschema.mma.data.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.Query;
 import io.openschema.mma.data.entity.NetworkQualityEntity;
 
 /**
@@ -26,4 +28,9 @@ public interface NetworkQualityDAO {
 
     @Insert
     long insert(NetworkQualityEntity newEntity);
+
+    @Query("SELECT * from network_quality " +
+                   "ORDER BY id DESC " +
+                   "LIMIT 1")
+    LiveData<NetworkQualityEntity> getLastMeasurement();
 }

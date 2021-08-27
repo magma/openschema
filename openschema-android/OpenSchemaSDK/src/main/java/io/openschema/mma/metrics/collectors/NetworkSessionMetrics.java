@@ -258,6 +258,11 @@ public abstract class NetworkSessionMetrics extends AsyncMetrics {
         //TODO: disable with flag from MMA builder? avoid extra calculations & storage
         if (mCurrentActiveConnection != null) {
             Log.d(TAG, "MMA: Updating database entry for network connection. (transport: " + mTransportType + ")");
+
+            if (location == null) {
+                Log.e(TAG, "MMA: Attempted to use a null location");
+                return;
+            }
             mCurrentActiveConnection.setLocation(location);
             mMetricsRepository.updateNetworkConnection(mCurrentActiveConnection);
         }

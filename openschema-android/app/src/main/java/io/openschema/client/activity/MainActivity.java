@@ -14,8 +14,6 @@
 
 package io.openschema.client.activity;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -25,18 +23,20 @@ import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.NotificationCompat;
 import androidx.core.util.Pair;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDeepLinkBuilder;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import io.openschema.client.R;
 import io.openschema.client.util.PermissionManager;
+import io.openschema.client.view.CustomNotification;
+import io.openschema.client.view.NetworkQualityView;
+import io.openschema.client.viewmodel.NetworkQualityViewModel;
 import io.openschema.mma.MobileMetricsAgent;
-import io.openschema.mma.utils.PersistentNotification;
+import io.openschema.mma.MobileMetricsService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,12 +69,30 @@ public class MainActivity extends AppCompatActivity {
             //Build OpenSchema agent with required data
             mMobileMetricsAgent = new MobileMetricsAgent.Builder()
                     .setAppContext(getApplicationContext())
-                    .setCustomNotification(createCustomNotification())
+                    .setCustomNotification(CustomNotification.getInstance(getApplicationContext()).getNotification())
                     .setBackendBaseURL(getString(R.string.backend_base_url))
                     .setBackendCertificateResId(R.raw.backend)
                     .setBackendUsername(getString(R.string.backend_username))
                     .setBackendPassword(getString(R.string.backend_password))
                     .build();
+
+            //Start permanent observer to update custom notification. (Only if service isn't running so that we don't create multiple observers on subsequent app starts)
+            if (!MobileMetricsService.isServiceRunning(getApplicationContext())) {
+                NetworkQualityViewModel networkQualityViewModel = new ViewModelProvider(this).get(NetworkQualityViewModel.class);
+                networkQualityViewModel.getActiveNetworkQuality().observeForever(networkQualityEntity -> {
+                    CustomNotification customNotification = CustomNotification.getInstance(getApplicationContext());
+
+                    //Update the notification's view
+                    if (networkQualityEntity == null) {
+                        customNotification.updateNetworkStatus(null);
+                    } else {
+                        customNotification.updateNetworkStatus(new NetworkQualityView.NetworkStatus(networkQualityEntity.getTransportType(), networkQualityEntity.getQualityScore()));
+                    }
+
+                    //Update the notification shown by the OS
+                    customNotification.show(getApplicationContext());
+                });
+            }
 
             //Initialize agent
             mMobileMetricsAgent.init();
@@ -94,29 +112,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         return true;
-    }
-
-    private Notification createCustomNotification() {
-        //Create intent to open main page
-        Bundle args = new Bundle();
-        args.putInt("requestCode", PersistentNotification.SERVICE_NOTIFICATION_ID);
-        PendingIntent pendingIntent = new NavDeepLinkBuilder(this)
-                .setComponentName(MainActivity.class)
-                .setGraph(R.navigation.nav_graph_main)
-                .setDestination(R.id.nav_usage)
-                .setArguments(args)
-                .createPendingIntent();
-
-        return new NotificationCompat.Builder(this, PersistentNotification.SERVICE_NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(io.openschema.mma.R.drawable.ic_persistent_notification)
-                .setContentTitle("OpenSchema is running")
-                .setContentText("Tap here for more information.")
-                .setOngoing(true) //notification can't be swiped
-                .setShowWhen(false)
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setContentIntent(pendingIntent)
-                .build();
     }
 
     @Override

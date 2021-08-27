@@ -35,15 +35,28 @@
         android:layout_height="match_parent"
         >
 
-        <io.openschema.client.view.TimeSelector
-            android:id="@+id/usage_time_selector"
+        <io.openschema.client.view.NetworkQualityView
+            android:id="@+id/usage_network_quality"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/usage_cellular_hourly_tonnage_chart"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toTopOf="@id/usage_time_selector"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
+            />
+
+        <io.openschema.client.view.TimeSelector
+            android:id="@+id/usage_time_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintBottom_toTopOf="@id/usage_cellular_hourly_tonnage_chart"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/usage_network_quality"
             />
 
         <ImageView

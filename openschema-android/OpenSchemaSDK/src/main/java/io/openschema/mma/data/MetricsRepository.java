@@ -257,6 +257,10 @@ public class MetricsRepository {
         return mHourlyUsageDAO.getUsageEntities(startTime, endTime);
     }
 
+    public LiveData<NetworkQualityEntity> getLastNetworkQualityMeasurement() {
+        return mNetworkQualityDAO.getLastMeasurement();
+    }
+
     //MediatorLiveData used to merge both Wifi and Cellular connections into a single List stream
     static class NetworkConnectionsLiveData extends MediatorLiveData<List<NetworkConnectionsEntity>> {
 

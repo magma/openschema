@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 
 import com.mackhartley.roundedprogressbar.RoundedProgressBar;
 
-import java.io.IOException;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -35,22 +34,27 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import io.openschema.client.databinding.FragmentUsageBinding;
 import io.openschema.client.util.FormattingUtils;
+import io.openschema.client.view.NetworkQualityView;
+import io.openschema.client.viewmodel.NetworkQualityViewModel;
 import io.openschema.client.viewmodel.UsageViewModel;
 import io.openschema.mma.data.entity.HourlyUsageEntity;
+import io.openschema.mma.data.entity.NetworkQualityEntity;
 
 
 public class UsageFragment extends Fragment {
 
     private static final String TAG = "UsageFragment";
     private FragmentUsageBinding mBinding;
-    private UsageViewModel mViewModel;
+    private UsageViewModel mUsageViewModel;
+    private NetworkQualityViewModel mNetworkQualityViewModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mBinding = FragmentUsageBinding.inflate(inflater, container, false);
-        mViewModel = new ViewModelProvider(this).get(UsageViewModel.class);
+        mUsageViewModel = new ViewModelProvider(this).get(UsageViewModel.class);
+        mNetworkQualityViewModel = new ViewModelProvider(requireActivity()).get(NetworkQualityViewModel.class); //Sharing MainActivity's ViewModel instance
         return mBinding.getRoot();
     }
 
@@ -58,10 +62,12 @@ public class UsageFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mViewModel.getHourlyUsageEntities().observe(getViewLifecycleOwner(), this::updateHourlyTonnageChart);
+        mUsageViewModel.getHourlyUsageEntities().observe(getViewLifecycleOwner(), this::updateHourlyTonnageChart);
+
+        mNetworkQualityViewModel.getActiveNetworkQuality().observe(getViewLifecycleOwner(), this::updateNetworkQualityView);
 
         mBinding.usageTimeSelector.setOnTimeWindowChangedListener(newWindow -> {
-            mViewModel.setCurrentTimeWindow(newWindow);
+            mUsageViewModel.setCurrentTimeWindow(newWindow);
         });
     }
 
@@ -88,6 +94,14 @@ public class UsageFragment extends Fragment {
 
         //Set the data to the layout
         mBinding.setHourlyData(new UsageData(cellularTonnage, wifiTonnage));
+    }
+
+    private void updateNetworkQualityView(NetworkQualityEntity networkQualityEntity) {
+        if (networkQualityEntity == null) {
+            mBinding.usageNetworkQuality.setNetworkData(null);
+        } else {
+            mBinding.usageNetworkQuality.setNetworkData(new NetworkQualityView.NetworkStatus(networkQualityEntity.getTransportType(), networkQualityEntity.getQualityScore()));
+        }
     }
 
     /**

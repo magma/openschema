@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:layout_height="wrap_content"
+    >
+
+    <ImageView
+        android:id="@+id/notification_network_primary_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src='@drawable/ic_notification_network_wifi'
+        />
+
+    <TextView
+        android:id="@+id/notification_network_primary"
+        style="@style/TextAppearance.Compat.Notification.Title"
+        android:textSize="13sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/notification_network_primary_icon"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_toRightOf="@id/notification_network_primary_icon"
+        android:text='Current Network: Wi-Fi'
+        />
+
+    <TextView
+        android:id="@+id/notification_network_quality"
+        style="@style/TextAppearance.Compat.Notification.Title"
+        android:textSize="13sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/notification_network_primary"
+        android:layout_alignLeft="@id/notification_network_primary"
+
+        android:text='Detected Quality: Good'
+        />
+
+</RelativeLayout>
