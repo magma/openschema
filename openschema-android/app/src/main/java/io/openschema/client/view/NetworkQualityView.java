@@ -75,34 +75,33 @@ public class NetworkQualityView extends ConstraintLayout {
         public enum NetworkQuality {
             WEAK,
             GOOD,
+            VERY_GOOD,
             EXCELLENT;
 
             @NonNull
             @Override
             public String toString() {
-                return this.name().substring(0, 1) + this.name().substring(1).toLowerCase();
+                return this.name().substring(0, 1) + this.name().substring(1).toLowerCase().replace("_", " ");
             }
         }
 
         public int mTransportType;
         public NetworkQuality mNetworkQuality;
 
-        public NetworkStatus(int transportType, int qualityScore) {
+        public NetworkStatus(int transportType, double qualityScore) {
             mTransportType = transportType;
             mNetworkQuality = convertQualityScore(qualityScore);
         }
 
-        private NetworkQuality convertQualityScore(int qualityScore) {
-            switch (qualityScore) {
-                case 5:
-                    return NetworkQuality.EXCELLENT;
-                case 4:
-                case 3:
-                    return NetworkQuality.GOOD;
-                case 2:
-                case 1:
-                default:
-                    return NetworkQuality.WEAK;
+        private NetworkQuality convertQualityScore(double qualityScore) {
+            if (qualityScore > 4) {
+                return NetworkQuality.EXCELLENT;
+            } else if (qualityScore > 3) {
+                return NetworkQuality.VERY_GOOD;
+            } else if (qualityScore > 2) {
+                return NetworkQuality.GOOD;
+            } else {
+                return NetworkQuality.WEAK;
             }
         }
 

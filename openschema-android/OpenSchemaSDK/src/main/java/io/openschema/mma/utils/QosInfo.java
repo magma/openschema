@@ -1,5 +1,7 @@
 package io.openschema.mma.utils;
 
+import java.util.Arrays;
+
 public class QosInfo {
 
     private final String mDnsServer;
@@ -7,6 +9,7 @@ public class QosInfo {
     private final double mRttMean;
     private final float mRttVariance;
     private final int mTotalFailedRequests;
+    private final long mMinRTTValue;
 
     public QosInfo(String dnsServer, long[] rttValues, int totalFailedRequests) {
         mDnsServer = dnsServer;
@@ -14,14 +17,19 @@ public class QosInfo {
         mRttMean = calculateMean();
         mTotalFailedRequests = totalFailedRequests;
         mRttVariance = calculateVariance();
+        mMinRTTValue = getMinRTT();
+    }
+
+    private long getMinRTT() {
+        return Arrays.stream(mRttValues)
+                .min()
+                .orElse(mRttValues[0]);
     }
 
     private double calculateMean() {
-        long sum = 0;
-        for (long value : mRttValues) {
-            sum += value;
-        }
-        return (double) sum / mRttValues.length;
+        return Arrays.stream(mRttValues)
+                .average()
+                .orElse(Double.NaN);
     }
 
     private float calculateVariance() {
@@ -47,4 +55,6 @@ public class QosInfo {
     public int getTotalFailedRequests() {
         return mTotalFailedRequests;
     }
+
+    public long getMinRTTValue() { return mMinRTTValue; }
 }

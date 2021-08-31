@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import androidx.annotation.WorkerThread;
@@ -22,10 +23,12 @@ public class DnsTester {
     private static final Short QUERY_TYPE = 0x0001; //Type A
 
     private static final String[] TEST_DNS_SERVERS = {"8.8.8.8", "9.9.9.9", "1.1.1.1", "185.228.168.9", "76.76.19.19"};
-    private static final String[] TEST_DOMAINS = {"qkieASX3S9.com", "x6e077uejM.com", "zr50V1DAXx.com", "3GNnaZUwE2.com", "K4255rzaKc.com"};
     private static final byte[][] TEST_DOMAIN_REQUESTS;
+    private static final int TEST_DOMAIN_COUNT = 5;
+    private static String[] TEST_DOMAINS;
 
     static {
+        TEST_DOMAINS = randomizeTestDomains();
         TEST_DOMAIN_REQUESTS = new byte[TEST_DOMAINS.length][0];
         for (int i = 0; i < TEST_DOMAINS.length; i++) {
             try {
@@ -36,11 +39,18 @@ public class DnsTester {
         }
     }
 
+    //Generate a new set of random domains to be used in DNS tests. Used to prevent DNS servers from returning a cached response.
+    public static void randomizeDomains() {
+        TEST_DOMAINS = randomizeTestDomains();
+    }
+
+    //Test a single specified DNS server.
     @WorkerThread
     public static QosInfo testServer(String dnsServer) {
         return requestAllDomains(dnsServer);
     }
 
+    //Test a list of specified DNS servers.
     @WorkerThread
     public static List<QosInfo> testServers(String[] dnsServers) {
         List<QosInfo> testResults = new ArrayList<>();
@@ -50,6 +60,7 @@ public class DnsTester {
         return testResults;
     }
 
+    //Test our default list DNS servers.
     @WorkerThread
     public static List<QosInfo> testDefaultServers() {
         List<QosInfo> testResults = new ArrayList<>();
@@ -59,6 +70,7 @@ public class DnsTester {
         return testResults;
     }
 
+    //Run a test with every randomized test domains on the specified DNS server.
     private static QosInfo requestAllDomains(String dnsServer) {
         //TODO: Implement Retries
 
@@ -82,6 +94,7 @@ public class DnsTester {
         return qosInfo;
     }
 
+    //Make the DNS request to the specified DNS server using a specified domain.
     private static long requestDomain(String dnsServer, byte[] requestQuestion) throws IOException {
         //Request
         DatagramPacket requestPacket;
@@ -155,6 +168,7 @@ public class DnsTester {
         return server;
     }
 
+    //Convert a domain from a String representation into a format ready to be sent as a request.
     private static byte[] buildQuestion(String domain) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -203,5 +217,31 @@ public class DnsTester {
         dos.writeShort(0x0001);
 
         return baos.toByteArray();
+    }
+
+    //Generate a new set of test domains.
+    private static String[] randomizeTestDomains() {
+        String[] testDomains = new String[DnsTester.TEST_DOMAIN_COUNT];
+
+        for (int i = 0; i < testDomains.length; i++) {
+            testDomains[i] = generateRandomDomain();
+        }
+
+        return testDomains;
+    }
+
+    //Generate a random string to be used as a test domain.
+    private static String generateRandomDomain() {
+        int leftLimit = 97; // letter 'a'
+        int rightLimit = 122; // letter 'z'
+        Random random = new Random();
+        int targetStringLength = random.nextInt(12 - 5 + 1) + 5;
+
+        String generatedString = random.ints(leftLimit, rightLimit + 1)
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        return generatedString + ".com";
     }
 }

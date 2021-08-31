@@ -31,7 +31,9 @@ import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkQualityEntity;
+import io.openschema.mma.utils.DnsServersDetector;
 import io.openschema.mma.utils.DnsTester;
+import io.openschema.mma.utils.QosInfo;
 import io.openschema.mma.utils.SignalStrength;
 
 /**
@@ -55,6 +57,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
     private final SignalStrength mSignalStrength;
     private final ExecutorService mExecutorService;
     private Future<?> mLastRequestFuture = null;
+    private final DnsServersDetector mDnsServersDetector;
 
     private final ConnectivityManager.NetworkCallback mNetworkCallBack;
     private ConnectivityManager.NetworkCallback getNetworkCallback() {
@@ -107,6 +110,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         mNetworkCallBack = getNetworkCallback();
         mMetricsRepository = MetricsRepository.getRepository(context.getApplicationContext());
         mActiveConnectionRetriever = activeConnectionRetriever;
+        mDnsServersDetector = new DnsServersDetector(context);
     }
 
     private void requestMetrics(final int networkConnectionId, final int transportType) {
@@ -122,18 +126,22 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         Log.d(TAG, "MMA: Generating network quality metrics...");
         List<Pair<String, String>> metricsList = new ArrayList<>();
 
-        //Latency
-        //TODO: implement proper test using device's default server and others
-        double rtt = DnsTester.testServer("1.1.1.1").getRttMean();
+        //Latency / RTT
+        Pair<List<QosInfo>, List<QosInfo>> rttTestsResults = runRttTests();
+        //Using average of default DNS servers as a placeholder.
+        double rtt = rttTestsResults.first.stream()
+                .mapToDouble(QosInfo::getRttMean)
+                .average()
+                .orElse(Double.NaN);
 
         //RSSI
         int rssi = mSignalStrength.getRSSI(transportType);
 
         //Final QoS/QoE score
-        int score = calculateQualityScore(rtt, rssi);
+        double score = calculateQualityScore(rttTestsResults);
 
         //Extract information shared by both network types
-        metricsList.add(new Pair<>(METRIC_QUALITY_SCORE, Integer.toString(score)));
+        metricsList.add(new Pair<>(METRIC_QUALITY_SCORE, Double.toString(score)));
         metricsList.add(new Pair<>(METRIC_LATENCY, Double.toString(rtt)));
         metricsList.add(new Pair<>(METRIC_RSSI, Integer.toString(rssi)));
 
@@ -144,10 +152,80 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         return metricsList;
     }
 
-    private int calculateQualityScore(double rtt, int rssi) {
-        //TODO: Implement equation
-        return 0;
+    private Pair<List<QosInfo>, List<QosInfo>> runRttTests() {
+        DnsTester.randomizeDomains();
+        List<QosInfo> testDnsServers = DnsTester.testDefaultServers();
+        List<QosInfo> deviceDnsServers = DnsTester.testServers(mDnsServersDetector.getServers());
+        return new Pair<>(testDnsServers, deviceDnsServers);
     }
+
+    private double calculateQualityScore(Pair<List<QosInfo>, List<QosInfo>> rttTestsResults) {
+
+        //For the default DNS we will be using the one that returns the lowest RTTs for now from the ones returned from mDnsServersDetector.getServers()
+        //Step 1: Get the min RTT from default DNS
+
+        QosInfo minDefaultRttServer = rttTestsResults.second.get(0);
+        long minRtt = minDefaultRttServer.getMinRTTValue();
+
+        for (int i = 1; i < rttTestsResults.second.size(); i++) {
+            //TODO: Handle 0(failed RTTS) in a better way
+            if (rttTestsResults.second.get(i).getMinRTTValue() == 0) {
+                continue;
+            }
+            if (rttTestsResults.second.get(i).getMinRTTValue() < minRtt) {
+                minRtt = rttTestsResults.second.get(i).getMinRTTValue();
+                minDefaultRttServer = rttTestsResults.second.get(i);
+            }
+        }
+        Log.d(TAG, "Default Min RTT:\n" + Long.toString(minRtt));
+
+        //Step 2: Map Min RTT of the default server to scoring scale, for now we call this scale Pivot Scale.
+
+        int pivotScore = 0;
+        ///Not using switch since it doesn't accept long type
+        if (minRtt < 25) pivotScore = 5;
+        else if (minRtt >= 25 && minRtt < 50) pivotScore = 4;
+        else if (minRtt >= 50 && minRtt < 75) pivotScore = 3;
+        else if (minRtt >= 75 && minRtt < 100) pivotScore = 2;
+        else if (minRtt >= 100) pivotScore = 1;
+
+        Log.d(TAG, "Pivot Score:\n" + Integer.toString(pivotScore));
+
+        //Step 3: Scale all DNS hardCoded Servers using pivot value and scale Default Server using pivot too. If value is greater than 5 make it 5 if less than 1 make it 1.
+
+        double scaledDefaultServerRTT = (minDefaultRttServer.getMinRTTValue() * pivotScore) / minDefaultRttServer.getRttMean();
+        if (scaledDefaultServerRTT > 5) scaledDefaultServerRTT = 5.0;
+        else if (scaledDefaultServerRTT < 1) scaledDefaultServerRTT = 1.0;
+
+        double[] scaledTestServersRtt = new double[rttTestsResults.first.size()];
+        for (int i = 0; i < rttTestsResults.first.size(); i++) {
+            if (rttTestsResults.first.get(i).getRttMean() > 0) {
+                scaledTestServersRtt[i] = (minDefaultRttServer.getMinRTTValue() * pivotScore) / rttTestsResults.first.get(i).getRttMean();
+                if (scaledTestServersRtt[i] > 5) scaledTestServersRtt[i] = 5.0;
+                else if (scaledTestServersRtt[i] < 1) scaledTestServersRtt[i] = 1.0;
+            } else {
+                //TODO: Ignore 0 values
+                //Holder to handle 0
+                scaledTestServersRtt[i] = 1;
+            }
+        }
+
+        //Step 4 Calculate final score using 70% of Default and 30% of other average
+
+        double scaledTestServersRttTotal = 0;
+
+        for (int i = 0; i < scaledTestServersRtt.length; i++) {
+            scaledTestServersRttTotal = scaledTestServersRttTotal + scaledTestServersRtt[i];
+        }
+        double scaledTestServersRttAverage = scaledTestServersRttTotal / scaledTestServersRtt.length;
+
+        double qosScore = 0.7 * scaledDefaultServerRTT + 0.3 * scaledTestServersRttAverage;
+
+        Log.d(TAG, "Final QoS Score:\n" + Double.toString(qosScore));
+
+        return qosScore;
+    }
+
 
     private void writeNetworkQuality(NetworkQualityEntity networkQualityEntity) {
         //TODO: disable with flag from MMA builder? avoid extra calculations & storage
