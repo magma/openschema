@@ -61,7 +61,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:text="Current Network:"
+            android:text="@string/network_primary_label"
             android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
             app:layout_constraintBottom_toTopOf="@id/network_primary_txt"
             app:layout_constraintEnd_toEndOf="parent"
@@ -94,7 +94,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="16dp"
-            android:text="Detected Quality:"
+            android:text="@string/network_quality_label"
             android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
             app:layout_constraintBottom_toTopOf="@id/network_quality_txt"
             app:layout_constraintEnd_toEndOf="parent"
@@ -108,10 +108,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:text='@{networkData == null ? "" : networkData.networkQuality}'
+            android:layout_marginBottom="8dp"
+            android:text='@{networkData == null ? "" : networkData.networkQualityString}'
             android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/network_measure_btn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@id/network_primary_label"
@@ -126,13 +126,27 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
-            android:text="No active network has been detected. Please try connecting to a network."
+            android:text="@string/network_unknown_label"
             android:visibility="@{networkData == null ? View.VISIBLE  : View.GONE}"
             app:layout_constraintBottom_toBottomOf="@id/network_quality_txt"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/network_primary_icon"
             app:layout_constraintTop_toTopOf="@id/network_primary_label"
             app:layout_constraintVertical_chainStyle="packed"
+            tools:visibility="gone"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/network_measure_btn"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/network_quality_measure_label"
+            android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

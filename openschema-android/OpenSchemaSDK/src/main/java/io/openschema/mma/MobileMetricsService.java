@@ -41,6 +41,7 @@ import io.openschema.mma.utils.PersistentNotification;
 public class MobileMetricsService extends Service implements AsyncMetrics.MetricsCollectorListener {
 
     private static final String TAG = "MobileMetricsService";
+    public static final String ACTION_MEASURE_NETWORK_QUALITY = "action_measure_network_quality";
 
     @Nullable
     @Override
@@ -88,17 +89,26 @@ public class MobileMetricsService extends Service implements AsyncMetrics.Metric
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "MMA: Foreground service is starting.");
+        if (intent != null && intent.getAction() != null) {
+            //startService was called to communicate with active MobileMetricsService instance.
+            if (intent.getAction().equals(ACTION_MEASURE_NETWORK_QUALITY)) {
+                mNetworkQualityMetrics.remeasureQuality();
+            }
+        } else {
+            //Starting service normally
+            Log.d(TAG, "MMA: Foreground service is starting.");
 
-        PersistentNotification persistentNotification = PersistentNotification.getInstance(this);
-        persistentNotification.show(getApplicationContext());
-        startForeground(PersistentNotification.SERVICE_NOTIFICATION_ID, persistentNotification.getNotification());
+            PersistentNotification persistentNotification = PersistentNotification.getInstance(this);
+            persistentNotification.show(getApplicationContext());
+            startForeground(PersistentNotification.SERVICE_NOTIFICATION_ID, persistentNotification.getNotification());
+        }
 
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
+        //TODO: Can we detect if the OS stopped our service?
         Log.d(TAG, "MMA: Destroying foreground service.");
         mWifiSessionMetrics.stopTrackers();
         mCellularSessionMetrics.stopTrackers();

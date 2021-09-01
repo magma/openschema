@@ -30,7 +30,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import io.openschema.client.activity.OnboardingActivity;
 import io.openschema.client.databinding.FragmentPhonePermissionBinding;
-import io.openschema.client.util.PermissionManager;
+import io.openschema.mma.utils.PermissionManager;
 
 public class PhonePermissionFragment extends Fragment {
 

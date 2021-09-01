@@ -21,7 +21,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.Navigation;
 import io.openschema.client.R;
-import io.openschema.client.util.PermissionManager;
+import io.openschema.mma.utils.PermissionManager;
 import io.openschema.client.util.SharedPreferencesHelper;
 
 public class OnboardingActivity extends AppCompatActivity {

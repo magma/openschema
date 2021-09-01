@@ -58,6 +58,15 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"
             />
+
+        <receiver
+            android:name=".util.DeviceBootReceiver"
+            android:exported="true"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

@@ -43,4 +43,6 @@
 
     <!--TODO: research using this permission to avoid being killed in the background-->
 <!--    <uses-permission android:name="REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />-->
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 </manifest>

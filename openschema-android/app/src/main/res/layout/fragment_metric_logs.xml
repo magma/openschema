@@ -34,7 +34,7 @@
         >
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/usage_empty_data_txt"
+            android:id="@+id/metric_logs_empty_data_txt"
             style="@style/TextAppearance.MaterialComponents.Body1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -59,11 +59,54 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
             android:visibility="@{isDataAvailable ? View.VISIBLE  : View.INVISIBLE}"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/metric_logs_uuid_separator"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:listitem="@layout/view_metric_log_list_entry"
+            />
+
+        <View
+            android:id="@+id/metric_logs_uuid_separator"
+            android:layout_width="0dp"
+            android:layout_height="3dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
+            android:background="@color/primaryColor"
+            app:layout_constraintBottom_toTopOf="@id/metric_logs_uuid_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/metric_logs_uuid_label"
+            style="@style/TextAppearance.MaterialComponents.Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:text="My UUID:"
+            app:layout_constraintBottom_toTopOf="@id/metric_logs_uuid_txt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/metric_logs_uuid_txt"
+            style="@style/TextAppearance.MaterialComponents.Body2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="c42c458f-62a6-46eb-8b48-0e309c168c30"
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,12 +31,13 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import io.openschema.client.R;
-import io.openschema.client.util.PermissionManager;
+import io.openschema.client.util.ServiceStatusWorker;
 import io.openschema.client.view.CustomNotification;
 import io.openschema.client.view.NetworkQualityView;
 import io.openschema.client.viewmodel.NetworkQualityViewModel;
 import io.openschema.mma.MobileMetricsAgent;
 import io.openschema.mma.MobileMetricsService;
+import io.openschema.mma.utils.PermissionManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (checkMandatoryPermissions()) {
+            //TODO: centralize this method together with DeviceBootReceiver and ServiceStatusWorker
             NavController navController = Navigation.findNavController(this, R.id.main_content);
 
             //Setup navigation drawer
@@ -96,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
             //Initialize agent
             mMobileMetricsAgent.init();
+            ServiceStatusWorker.enqueuePeriodicWorker(getApplicationContext());
         }
     }
 

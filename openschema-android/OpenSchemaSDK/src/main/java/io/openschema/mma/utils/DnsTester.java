@@ -47,12 +47,14 @@ public class DnsTester {
     //Test a single specified DNS server.
     @WorkerThread
     public static QosInfo testServer(String dnsServer) {
+        Log.d(TAG, "MMA: Starting DNS test specified server.");
         return requestAllDomains(dnsServer);
     }
 
     //Test a list of specified DNS servers.
     @WorkerThread
     public static List<QosInfo> testServers(String[] dnsServers) {
+        Log.d(TAG, "MMA: Starting DNS test on specified list of servers.");
         List<QosInfo> testResults = new ArrayList<>();
         for (int i = 0; i < dnsServers.length; i++) {
             testResults.add(requestAllDomains(dnsServers[i]));
@@ -63,6 +65,7 @@ public class DnsTester {
     //Test our default list DNS servers.
     @WorkerThread
     public static List<QosInfo> testDefaultServers() {
+        Log.d(TAG, "MMA: Starting DNS test on our default list of servers.");
         List<QosInfo> testResults = new ArrayList<>();
         for (int i = 0; i < TEST_DNS_SERVERS.length; i++) {
             testResults.add(requestAllDomains(TEST_DNS_SERVERS[i]));
@@ -80,17 +83,17 @@ public class DnsTester {
         for (int i = 0; i < TEST_DOMAINS.length; i++) {
             try {
                 individualValues[i] = requestDomain(dnsServer, TEST_DOMAIN_REQUESTS[i]);
-                Log.d(TAG, "MMA: DNS RTT Result " + dnsServer + " on " + TEST_DOMAINS[i] + ": " + individualValues[i]);
+//                Log.d(TAG, "MMA: DNS RTT Result " + dnsServer + " on " + TEST_DOMAINS[i] + ": " + individualValues[i]);
             } catch (IOException e) {
                 failures++;
-                Log.d(TAG, "MMA: DNS RTT Error " + dnsServer + ": " + e);
+                Log.e(TAG, "MMA: DNS RTT Error " + dnsServer + ": " + e);
             }
         }
 
         QosInfo qosInfo = new QosInfo(dnsServer, individualValues, failures);
-        Log.d(TAG, "MMA: DNS RTT Average Result " + qosInfo.getDnsServer() + ": " + qosInfo.getRttMean());
-        Log.d(TAG, "MMA: DNS RTT variance " + qosInfo.getDnsServer() + ": " + qosInfo.getRttVariance());
-        Log.d(TAG, "MMA: DNS RTT failures " + qosInfo.getDnsServer() + ": " + qosInfo.getTotalFailedRequests());
+//        Log.d(TAG, "MMA: DNS RTT Average Result " + qosInfo.getDnsServer() + ": " + qosInfo.getRttMean());
+//        Log.d(TAG, "MMA: DNS RTT variance " + qosInfo.getDnsServer() + ": " + qosInfo.getRttVariance());
+//        Log.d(TAG, "MMA: DNS RTT failures " + qosInfo.getDnsServer() + ": " + qosInfo.getTotalFailedRequests());
         return qosInfo;
     }
 
@@ -198,10 +201,8 @@ public class DnsTester {
         dos.writeShort(0x0000);
 
         String[] domainParts = domain.split("\\.");
-        Log.d(TAG, "MMA: " + domain + " has " + domainParts.length + " parts");
 
         for (int i = 0; i < domainParts.length; i++) {
-            Log.d(TAG, "MMA: Writing: " + domainParts[i]);
             byte[] domainBytes = domainParts[i].getBytes(StandardCharsets.UTF_8);
             dos.writeByte(domainBytes.length);
             dos.write(domainBytes);

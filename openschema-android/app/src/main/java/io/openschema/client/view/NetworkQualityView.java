@@ -66,6 +66,10 @@ public class NetworkQualityView extends ConstraintLayout {
         mBinding.setNetworkData(networkStatus);
     }
 
+    public void setMeasureBtnClickListener(OnClickListener listener) {
+        mBinding.networkMeasureBtn.setOnClickListener(listener);
+    }
+
     @BindingAdapter("app:tint")
     public static void setImageTint(ImageView view, @ColorInt int color) {
         view.setColorFilter(color);
@@ -86,11 +90,13 @@ public class NetworkQualityView extends ConstraintLayout {
         }
 
         public int mTransportType;
+        public double mQualityScore;
         public NetworkQuality mNetworkQuality;
 
         public NetworkStatus(int transportType, double qualityScore) {
             mTransportType = transportType;
-            mNetworkQuality = convertQualityScore(qualityScore);
+            mQualityScore = qualityScore;
+            mNetworkQuality = convertQualityScore(mQualityScore);
         }
 
         private NetworkQuality convertQualityScore(double qualityScore) {
@@ -105,8 +111,8 @@ public class NetworkQualityView extends ConstraintLayout {
             }
         }
 
-        public String getNetworkQuality() {
-            return mNetworkQuality.toString();
+        public String getNetworkQualityString() {
+            return String.format("%s (%.2f)", mNetworkQuality.toString(), mQualityScore);
         }
     }
 }

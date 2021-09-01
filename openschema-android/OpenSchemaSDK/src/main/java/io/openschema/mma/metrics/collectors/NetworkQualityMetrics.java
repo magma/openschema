@@ -35,6 +35,7 @@ import io.openschema.mma.utils.DnsServersDetector;
 import io.openschema.mma.utils.DnsTester;
 import io.openschema.mma.utils.QosInfo;
 import io.openschema.mma.utils.SignalStrength;
+import io.openschema.mma.utils.TransportType;
 
 /**
  * Class to collect information about Network Quality, be it QoS or QoE.
@@ -47,7 +48,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
      */
     public static final String METRIC_NAME = "openschemaNetworkQuality";
 
-    public static final String METRIC_QUALITY_SCORE = "quality_score";
+    public static final String METRIC_QUALITY_SCORE = "qualityScore";
     public static final String METRIC_LATENCY = "latency";
     public static final String METRIC_RSSI = "rssi";
 
@@ -56,8 +57,11 @@ public class NetworkQualityMetrics extends AsyncMetrics {
     private final ConnectivityManager mConnectivityManager;
     private final SignalStrength mSignalStrength;
     private final ExecutorService mExecutorService;
-    private Future<?> mLastRequestFuture = null;
     private final DnsServersDetector mDnsServersDetector;
+
+    private Future<?> mLastRequestFuture = null;
+    private int mCurrentActiveTransportType = -1;
+    private int mCurrentActiveConnectionId = -1;
 
     private final ConnectivityManager.NetworkCallback mNetworkCallBack;
     private ConnectivityManager.NetworkCallback getNetworkCallback() {
@@ -65,12 +69,6 @@ public class NetworkQualityMetrics extends AsyncMetrics {
             @Override
             public void onAvailable(@NonNull Network network) {
                 Log.d(TAG, "MMA: Detected new active network connection");
-
-                //Check if the previous test is still running and cancel it. Due to active network changes the results won't be relevant anymore.
-                //TODO: Move to onLost instead?
-                if (mLastRequestFuture != null && !mLastRequestFuture.isDone()) {
-                    mLastRequestFuture.cancel(true);
-                }
 
                 NetworkCapabilities networkCapabilities = mConnectivityManager.getNetworkCapabilities(network);
                 if (networkCapabilities != null) {
@@ -88,12 +86,26 @@ public class NetworkQualityMetrics extends AsyncMetrics {
                         return;
                     }
 
+                    mCurrentActiveTransportType = transportType;
+
+                    //TODO: Figure out how to handle the case where the connection entry hasn't finished writing to DB yet.
                     //Get the connection ID used in the local DB for the active network
-                    int activeConnectionId = mActiveConnectionRetriever.getActiveConnectionId(transportType);
-                    if (activeConnectionId == -1) {
+                    mCurrentActiveConnectionId = mActiveConnectionRetriever.getActiveConnectionId(mCurrentActiveTransportType);
+                    if (mCurrentActiveConnectionId == -1) {
                         Log.e(TAG, "MMA: Active connection ID failed to be retrieved");
                     }
-                    requestMetrics(activeConnectionId, transportType);
+                    requestMetrics(mCurrentActiveConnectionId, mCurrentActiveTransportType);
+                }
+            }
+
+            @Override
+            public void onLost(@NonNull Network network) {
+                mCurrentActiveTransportType = -1;
+                mCurrentActiveConnectionId = -1;
+
+                //Check if the previous test is still running and cancel it. Due to active network changes the results won't be relevant anymore.
+                if (mLastRequestFuture != null && !mLastRequestFuture.isDone()) {
+                    mLastRequestFuture.cancel(true);
                 }
             }
         };
@@ -114,7 +126,6 @@ public class NetworkQualityMetrics extends AsyncMetrics {
     }
 
     private void requestMetrics(final int networkConnectionId, final int transportType) {
-
         mLastRequestFuture = mExecutorService.submit(() -> {
             List<Pair<String, String>> networkQualityMetrics = runTests(networkConnectionId, transportType);
             //Collect metrics to DB to be pushed later
@@ -124,7 +135,6 @@ public class NetworkQualityMetrics extends AsyncMetrics {
 
     private List<Pair<String, String>> runTests(final int networkConnectionId, final int transportType) {
         Log.d(TAG, "MMA: Generating network quality metrics...");
-        List<Pair<String, String>> metricsList = new ArrayList<>();
 
         //Latency / RTT
         Pair<List<QosInfo>, List<QosInfo>> rttTestsResults = runRttTests();
@@ -141,6 +151,8 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         double score = calculateQualityScore(rttTestsResults);
 
         //Extract information shared by both network types
+        List<Pair<String, String>> metricsList = new ArrayList<>();
+        metricsList.add(new Pair<>(TransportType.METRIC_TRANSPORT_TYPE, TransportType.getTransportString(transportType)));
         metricsList.add(new Pair<>(METRIC_QUALITY_SCORE, Double.toString(score)));
         metricsList.add(new Pair<>(METRIC_LATENCY, Double.toString(rtt)));
         metricsList.add(new Pair<>(METRIC_RSSI, Integer.toString(rssi)));
@@ -226,12 +238,20 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         return qosScore;
     }
 
-
     private void writeNetworkQuality(NetworkQualityEntity networkQualityEntity) {
         //TODO: disable with flag from MMA builder? avoid extra calculations & storage
         Log.d(TAG, "MMA: Creating new database entry for network quality.");
         //TODO: Evaluate possible concurrency issues by using the repo object from background threads
         mMetricsRepository.writeNetworkQuality(networkQualityEntity);
+    }
+
+    public void remeasureQuality() {
+        if (mCurrentActiveTransportType == -1) {
+            Log.e(TAG, "MMA: Couldn't recognize active network type");
+            return;
+        }
+
+        requestMetrics(mCurrentActiveConnectionId, mCurrentActiveTransportType);
     }
 
     public void startTrackers() {

@@ -122,7 +122,7 @@ public class MobileMetricsAgent {
                 persistentNotification.setCustomNotification(mCustomNotification);
             }
 
-            mAppContext.startService(new Intent(mAppContext, MobileMetricsService.class));
+            mAppContext.startForegroundService(new Intent(mAppContext, MobileMetricsService.class));
         }
 
         mMetricsManager.startWorker(mAppContext, mBackendBaseURL, mBackendUsername, mBackendPassword);

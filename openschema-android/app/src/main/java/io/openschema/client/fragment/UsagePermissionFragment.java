@@ -30,7 +30,7 @@ import androidx.fragment.app.Fragment;
 import io.openschema.client.R;
 import io.openschema.client.activity.OnboardingActivity;
 import io.openschema.client.databinding.FragmentUsagePermissionBinding;
-import io.openschema.client.util.PermissionManager;
+import io.openschema.mma.utils.PermissionManager;
 
 public class UsagePermissionFragment extends Fragment {
 

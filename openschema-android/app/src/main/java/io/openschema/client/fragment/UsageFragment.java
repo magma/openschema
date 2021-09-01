@@ -69,6 +69,13 @@ public class UsageFragment extends Fragment {
         mBinding.usageTimeSelector.setOnTimeWindowChangedListener(newWindow -> {
             mUsageViewModel.setCurrentTimeWindow(newWindow);
         });
+
+        mBinding.usageNetworkQuality.setMeasureBtnClickListener(view1 -> {
+            //Set current network data to null while network is being measured.
+            //TODO: consider implementing a "measuring" state instead to prevent confusion.
+            mBinding.usageNetworkQuality.setNetworkData(null);
+            mNetworkQualityViewModel.remeasureNetworkQuality();
+        });
     }
 
     private void updateHourlyTonnageChart(List<HourlyUsageEntity> hourlyUsageEntities) {

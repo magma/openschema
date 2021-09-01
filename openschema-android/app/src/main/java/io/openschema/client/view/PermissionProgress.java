@@ -24,7 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import io.openschema.client.R;
 import io.openschema.client.databinding.ViewPermissionsProgressBinding;
-import io.openschema.client.util.PermissionManager;
+import io.openschema.mma.utils.PermissionManager;
 
 
 /**

@@ -72,7 +72,7 @@ public class CustomNotification {
             String networkPrimary = "Current Network: ";
             networkPrimary += networkStatus.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi" : "Cellular";
 
-            String networkQuality = "Detected Quality: " + networkStatus.getNetworkQuality();
+            String networkQuality = "Detected Quality: " + networkStatus.getNetworkQualityString();
 
             mNotificationView.setImageViewResource(R.id.notification_network_primary_icon, networkIcon);
             mNotificationView.setTextViewText(R.id.notification_network_primary, networkPrimary);

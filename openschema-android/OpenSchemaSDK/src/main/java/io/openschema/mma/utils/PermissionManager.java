@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package io.openschema.client.util;
+package io.openschema.mma.utils;
 
 import android.Manifest;
 import android.app.AppOpsManager;

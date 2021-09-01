@@ -2,6 +2,7 @@ package io.openschema.client.viewmodel;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -13,6 +14,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import io.openschema.mma.MobileMetricsService;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkQualityEntity;
 
@@ -60,6 +62,13 @@ public class NetworkQualityViewModel extends AndroidViewModel {
         mConnectivityManager.requestNetwork(activeNetworkRequest, mNetworkCallBack);
 
         mActiveNetworkQuality = new ActiveNetworkQuality(mMetricsRepository.getLastNetworkQualityMeasurement(), mActiveNetworkExists);
+    }
+
+    public void remeasureNetworkQuality() {
+        //Calling startService with specified action to call method within active Service instance.
+        Intent i = new Intent(getApplication(), MobileMetricsService.class);
+        i.setAction(MobileMetricsService.ACTION_MEASURE_NETWORK_QUALITY);
+        getApplication().startService(i);
     }
 
     public LiveData<NetworkQualityEntity> getActiveNetworkQuality() {

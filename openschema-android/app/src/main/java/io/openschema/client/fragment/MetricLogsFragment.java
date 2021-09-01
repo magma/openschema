@@ -14,10 +14,14 @@
 
 package io.openschema.client.fragment;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,10 +30,12 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import io.openschema.client.R;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.MetricsEntity;
 import io.openschema.client.databinding.FragmentMetricLogsBinding;
 import io.openschema.client.databinding.ViewMetricLogListEntryBinding;
+import io.openschema.mma.id.Identity;
 
 public class MetricLogsFragment extends Fragment {
 
@@ -63,6 +69,15 @@ public class MetricLogsFragment extends Fragment {
             } else {
                 mBinding.setIsDataAvailable(false);
             }
+        });
+
+        final String uuid = new Identity(requireContext().getApplicationContext()).getUUID();
+        mBinding.metricLogsUuidTxt.setText(uuid);
+        mBinding.metricLogsUuidTxt.setOnClickListener(uuidTxt -> {
+            ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newPlainText("uuid", uuid));
+
+            Toast.makeText(requireContext(), R.string.uuid_copied_toast, Toast.LENGTH_SHORT).show();
         });
     }
 

@@ -14,10 +14,19 @@
 
 <resources>
     <string name="app_name">OpenSchema</string>
+
+    <!--Terms & Permissions-->
     <string name="terms_of_service_txt">Welcome to the OpenSchema app. By continuing, you are indicating that you accept our <annotation link="https://www.shoelacewireless.com/os/tos">Terms and Privacy Policy</annotation>.</string>
     <string name="usage_permission_txt">This app requires Usage Access to be able to measure the amount of data used by your network connections.\n\nPlease enable the permission for \"%s\".</string>
     <string name="phone_permission_txt">This app requires Phone Access to be able to check your cellular network\'s information from your SIM card. We won\'t make any calls or check your contacts.</string>
     <string name="location_permission_txt">This app requires Location Access to be able to track the areas where connections were made. This will help your carrier improve places where their coverage is weak.</string>
     <!--This information needs to be disclosed due to Play Store requirements-->
     <string name="location_permission_txt_background">Please select the <b>\"Allow all the time\"</b> option. By allowing us to access location from the background, you will let our connection mapping mark the areas were you\'ve made connections, even if the app is closed. </string>
+
+    <string name="network_primary_label">Current Network:</string>
+    <string name="network_quality_label">Detected Quality:</string>
+    <string name="network_unknown_label">No active network has been detected. Please try connecting to a network.</string>
+    <string name="network_quality_measure_label">Measure Again</string>
+
+    <string name="uuid_copied_toast">UUID copied to clipboard.</string>
 </resources>
