@@ -6,6 +6,7 @@ const CellularSession = require('../models/cellular-session')
 const DeviceInfo = require('../models/device-info')
 const ConnectionReport = require('../models/connection-report')
 const UsageHourly = require('../models/usage-hourly')
+const NetworkQuality = require('../models/network-quality')
 const CustomMetric = require('../models/custom-metric')
 var router = express.Router()
 
@@ -53,6 +54,7 @@ router.post('/metrics/push', am(async (req, res) => {
 module.exports = router
 
 //TODO: Abstract handlers back into each schema's module?
+//TODO: Change from switch/case to a map using metricName:Handler as key:value?
 function checkKnownMetrics(metricName) {
     switch (metricName) {
         case WifiSession.metricName:
@@ -65,6 +67,8 @@ function checkKnownMetrics(metricName) {
             return handleConnectionReport
         case UsageHourly.metricName:
             return handleUsageHourly
+        case NetworkQuality.metricName:
+            return NetworkQuality.handleRequestBody
         default:
             return handleCustomMetric
     }
