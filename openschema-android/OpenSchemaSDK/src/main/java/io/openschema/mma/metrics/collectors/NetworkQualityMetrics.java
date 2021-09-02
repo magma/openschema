@@ -184,6 +184,10 @@ public class NetworkQualityMetrics extends AsyncMetrics {
             if (rttTestsResults.second.get(i).getMinRTTValue() == 0) {
                 continue;
             }
+            if(minDefaultRttServer.getMinRTTValue() == 0){
+                minRtt = rttTestsResults.second.get(i).getMinRTTValue();
+                minDefaultRttServer = rttTestsResults.second.get(i);
+            }
             if (rttTestsResults.second.get(i).getMinRTTValue() < minRtt) {
                 minRtt = rttTestsResults.second.get(i).getMinRTTValue();
                 minDefaultRttServer = rttTestsResults.second.get(i);
@@ -215,6 +219,10 @@ public class NetworkQualityMetrics extends AsyncMetrics {
                 scaledTestServersRtt[i] = (minDefaultRttServer.getMinRTTValue() * pivotScore) / rttTestsResults.first.get(i).getRttMean();
                 if (scaledTestServersRtt[i] > 5) scaledTestServersRtt[i] = 5.0;
                 else if (scaledTestServersRtt[i] < 1) scaledTestServersRtt[i] = 1.0;
+            } else if (Double.isNaN(rttTestsResults.first.get(i).getRttMean())){
+                //TODO: Ignore 0 values
+                //Holder to handle 0
+                scaledTestServersRtt[i] = 1;
             } else {
                 //TODO: Ignore 0 values
                 //Holder to handle 0
