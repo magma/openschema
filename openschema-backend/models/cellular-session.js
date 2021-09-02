@@ -31,6 +31,30 @@ let cellularSessionSchema = new Schema({
     collection: openschemaMetricName
 })
 
+let model = mongoose.model(`CellularSession`, cellularSessionSchema)
+
+async function handleRequestBody(body) {
+    let newEntry = {
+        metrics: preProcessMetrics(body.metrics),
+        identifier: body.identifier,
+        timestamp: body.timestamp
+    }
+
+    //TODO: remove
+    console.log(newEntry)
+    console.log(`Saving entry...`)
+
+    let storedEntry = await new model(newEntry)
+        .save()
+        .catch(e => console.log('Error: ', e.message));
+
+    return storedEntry != null
+}
+
+exports.model = model
+exports.handleRequestBody = handleRequestBody
+exports.metricName = openschemaMetricName
+
 //Convert flat list of metrics into required nested structure
 function preProcessMetrics(metrics){
     if (metrics.longitude && metrics.latitude) {
@@ -43,7 +67,3 @@ function preProcessMetrics(metrics){
     delete metrics.latitude
     return metrics
 }
-
-exports.model = mongoose.model(`CellularSession`, cellularSessionSchema)
-exports.preProcessMetrics = preProcessMetrics
-exports.metricName = openschemaMetricName

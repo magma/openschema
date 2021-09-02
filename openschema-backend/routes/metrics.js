@@ -10,7 +10,6 @@ const NetworkQuality = require('../models/network-quality')
 const CustomMetric = require('../models/custom-metric')
 var router = express.Router()
 
-
 //TODO: add middleware to handle identifier information and make sure that the UE has been registered
 router.use(function (req, res, next) {
     //Trim request body to expected parameters
@@ -34,7 +33,6 @@ router.use(function (req, res, next) {
     next()
 })
 
-
 router.post('/metrics/push', am(async (req, res) => {
 
     let metricHandler = checkKnownMetrics(req.body.metricName)
@@ -53,118 +51,22 @@ router.post('/metrics/push', am(async (req, res) => {
 
 module.exports = router
 
-//TODO: Abstract handlers back into each schema's module?
 //TODO: Change from switch/case to a map using metricName:Handler as key:value?
 function checkKnownMetrics(metricName) {
     switch (metricName) {
         case WifiSession.metricName:
-            return handleWifiSession
+            return WifiSession.handleRequestBody
         case CellularSession.metricName:
-            return handleCellularSession
+            return CellularSession.handleRequestBody
         case DeviceInfo.metricName:
-            return handleDeviceInfo
+            return DeviceInfo.handleRequestBody
         case ConnectionReport.metricName:
-            return handleConnectionReport
+            return ConnectionReport.handleRequestBody
         case UsageHourly.metricName:
-            return handleUsageHourly
+            return UsageHourly.handleRequestBody
         case NetworkQuality.metricName:
             return NetworkQuality.handleRequestBody
         default:
-            return handleCustomMetric
+            return CustomMetric.handleRequestBody
     }
-}
-
-async function handleWifiSession(body) {
-    let newEntry = {
-        metrics: WifiSession.preProcessMetrics(body.metrics),
-        identifier: body.identifier,
-        timestamp: body.timestamp
-    }
-
-    //TODO: remove
-    console.log(newEntry)
-    console.log(`Saving entry...`)
-
-    let storedEntry = await new WifiSession.model(newEntry)
-        .save()
-        .catch(e => console.log('Error: ', e.message));
-
-    return storedEntry != null
-}
-
-async function handleCellularSession(body) {
-    let newEntry = {
-        metrics: CellularSession.preProcessMetrics(body.metrics),
-        identifier: body.identifier,
-        timestamp: body.timestamp
-    }
-
-    //TODO: remove
-    console.log(newEntry)
-    console.log(`Saving entry...`)
-
-    let storedEntry = await new CellularSession.model(newEntry)
-        .save()
-        .catch(e => console.log('Error: ', e.message));
-
-    return storedEntry != null
-}
-
-async function handleDeviceInfo(body) {
-    let newEntry = {
-        metrics: body.metrics,
-        identifier: body.identifier,
-        timestamp: body.timestamp
-    }
-
-    //TODO: remove
-    console.log(newEntry)
-    console.log(`Saving entry...`)
-
-    let storedEntry = await new DeviceInfo.model(newEntry)
-        .save()
-        .catch(e => console.log('Error: ', e.message));
-
-    return storedEntry != null
-}
-
-async function handleConnectionReport(body) {
-    let newEntry = {
-        metrics: ConnectionReport.preProcessMetrics(body.metrics),
-        identifier: body.identifier,
-        timestamp: body.timestamp
-    }
-
-    //TODO: remove
-    console.log(newEntry)
-    console.log(`Saving entry...`)
-
-    let storedEntry = await new ConnectionReport.model(newEntry)
-        .save()
-        .catch(e => console.log('Error: ', e.message));
-
-    return storedEntry != null
-}
-
-async function handleUsageHourly(body) {
-    let newEntry = {
-        metrics: body.metrics,
-        identifier: body.identifier,
-        timestamp: body.timestamp
-    }
-
-    //TODO: remove
-    console.log(newEntry)
-    console.log(`Saving entry...`)
-
-    let storedEntry = await new UsageHourly.model(newEntry)
-        .save()
-        .catch(e => console.log('Error: ', e.message));
-
-    return storedEntry != null
-}
-
-async function handleCustomMetric(body) {
-    //TODO: implement custom metric handling
-    console.log(`Error: Custom metric handling hasn't been implemented yet.`)
 }
