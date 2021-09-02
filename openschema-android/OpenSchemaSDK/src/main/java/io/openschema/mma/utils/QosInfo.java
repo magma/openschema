@@ -22,6 +22,7 @@ public class QosInfo {
 
     private long getMinRTT() {
         return Arrays.stream(mRttValues)
+                .filter(value -> value != 0)
                 .min()
                 .orElse(mRttValues[0]);
     }

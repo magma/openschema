@@ -102,7 +102,12 @@ public class DnsTester {
     private static long requestDomain(String dnsServer, byte[] requestQuestion) throws IOException {
         //Request
         DatagramPacket requestPacket;
-        requestPacket = new DatagramPacket(requestQuestion, requestQuestion.length, InetAddress.getByAddress(getServer(dnsServer)), DNS_PORT);
+        if(dnsServer.contains(":")){
+            InetAddress ipv6Dns = InetAddress.getByName(dnsServer);
+            requestPacket = new DatagramPacket(requestQuestion, requestQuestion.length, InetAddress.getByAddress(ipv6Dns.getAddress()), DNS_PORT);
+        } else {
+            requestPacket = new DatagramPacket(requestQuestion, requestQuestion.length, InetAddress.getByAddress(getServer(dnsServer)), DNS_PORT);
+        }
 
         //Response
         DatagramPacket responsePacket;
