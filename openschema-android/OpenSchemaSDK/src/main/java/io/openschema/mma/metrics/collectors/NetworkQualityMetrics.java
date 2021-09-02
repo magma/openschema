@@ -43,6 +43,7 @@ import io.openschema.mma.utils.TransportType;
 public class NetworkQualityMetrics extends AsyncMetrics {
     private static final String TAG = "NetworkQualityMetrics";
 
+    private final Context mContext;
     /**
      * Metric name to be used for the collected information.
      */
@@ -57,7 +58,6 @@ public class NetworkQualityMetrics extends AsyncMetrics {
     private final ConnectivityManager mConnectivityManager;
     private final SignalStrength mSignalStrength;
     private final ExecutorService mExecutorService;
-    private final DnsServersDetector mDnsServersDetector;
 
     private Future<?> mLastRequestFuture = null;
     private int mCurrentActiveTransportType = -1;
@@ -122,7 +122,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         mNetworkCallBack = getNetworkCallback();
         mMetricsRepository = MetricsRepository.getRepository(context.getApplicationContext());
         mActiveConnectionRetriever = activeConnectionRetriever;
-        mDnsServersDetector = new DnsServersDetector(context);
+        mContext = context;
     }
 
     private void requestMetrics(final int networkConnectionId, final int transportType) {
@@ -167,6 +167,8 @@ public class NetworkQualityMetrics extends AsyncMetrics {
     private Pair<List<QosInfo>, List<QosInfo>> runRttTests() {
         DnsTester.randomizeDomains();
         List<QosInfo> testDnsServers = DnsTester.testDefaultServers();
+        DnsServersDetector mDnsServersDetector = new DnsServersDetector(mContext);
+        DnsTester.randomizeDomains();
         List<QosInfo> deviceDnsServers = DnsTester.testServers(mDnsServersDetector.getServers());
         return new Pair<>(testDnsServers, deviceDnsServers);
     }
