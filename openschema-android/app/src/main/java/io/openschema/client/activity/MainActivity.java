@@ -81,15 +81,11 @@ public class MainActivity extends AppCompatActivity {
             //Start permanent observer to update custom notification. (Only if service isn't running so that we don't create multiple observers on subsequent app starts)
             if (!MobileMetricsService.isServiceRunning(getApplicationContext())) {
                 NetworkQualityViewModel networkQualityViewModel = new ViewModelProvider(this).get(NetworkQualityViewModel.class);
-                networkQualityViewModel.getActiveNetworkQuality().observeForever(networkQualityEntity -> {
+                networkQualityViewModel.getActiveNetworkQuality().observeForever(networkStatus -> {
                     CustomNotification customNotification = CustomNotification.getInstance(getApplicationContext());
 
                     //Update the notification's view
-                    if (networkQualityEntity == null) {
-                        customNotification.updateNetworkStatus(null);
-                    } else {
-                        customNotification.updateNetworkStatus(new NetworkQualityView.NetworkStatus(networkQualityEntity.getTransportType(), networkQualityEntity.getQualityScore()));
-                    }
+                    customNotification.updateNetworkStatus(networkStatus);
 
                     //Update the notification shown by the OS
                     customNotification.show(getApplicationContext());

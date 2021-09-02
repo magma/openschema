@@ -26,6 +26,7 @@
     <string name="network_primary_label">Current Network:</string>
     <string name="network_quality_label">Detected Quality:</string>
     <string name="network_unknown_label">No active network has been detected. Please try connecting to a network.</string>
+    <string name="network_measuring_label">Active network is being measured.</string>
     <string name="network_quality_measure_label">Measure Again</string>
 
     <string name="uuid_copied_toast">UUID copied to clipboard.</string>

@@ -75,7 +75,10 @@ public class NetworkQualityView extends ConstraintLayout {
         view.setColorFilter(color);
     }
 
+    //POJO class used to handle the view's displayed information.
     public static class NetworkStatus {
+        public static final int MEASURING_NETWORK = -2;
+
         public enum NetworkQuality {
             WEAK,
             GOOD,

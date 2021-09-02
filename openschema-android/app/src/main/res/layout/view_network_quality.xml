@@ -43,12 +43,12 @@
             android:layout_width="80dp"
             android:layout_height="0dp"
             android:layout_marginStart="16dp"
-            android:src='@{networkData == null ? @drawable/ic_network_unknown : networkData.mTransportType==NetworkCapabilities.TRANSPORT_WIFI ? @drawable/ic_network_wifi : @drawable/ic_network_cellular}'
+            android:src='@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? @drawable/ic_network_unknown : networkData.mTransportType==NetworkCapabilities.TRANSPORT_WIFI ? @drawable/ic_network_wifi : @drawable/ic_network_cellular}'
             app:layout_constraintBottom_toBottomOf="@id/network_quality_txt"
             app:layout_constraintEnd_toStartOf="@id/network_primary_txt"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/network_primary_label"
-            app:tint="@{networkData == null ? @color/primaryColor : networkData.mTransportType==NetworkCapabilities.TRANSPORT_WIFI ? @color/wifiColor : @color/cellularColor}"
+            app:tint="@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? @color/primaryColor : networkData.mTransportType==NetworkCapabilities.TRANSPORT_WIFI ? @color/wifiColor : @color/cellularColor}"
             tools:src="@drawable/ic_network_wifi"
             tools:tint="@color/wifiColor"
             />
@@ -62,7 +62,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:text="@string/network_primary_label"
-            android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
+            android:visibility="@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? View.INVISIBLE  : View.VISIBLE}"
             app:layout_constraintBottom_toTopOf="@id/network_primary_txt"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/network_primary_icon"
@@ -77,8 +77,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="4dp"
-            android:text='@{networkData == null ? "" : networkData.mTransportType==NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi" : "Cellular"}'
-            android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
+            android:text='@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? "" : networkData.mTransportType==NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi" : "Cellular"}'
+            android:visibility="@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? View.INVISIBLE  : View.VISIBLE}"
             app:layout_constraintBottom_toTopOf="@id/network_quality_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -95,7 +95,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginEnd="16dp"
             android:text="@string/network_quality_label"
-            android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
+            android:visibility="@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? View.INVISIBLE  : View.VISIBLE}"
             app:layout_constraintBottom_toTopOf="@id/network_quality_txt"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/network_primary_label"
@@ -109,14 +109,14 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
-            android:text='@{networkData == null ? "" : networkData.networkQualityString}'
-            android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
+            android:text='@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? "" : networkData.networkQualityString}'
+            android:visibility="@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? View.INVISIBLE  : View.VISIBLE}"
             app:layout_constraintBottom_toTopOf="@id/network_measure_btn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@id/network_primary_label"
             app:layout_constraintTop_toBottomOf="@id/network_quality_label"
-            tools:text="Good"
+            tools:text="Good (2.45)"
             />
 
         <com.google.android.material.textview.MaterialTextView
@@ -126,13 +126,14 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
-            android:text="@string/network_unknown_label"
-            android:visibility="@{networkData == null ? View.VISIBLE  : View.GONE}"
+            android:text="@{networkData == null ? @string/network_unknown_label  : @string/network_measuring_label}"
+            android:visibility="@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? View.VISIBLE  : View.GONE}"
             app:layout_constraintBottom_toBottomOf="@id/network_quality_txt"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/network_primary_icon"
             app:layout_constraintTop_toTopOf="@id/network_primary_label"
             app:layout_constraintVertical_chainStyle="packed"
+            tools:text="@string/network_unknown_label"
             tools:visibility="gone"
             />
 
@@ -143,7 +144,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="@string/network_quality_measure_label"
-            android:visibility="@{networkData == null ? View.INVISIBLE  : View.VISIBLE}"
+            android:visibility="@{networkData == null || networkData.mTransportType==NetworkStatus.MEASURING_NETWORK ? View.INVISIBLE  : View.VISIBLE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
