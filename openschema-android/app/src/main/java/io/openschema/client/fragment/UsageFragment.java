@@ -71,9 +71,6 @@ public class UsageFragment extends Fragment {
         });
 
         mBinding.usageNetworkQuality.setMeasureBtnClickListener(view1 -> {
-            //Set current network data to null while network is being measured.
-            //TODO: consider implementing a "measuring" state instead to prevent confusion.
-            mBinding.usageNetworkQuality.setNetworkData(null);
             mNetworkQualityViewModel.remeasureNetworkQuality();
         });
     }
@@ -103,12 +100,8 @@ public class UsageFragment extends Fragment {
         mBinding.setHourlyData(new UsageData(cellularTonnage, wifiTonnage));
     }
 
-    private void updateNetworkQualityView(NetworkQualityEntity networkQualityEntity) {
-        if (networkQualityEntity == null) {
-            mBinding.usageNetworkQuality.setNetworkData(null);
-        } else {
-            mBinding.usageNetworkQuality.setNetworkData(new NetworkQualityView.NetworkStatus(networkQualityEntity.getTransportType(), networkQualityEntity.getQualityScore()));
-        }
+    private void updateNetworkQualityView(NetworkQualityView.NetworkStatus networkStatus) {
+        mBinding.usageNetworkQuality.setNetworkData(networkStatus);
     }
 
     /**

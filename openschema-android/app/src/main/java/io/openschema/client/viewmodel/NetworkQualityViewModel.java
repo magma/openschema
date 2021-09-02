@@ -14,6 +14,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import io.openschema.client.view.NetworkQualityView;
 import io.openschema.mma.MobileMetricsService;
 import io.openschema.mma.data.MetricsRepository;
 import io.openschema.mma.data.entity.NetworkQualityEntity;
@@ -65,13 +66,16 @@ public class NetworkQualityViewModel extends AndroidViewModel {
     }
 
     public void remeasureNetworkQuality() {
+        //Notify mediator that we are remeasuring network quality
+        mActiveNetworkQuality.onRemeasure();
+
         //Calling startService with specified action to call method within active Service instance.
         Intent i = new Intent(getApplication(), MobileMetricsService.class);
         i.setAction(MobileMetricsService.ACTION_MEASURE_NETWORK_QUALITY);
         getApplication().startService(i);
     }
 
-    public LiveData<NetworkQualityEntity> getActiveNetworkQuality() {
+    public LiveData<NetworkQualityView.NetworkStatus> getActiveNetworkQuality() {
         return mActiveNetworkQuality;
     }
 
@@ -80,17 +84,19 @@ public class NetworkQualityViewModel extends AndroidViewModel {
         mConnectivityManager.unregisterNetworkCallback(mNetworkCallBack);
     }
 
-    private static class ActiveNetworkQuality extends MediatorLiveData<NetworkQualityEntity> {
+    private static class ActiveNetworkQuality extends MediatorLiveData<NetworkQualityView.NetworkStatus> {
 
         private NetworkQualityEntity mCurrentQualityEntity = null;
         private int mActiveNetworkType = NO_ACTIVE_NETWORK;
 
         public ActiveNetworkQuality(LiveData<NetworkQualityEntity> latestMeasurement, LiveData<Integer> activeNetworkExists) {
+            //Track the latest network quality measurement from the SDK
             addSource(latestMeasurement, networkQualityEntity -> {
                 mCurrentQualityEntity = networkQualityEntity;
                 update();
             });
 
+            //Track the network type of the currently active network
             addSource(activeNetworkExists, transportType -> {
                 mActiveNetworkType = transportType;
                 update();
@@ -99,13 +105,24 @@ public class NetworkQualityViewModel extends AndroidViewModel {
             setValue(null);
         }
 
+        public void onRemeasure() {
+            setValue(new NetworkQualityView.NetworkStatus(NetworkQualityView.NetworkStatus.MEASURING_NETWORK, 0));
+        }
+
         private void update() {
-            if (mActiveNetworkType != NO_ACTIVE_NETWORK &&
-                    mCurrentQualityEntity != null &&
-                    mCurrentQualityEntity.getTransportType() == mActiveNetworkType) {
-                //TODO: Might be pulling the previous measurement value in case the device connected to the same network type twice in a row
-                setValue(mCurrentQualityEntity);
+            //Make sure that the latest network quality entity we receive from the DB matches the currently active network type
+            if (mActiveNetworkType != NO_ACTIVE_NETWORK) {
+                if (mCurrentQualityEntity != null &&
+                        mCurrentQualityEntity.getTransportType() == mActiveNetworkType) {
+                    //Valid measurement detected
+                    //TODO: Might be pulling the previous measurement value in case the device connected to the same network type twice in a row
+                    setValue(new NetworkQualityView.NetworkStatus(mActiveNetworkType, mCurrentQualityEntity.getQualityScore()));
+                } else {
+                    //Network is being measured
+                    setValue(new NetworkQualityView.NetworkStatus(NetworkQualityView.NetworkStatus.MEASURING_NETWORK, 0));
+                }
             } else {
+                //No active network detected
                 setValue(null);
             }
         }

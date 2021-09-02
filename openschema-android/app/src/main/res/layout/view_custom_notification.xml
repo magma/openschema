@@ -37,7 +37,7 @@
         android:layout_below="@id/notification_network_primary"
         android:layout_alignLeft="@id/notification_network_primary"
 
-        android:text='Detected Quality: Good'
+        android:text='Detected Quality: Good (2.45)'
         />
 
 </RelativeLayout>

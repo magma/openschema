@@ -67,16 +67,22 @@ public class CustomNotification {
 
     public void updateNetworkStatus(NetworkQualityView.NetworkStatus networkStatus) {
         if (networkStatus != null) {
-            int networkIcon = networkStatus.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? R.drawable.ic_notification_network_wifi : R.drawable.ic_notification_network_cellular;
+            if (networkStatus.mTransportType != NetworkQualityView.NetworkStatus.MEASURING_NETWORK) {
+                int networkIcon = networkStatus.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? R.drawable.ic_notification_network_wifi : R.drawable.ic_notification_network_cellular;
 
-            String networkPrimary = "Current Network: ";
-            networkPrimary += networkStatus.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi" : "Cellular";
+                String networkPrimary = "Current Network: ";
+                networkPrimary += networkStatus.mTransportType == NetworkCapabilities.TRANSPORT_WIFI ? "Wi-Fi" : "Cellular";
 
-            String networkQuality = "Detected Quality: " + networkStatus.getNetworkQualityString();
+                String networkQuality = "Detected Quality: " + networkStatus.getNetworkQualityString();
 
-            mNotificationView.setImageViewResource(R.id.notification_network_primary_icon, networkIcon);
-            mNotificationView.setTextViewText(R.id.notification_network_primary, networkPrimary);
-            mNotificationView.setTextViewText(R.id.notification_network_quality, networkQuality);
+                mNotificationView.setImageViewResource(R.id.notification_network_primary_icon, networkIcon);
+                mNotificationView.setTextViewText(R.id.notification_network_primary, networkPrimary);
+                mNotificationView.setTextViewText(R.id.notification_network_quality, networkQuality);
+            } else {
+                mNotificationView.setImageViewResource(R.id.notification_network_primary_icon, R.drawable.ic_notification_network_unknown);
+                mNotificationView.setTextViewText(R.id.notification_network_primary, "Active network is being measured.");
+                mNotificationView.setTextViewText(R.id.notification_network_quality, "");
+            }
         } else {
             mNotificationView.setImageViewResource(R.id.notification_network_primary_icon, R.drawable.ic_notification_network_unknown);
             mNotificationView.setTextViewText(R.id.notification_network_primary, "No active network detected.");
