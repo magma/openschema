@@ -24,7 +24,7 @@ public class DnsTester {
 
     private static final String[] TEST_DNS_SERVERS = {"8.8.8.8", "9.9.9.9", "1.1.1.1", "185.228.168.9", "76.76.19.19"};
     private static final byte[][] TEST_DOMAIN_REQUESTS;
-    private static final int TEST_DOMAIN_COUNT = 5;
+    private static final int TEST_DOMAIN_COUNT = 10;
     private static String[] TEST_DOMAINS;
 
     static {

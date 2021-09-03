@@ -241,8 +241,8 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         }
         double scaledTestServersRttAverage = scaledTestServersRttTotal / scaledTestServersRtt.length;
 
-        double qosScore = 0.7 * scaledDefaultServerRTT + 0.3 * scaledTestServersRttAverage;
-
+        double qosScore = 1.0 * scaledDefaultServerRTT + 0.0 * scaledTestServersRttAverage;
+        Log.d(TAG, "QoS Score with 70 - 30 formula:\n" + Double.toString( 0.7 * scaledDefaultServerRTT + 0.3 * scaledTestServersRttAverage));
         Log.d(TAG, "Final QoS Score:\n" + Double.toString(qosScore));
 
         return qosScore;
