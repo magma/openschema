@@ -272,6 +272,9 @@ public class NetworkQualityMetrics extends AsyncMetrics {
 
         for(int i = 0; i < defaultDNStRTTS.size(); i++) {
             scaledDefaultDNSRTTS[i] = (pivotScore * minDefaultRttServer.getRttMean())/defaultDNStRTTS.get(i);
+            if(scaledDefaultDNSRTTS[i] < 1.0) scaledDefaultDNSRTTS[i] = 1.0;
+            if(scaledDefaultDNSRTTS[i] > 5.0) scaledDefaultDNSRTTS[i] = 5.0;
+
         }
 
         //Step 6: Calculate mean of all standard deviations
