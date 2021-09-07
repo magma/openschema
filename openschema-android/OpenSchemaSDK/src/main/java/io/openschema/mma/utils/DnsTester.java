@@ -95,6 +95,8 @@ public class DnsTester {
         Log.d(TAG, "MMA: DNS RTT Average Result " + qosInfo.getDnsServer() + ": " + qosInfo.getRttMean());
         Log.d(TAG, "MMA: DNS RTT variance " + qosInfo.getDnsServer() + ": " + qosInfo.getRttVariance());
         Log.d(TAG, "MMA: DNS RTT failures " + qosInfo.getDnsServer() + ": " + qosInfo.getTotalFailedRequests());
+        Log.d(TAG, "MMA: DNS RTT SuccessRate " + qosInfo.getDnsServer() + ": " + qosInfo.getSuccessRate());
+        Log.d(TAG, "MMA: DNS RTT StdDev " + qosInfo.getDnsServer() + ": " + qosInfo.getRttStdDev());
         return qosInfo;
     }
 

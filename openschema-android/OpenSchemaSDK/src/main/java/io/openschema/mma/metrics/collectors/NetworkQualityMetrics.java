@@ -22,6 +22,7 @@ import android.net.NetworkRequest;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -176,73 +177,125 @@ public class NetworkQualityMetrics extends AsyncMetrics {
     private double calculateQualityScore(Pair<List<QosInfo>, List<QosInfo>> rttTestsResults) {
 
         //For the default DNS we will be using the one that returns the lowest RTTs for now from the ones returned from mDnsServersDetector.getServers()
-        //Step 1: Get the min RTT from default DNS
+        //Step 1: Get the min RTT from default DNS. And make sure test is usable:
+        //1- each dns test should have at least 50% success to be considered for the calculation.
+        //2- Default DNS tes should be success
+        //3- at least 50% of non default DNS test should be success
 
         QosInfo minDefaultRttServer = rttTestsResults.second.get(0);
-        long minRtt = minDefaultRttServer.getMinRTTValue();
 
         for (int i = 1; i < rttTestsResults.second.size(); i++) {
-            //TODO: Handle 0(failed RTTS) in a better way
+            //TODO: Handle 0(failed RTT's) in a better way
+            if(rttTestsResults.second.get(i).getSuccessRate() < 0.5) {
+                continue;
+            }
+
             if (rttTestsResults.second.get(i).getMinRTTValue() == 0) {
                 continue;
             }
             if(minDefaultRttServer.getMinRTTValue() == 0){
-                minRtt = rttTestsResults.second.get(i).getMinRTTValue();
                 minDefaultRttServer = rttTestsResults.second.get(i);
             }
-            if (rttTestsResults.second.get(i).getMinRTTValue() < minRtt) {
-                minRtt = rttTestsResults.second.get(i).getMinRTTValue();
+            if (rttTestsResults.second.get(i).getMinRTTValue() < minDefaultRttServer.getMinRTTValue()) {
                 minDefaultRttServer = rttTestsResults.second.get(i);
             }
         }
-        Log.d(TAG, "Default Min RTT:\n" + Long.toString(minRtt));
 
-        //Step 2: Map Min RTT of the default server to scoring scale, for now we call this scale Pivot Scale.
+        //TODO: Handle no default DNS, Maybe throw an error.
+        //Conditions Default DNS
+        //Default DNS has to have a successRate of 0.5 or greater.
+        if(minDefaultRttServer.getRttMean() == 0 || minDefaultRttServer.getSuccessRate() < 0.5){
+            Log.d(TAG, "No default DNS matches the criteria to calculate QoS\n");
+            return -1;
+        }
+
+        int totalSuccessfulHardcodedDNS = 0;
+        for (int i = 0; i < rttTestsResults.first.size(); i++) {
+            if(rttTestsResults.first.get(i).getSuccessRate() >= 0.5) {
+                totalSuccessfulHardcodedDNS++;
+            }
+        }
+        Log.d(TAG, "Hardcoded DNSs Success Rate: " + Integer.toString(totalSuccessfulHardcodedDNS) + " and Total hardcoded DNSs: " + Integer.toString(rttTestsResults.first.size()));
+
+        double totalSuccessfulHardcodedDNSpercentage = totalSuccessfulHardcodedDNS/rttTestsResults.first.size();
+        if(totalSuccessfulHardcodedDNSpercentage < 0.5) {
+            Log.d(TAG, "Hardcoded Dns Servers success rate:\n" + Double.toString(totalSuccessfulHardcodedDNSpercentage));
+            return -1;
+        }
+
+        Log.d(TAG, "Default DNS Success Rate:\n" + Double.toString(minDefaultRttServer.getSuccessRate()));
+        Log.d(TAG, "Default Min RTT:\n" + Long.toString(minDefaultRttServer.getMinRTTValue()));
+
+        //Step 2: Calculate confidence Factor: (percentage of non default success test) + (average of success's of all tests) / 2
+        double confidenceFactor;
+        double successfulNonDefaultTests = 0;
+        double nonDefaultSuccessRate;
+        double averageSuccessRate = 0.0;
+
+        for (int i = 0; i < rttTestsResults.first.size(); i++) {
+
+            averageSuccessRate = averageSuccessRate + rttTestsResults.first.get(i).getSuccessRate();
+
+            if(rttTestsResults.first.get(i).getSuccessRate() >= 0.5) {
+                successfulNonDefaultTests = successfulNonDefaultTests++;
+            }
+        }
+
+        nonDefaultSuccessRate = successfulNonDefaultTests/rttTestsResults.first.size();
+        averageSuccessRate = (averageSuccessRate + minDefaultRttServer.getSuccessRate())/(rttTestsResults.first.size()+1);
+
+        confidenceFactor = nonDefaultSuccessRate + (averageSuccessRate/2);
+        Log.d(TAG, "QOS Confidence Factor:\n" + Double.toString(confidenceFactor));
+
+        //Step 3: Clean Data
+        minDefaultRttServer.cleanData();
+        for (int i = 0; i < rttTestsResults.first.size(); i++) {
+            rttTestsResults.first.get(i).cleanData();
+        }
+
+        //Step 4: Map Mean RTT of the default server to scoring scale, for now we call this scale Pivot Scale.
 
         int pivotScore = 0;
         ///Not using switch since it doesn't accept long type
-        if (minRtt < 25) pivotScore = 5;
-        else if (minRtt >= 25 && minRtt < 50) pivotScore = 4;
-        else if (minRtt >= 50 && minRtt < 75) pivotScore = 3;
-        else if (minRtt >= 75 && minRtt < 100) pivotScore = 2;
-        else if (minRtt >= 100) pivotScore = 1;
+        if (minDefaultRttServer.getRttMean() < 50) pivotScore = 5;
+        else if (minDefaultRttServer.getRttMean() >= 50 && minDefaultRttServer.getRttMean() < 75) pivotScore = 4;
+        else if (minDefaultRttServer.getRttMean() >= 75 && minDefaultRttServer.getRttMean() < 100) pivotScore = 3;
+        else if (minDefaultRttServer.getRttMean() >= 100 && minDefaultRttServer.getRttMean() < 125) pivotScore = 2;
+        else if (minDefaultRttServer.getRttMean() >= 125) pivotScore = 1;
 
         Log.d(TAG, "Pivot Score:\n" + Integer.toString(pivotScore));
 
-        //Step 3: Scale all DNS hardCoded Servers using pivot value and scale Default Server using pivot too. If value is greater than 5 make it 5 if less than 1 make it 1.
+        //Step 5: Scale other result of default DNS
 
-        double scaledDefaultServerRTT = (minDefaultRttServer.getMinRTTValue() * pivotScore) / minDefaultRttServer.getRttMean();
-        if (scaledDefaultServerRTT > 5) scaledDefaultServerRTT = 5.0;
-        else if (scaledDefaultServerRTT < 1) scaledDefaultServerRTT = 1.0;
+        long[] defaultDNStRTTS = minDefaultRttServer.getRttValues();
+        double[] scaledDefaultDNSRTTS = new double[defaultDNStRTTS.length];
 
-        double[] scaledTestServersRtt = new double[rttTestsResults.first.size()];
+        for(int i = 0; i < defaultDNStRTTS.length; i++) {
+            scaledDefaultDNSRTTS[i] = (pivotScore * minDefaultRttServer.getRttMean())/defaultDNStRTTS[i];
+        }
+
+        //Step 6: Calculate mean of all standard deviations
+        double averageStdDev = 0.0;
         for (int i = 0; i < rttTestsResults.first.size(); i++) {
-            if (rttTestsResults.first.get(i).getRttMean() > 0) {
-                scaledTestServersRtt[i] = (minDefaultRttServer.getMinRTTValue() * pivotScore) / rttTestsResults.first.get(i).getRttMean();
-                if (scaledTestServersRtt[i] > 5) scaledTestServersRtt[i] = 5.0;
-                else if (scaledTestServersRtt[i] < 1) scaledTestServersRtt[i] = 1.0;
-            } else if (Double.isNaN(rttTestsResults.first.get(i).getRttMean())){
-                //TODO: Ignore 0 values
-                //Holder to handle 0
-                scaledTestServersRtt[i] = 1;
-            } else {
-                //TODO: Ignore 0 values
-                //Holder to handle 0
-                scaledTestServersRtt[i] = 1;
-            }
+            averageStdDev = averageStdDev + rttTestsResults.first.get(i).getRttStdDev();
         }
 
-        //Step 4 Calculate final score using 70% of Default and 30% of other average
+        averageStdDev = (averageStdDev + minDefaultRttServer.getRttStdDev())/(rttTestsResults.first.size() +1);
 
-        double scaledTestServersRttTotal = 0;
+        //Step 7: Map step 6 result to pivot range:
+        int averageStdDevScore = 0;
+        ///Not using switch since it doesn't accept long type
+        if (averageStdDev < 50) averageStdDevScore = 5;
+        else if (averageStdDev >= 50 && averageStdDev < 75) averageStdDevScore = 4;
+        else if (averageStdDev >= 75 && averageStdDev < 100) averageStdDevScore = 3;
+        else if (averageStdDev >= 100 && averageStdDev < 125) averageStdDevScore = 2;
+        else if (averageStdDev >= 125) averageStdDevScore = 1;
 
-        for (int i = 0; i < scaledTestServersRtt.length; i++) {
-            scaledTestServersRttTotal = scaledTestServersRttTotal + scaledTestServersRtt[i];
-        }
-        double scaledTestServersRttAverage = scaledTestServersRttTotal / scaledTestServersRtt.length;
+        Log.d(TAG, "Average StdDev Score:\n" + Integer.toString(pivotScore));
 
-        double qosScore = 1.0 * scaledDefaultServerRTT + 0.0 * scaledTestServersRttAverage;
-        Log.d(TAG, "QoS Score with 70 - 30 formula:\n" + Double.toString( 0.7 * scaledDefaultServerRTT + 0.3 * scaledTestServersRttAverage));
+        //Step 8: Calculate QoS score -> .7(average of step5) + .3 of step 7
+        double averageScaledDefaultDNSRTTS = Arrays.stream(scaledDefaultDNSRTTS).average().orElse(Double.NaN);
+        double qosScore = 0.7 * averageScaledDefaultDNSRTTS + 0.3 * averageStdDevScore;
         Log.d(TAG, "Final QoS Score:\n" + Double.toString(qosScore));
 
         return qosScore;
