@@ -14,7 +14,7 @@ public class QosInfo {
     private final int mTotalFailedRequests;
     private long mMinRTTValue;
     private double mRttStdDev;
-    private final float mSuccessRate;
+    private final double mSuccessRate;
 
     public QosInfo(String dnsServer, ArrayList<Long> rttValues, int totalFailedRequests) {
         mDnsServer = dnsServer;
@@ -58,9 +58,9 @@ public class QosInfo {
         return Math.sqrt(mRttVariance);
     }
 
-    private float calculateSuccessRate() {
-        if(mRttValues.isEmpty()) return 0;
-        return (float)(mRttValues.size() - mTotalFailedRequests)/mRttValues.size();
+    private double calculateSuccessRate() {
+        if(mRttValues.isEmpty()) return 0.0;
+        return (double)(mRttValues.size() - mTotalFailedRequests)/mRttValues.size();
     }
 
     public void cleanData() {

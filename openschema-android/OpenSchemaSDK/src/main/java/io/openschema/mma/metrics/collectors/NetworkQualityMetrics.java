@@ -205,8 +205,8 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         //Conditions Default DNS
         //Default DNS has to have a successRate of 0.5 or greater.
         if(minDefaultRttServer.getRttMean() == 0 || minDefaultRttServer.getSuccessRate() < 0.5){
-            Log.d(TAG, "No default DNS matches the criteria to calculate QoS\n");
-            return -1;
+            Log.d(TAG, "Default DNS success Rate is lower than 50%\n");
+            //return -1;
         }
 
         double totalSuccessfulHardcodedDNS = 0.0;
@@ -219,8 +219,8 @@ public class NetworkQualityMetrics extends AsyncMetrics {
 
         double totalSuccessfulHardcodedDNSPercentage = totalSuccessfulHardcodedDNS/rttTestsResults.first.size();
         if(totalSuccessfulHardcodedDNSPercentage < 0.5) {
-            Log.d(TAG, "Hardcoded Dns Servers success rate:\n" + Double.toString(totalSuccessfulHardcodedDNSPercentage));
-            return -1;
+            Log.d(TAG, "Hardcoded Dns Servers success rate is lower than 50%:\n" + Double.toString(totalSuccessfulHardcodedDNSPercentage));
+            //return -1;
         }
 
         Log.d(TAG, "Default DNS Success Rate:\n" + minDefaultRttServer.getSuccessRate());
@@ -228,7 +228,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
 
         //Step 2: Calculate confidence Factor: (percentage of non default success test) + (average of success's of all tests) / 2
         double confidenceFactor;
-        double successfulNonDefaultTests = 0;
+        double successfulNonDefaultTests = 0.0;
         double nonDefaultSuccessRate;
         double averageSuccessRate = 0.0;
 
@@ -237,12 +237,14 @@ public class NetworkQualityMetrics extends AsyncMetrics {
             averageSuccessRate = averageSuccessRate + rttTestsResults.first.get(i).getSuccessRate();
 
             if(rttTestsResults.first.get(i).getSuccessRate() >= 0.5) {
-                successfulNonDefaultTests = successfulNonDefaultTests++;
+                successfulNonDefaultTests = successfulNonDefaultTests + 1.0;
             }
         }
 
         nonDefaultSuccessRate = successfulNonDefaultTests/rttTestsResults.first.size();
+        Log.d(TAG, "QOS Confidence Percentage of non default success tests: " + nonDefaultSuccessRate);
         averageSuccessRate = (averageSuccessRate + minDefaultRttServer.getSuccessRate())/(rttTestsResults.first.size()+1);
+        Log.d(TAG, "QOS Confidence average of success of all tests: " + averageSuccessRate);
 
         confidenceFactor = nonDefaultSuccessRate + (averageSuccessRate/2);
         Log.d(TAG, "QOS Confidence Factor:\n" + confidenceFactor);
