@@ -215,16 +215,16 @@ public class NetworkQualityMetrics extends AsyncMetrics {
                 totalSuccessfulHardcodedDNS++;
             }
         }
-        Log.d(TAG, "Hardcoded DNSs Success Rate: " + Integer.toString(totalSuccessfulHardcodedDNS) + " and Total hardcoded DNSs: " + Integer.toString(rttTestsResults.first.size()));
+        Log.d(TAG, "Hardcoded DNSs Total successful Tests: " + totalSuccessfulHardcodedDNS + " and Total hardcoded DNSs: " + rttTestsResults.first.size());
 
-        double totalSuccessfulHardcodedDNSpercentage = totalSuccessfulHardcodedDNS/rttTestsResults.first.size();
-        if(totalSuccessfulHardcodedDNSpercentage < 0.5) {
-            Log.d(TAG, "Hardcoded Dns Servers success rate:\n" + Double.toString(totalSuccessfulHardcodedDNSpercentage));
+        /*double totalSuccessfulHardcodedDNSPercentage = totalSuccessfulHardcodedDNS/rttTestsResults.first.size();
+        if(totalSuccessfulHardcodedDNSPercentage < 0.5) {
+            Log.d(TAG, "Hardcoded Dns Servers success rate:\n" + Double.toString(totalSuccessfulHardcodedDNSPercentage));
             return -1;
-        }
+        }*/
 
-        Log.d(TAG, "Default DNS Success Rate:\n" + Double.toString(minDefaultRttServer.getSuccessRate()));
-        Log.d(TAG, "Default Min RTT:\n" + Long.toString(minDefaultRttServer.getMinRTTValue()));
+        Log.d(TAG, "Default DNS Success Rate:\n" + minDefaultRttServer.getSuccessRate());
+        Log.d(TAG, "Default Min RTT:\n" + minDefaultRttServer.getMinRTTValue());
 
         //Step 2: Calculate confidence Factor: (percentage of non default success test) + (average of success's of all tests) / 2
         double confidenceFactor;
@@ -245,7 +245,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         averageSuccessRate = (averageSuccessRate + minDefaultRttServer.getSuccessRate())/(rttTestsResults.first.size()+1);
 
         confidenceFactor = nonDefaultSuccessRate + (averageSuccessRate/2);
-        Log.d(TAG, "QOS Confidence Factor:\n" + Double.toString(confidenceFactor));
+        Log.d(TAG, "QOS Confidence Factor:\n" + confidenceFactor);
 
         //Step 3: Clean Data
         minDefaultRttServer.cleanData();
@@ -263,15 +263,15 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         else if (minDefaultRttServer.getRttMean() >= 100 && minDefaultRttServer.getRttMean() < 125) pivotScore = 2;
         else if (minDefaultRttServer.getRttMean() >= 125) pivotScore = 1;
 
-        Log.d(TAG, "Pivot Score:\n" + Integer.toString(pivotScore));
+        Log.d(TAG, "Pivot Score:\n" + pivotScore);
 
         //Step 5: Scale other result of default DNS
 
-        long[] defaultDNStRTTS = minDefaultRttServer.getRttValues();
-        double[] scaledDefaultDNSRTTS = new double[defaultDNStRTTS.length];
+        ArrayList<Long> defaultDNStRTTS = minDefaultRttServer.getRttValues();
+        double[] scaledDefaultDNSRTTS = new double[defaultDNStRTTS.size()];
 
-        for(int i = 0; i < defaultDNStRTTS.length; i++) {
-            scaledDefaultDNSRTTS[i] = (pivotScore * minDefaultRttServer.getRttMean())/defaultDNStRTTS[i];
+        for(int i = 0; i < defaultDNStRTTS.size(); i++) {
+            scaledDefaultDNSRTTS[i] = (pivotScore * minDefaultRttServer.getRttMean())/defaultDNStRTTS.get(i);
         }
 
         //Step 6: Calculate mean of all standard deviations
@@ -291,12 +291,12 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         else if (averageStdDev >= 100 && averageStdDev < 125) averageStdDevScore = 2;
         else if (averageStdDev >= 125) averageStdDevScore = 1;
 
-        Log.d(TAG, "Average StdDev Score:\n" + Integer.toString(pivotScore));
+        Log.d(TAG, "Average StdDev Score:\n" + averageStdDevScore);
 
         //Step 8: Calculate QoS score -> .7(average of step5) + .3 of step 7
         double averageScaledDefaultDNSRTTS = Arrays.stream(scaledDefaultDNSRTTS).average().orElse(Double.NaN);
         double qosScore = 0.7 * averageScaledDefaultDNSRTTS + 0.3 * averageStdDevScore;
-        Log.d(TAG, "Final QoS Score:\n" + Double.toString(qosScore));
+        Log.d(TAG, "Final QoS Score:\n" + qosScore);
 
         return qosScore;
     }

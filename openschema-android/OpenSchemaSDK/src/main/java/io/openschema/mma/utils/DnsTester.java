@@ -18,7 +18,7 @@ import androidx.annotation.WorkerThread;
 
 public class DnsTester {
     private static final String TAG = "DnsTester";
-    private static final int TIMEOUT = 5000;
+    private static final int TIMEOUT = 2000;
     private static final int DNS_PORT = 53;
     private static final Short QUERY_TYPE = 0x0001; //Type A
 
@@ -77,19 +77,22 @@ public class DnsTester {
     private static QosInfo requestAllDomains(String dnsServer) {
         //TODO: Implement Retries
 
-        long[] individualValues = new long[TEST_DOMAINS.length];
+        ArrayList<Long> individualValues = new ArrayList<Long>();
         int failures = 0;
 
         for (int i = 0; i < TEST_DOMAINS.length; i++) {
+            Log.d(TAG, "MMA: DNS " + dnsServer + " query number : " + i);
             try {
-                individualValues[i] = requestDomain(dnsServer, TEST_DOMAIN_REQUESTS[i]);
-                Log.d(TAG, "MMA: DNS RTT Result " + dnsServer + " on " + TEST_DOMAINS[i] + ": " + individualValues[i]);
+                long rtt = requestDomain(dnsServer, TEST_DOMAIN_REQUESTS[i]);
+                individualValues.add(rtt);
+                Log.d(TAG, "MMA: DNS RTT Result " + dnsServer + " on " + TEST_DOMAINS[i] + ": " + individualValues.get(i));
             } catch (IOException e) {
                 failures++;
                 Log.e(TAG, "MMA: DNS RTT Error " + dnsServer + ": " + e);
             }
         }
 
+        Log.d(TAG, "MMA: DNS RTT values size " + dnsServer + ": " + individualValues.size());
         QosInfo qosInfo = new QosInfo(dnsServer, individualValues, failures);
         Log.d(TAG, "MMA: DNS RTT Min Result " + qosInfo.getDnsServer() + ": " + qosInfo.getMinRTTValue());
         Log.d(TAG, "MMA: DNS RTT Average Result " + qosInfo.getDnsServer() + ": " + qosInfo.getRttMean());
