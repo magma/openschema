@@ -60,7 +60,7 @@ public class QosInfo {
 
     private float calculateSuccessRate() {
         if(mRttValues.isEmpty()) return 0;
-        return (mRttValues.size() - mTotalFailedRequests)/mRttValues.size();
+        return (float)(mRttValues.size() - mTotalFailedRequests)/mRttValues.size();
     }
 
     public void cleanData() {

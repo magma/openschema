@@ -18,7 +18,7 @@ import androidx.annotation.WorkerThread;
 
 public class DnsTester {
     private static final String TAG = "DnsTester";
-    private static final int TIMEOUT = 200;
+    private static final int TIMEOUT = 5000;
     private static final int DNS_PORT = 53;
     private static final Short QUERY_TYPE = 0x0001; //Type A
 

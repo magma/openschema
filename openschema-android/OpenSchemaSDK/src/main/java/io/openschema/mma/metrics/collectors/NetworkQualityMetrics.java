@@ -209,19 +209,19 @@ public class NetworkQualityMetrics extends AsyncMetrics {
             return -1;
         }
 
-        int totalSuccessfulHardcodedDNS = 0;
+        double totalSuccessfulHardcodedDNS = 0.0;
         for (int i = 0; i < rttTestsResults.first.size(); i++) {
             if(rttTestsResults.first.get(i).getSuccessRate() >= 0.5) {
-                totalSuccessfulHardcodedDNS++;
+                totalSuccessfulHardcodedDNS = totalSuccessfulHardcodedDNS + 1.0;
             }
         }
         Log.d(TAG, "Hardcoded DNSs Total successful Tests: " + totalSuccessfulHardcodedDNS + " and Total hardcoded DNSs: " + rttTestsResults.first.size());
 
-        /*double totalSuccessfulHardcodedDNSPercentage = totalSuccessfulHardcodedDNS/rttTestsResults.first.size();
+        double totalSuccessfulHardcodedDNSPercentage = totalSuccessfulHardcodedDNS/rttTestsResults.first.size();
         if(totalSuccessfulHardcodedDNSPercentage < 0.5) {
             Log.d(TAG, "Hardcoded Dns Servers success rate:\n" + Double.toString(totalSuccessfulHardcodedDNSPercentage));
             return -1;
-        }*/
+        }
 
         Log.d(TAG, "Default DNS Success Rate:\n" + minDefaultRttServer.getSuccessRate());
         Log.d(TAG, "Default Min RTT:\n" + minDefaultRttServer.getMinRTTValue());
