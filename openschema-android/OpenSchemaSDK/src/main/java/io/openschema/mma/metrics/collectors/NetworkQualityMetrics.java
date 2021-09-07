@@ -297,7 +297,9 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         Log.d(TAG, "Average StdDev Score:\n" + averageStdDevScore);
 
         //Step 8: Calculate QoS score -> .7(average of step5) + .3 of step 7
-        double averageScaledDefaultDNSRTTS = Arrays.stream(scaledDefaultDNSRTTS).average().orElse(Double.NaN);
+        double averageScaledDefaultDNSRTTS = Arrays.stream(scaledDefaultDNSRTTS).average().orElse(0.0);
+        if (averageScaledDefaultDNSRTTS > 5.0) averageScaledDefaultDNSRTTS = 5.0;
+        if (averageScaledDefaultDNSRTTS < 1.0) averageScaledDefaultDNSRTTS = 1.0;
         double qosScore = 0.7 * averageScaledDefaultDNSRTTS + 0.3 * averageStdDevScore;
         Log.d(TAG, "Final QoS Score:\n" + qosScore);
 
