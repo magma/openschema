@@ -10,4 +10,12 @@ let customMetricSchema = new Schema({
     identifier: identifierSchema
 })
 
-module.exports = mongoose.model(`CustomMetric`, customMetricSchema)
+let model = mongoose.model(`CustomMetric`, customMetricSchema)
+
+async function handleRequestBody(body) {
+    //TODO: implement custom metric handling
+    console.log(`Error: Custom metric handling hasn't been implemented yet.`)
+}
+
+exports.model = model
+exports.handleRequestBody = handleRequestBody

@@ -41,15 +41,11 @@ public class DeviceBootReceiver extends BroadcastReceiver {
 //                NetworkQualityViewModel networkQualityViewModel = new ViewModelProvider(context.getApplicationContext()).get(NetworkQualityViewModel.class);
                 NetworkQualityViewModel networkQualityViewModel = new NetworkQualityViewModel((Application) context.getApplicationContext());
 
-                networkQualityViewModel.getActiveNetworkQuality().observeForever(networkQualityEntity -> {
+                networkQualityViewModel.getActiveNetworkQuality().observeForever(networkStatus -> {
                     CustomNotification customNotification = CustomNotification.getInstance(context.getApplicationContext());
 
                     //Update the notification's view
-                    if (networkQualityEntity == null) {
-                        customNotification.updateNetworkStatus(null);
-                    } else {
-                        customNotification.updateNetworkStatus(new NetworkQualityView.NetworkStatus(networkQualityEntity.getTransportType(), networkQualityEntity.getQualityScore()));
-                    }
+                    customNotification.updateNetworkStatus(networkStatus);
 
                     //Update the notification shown by the OS
                     customNotification.show(context.getApplicationContext());

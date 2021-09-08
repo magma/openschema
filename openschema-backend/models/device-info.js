@@ -24,5 +24,26 @@ let deviceInfoSchema = new Schema({
     collection: openschemaMetricName
 })
 
-exports.model = mongoose.model(`DeviceInfo`, deviceInfoSchema)
+let model = mongoose.model(`DeviceInfo`, deviceInfoSchema)
+
+async function handleRequestBody(body) {
+    let newEntry = {
+        metrics: body.metrics,
+        identifier: body.identifier,
+        timestamp: body.timestamp
+    }
+
+    //TODO: remove
+    console.log(newEntry)
+    console.log(`Saving entry...`)
+
+    let storedEntry = await new model(newEntry)
+        .save()
+        .catch(e => console.log('Error: ', e.message));
+
+    return storedEntry != null
+}
+
+exports.model = model
+exports.handleRequestBody = handleRequestBody
 exports.metricName = openschemaMetricName
