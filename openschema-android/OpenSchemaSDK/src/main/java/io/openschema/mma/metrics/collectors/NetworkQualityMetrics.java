@@ -242,11 +242,8 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         }
 
         nonDefaultSuccessRate = successfulNonDefaultTests/rttTestsResults.first.size();
-        Log.d(TAG, "QOS Confidence Percentage of non default success tests: " + nonDefaultSuccessRate);
         averageSuccessRate = (averageSuccessRate + minDefaultRttServer.getSuccessRate())/(rttTestsResults.first.size()+1);
-        Log.d(TAG, "QOS Confidence average of success of all tests: " + averageSuccessRate);
-
-        confidenceFactor = nonDefaultSuccessRate + (averageSuccessRate/2);
+        confidenceFactor = (nonDefaultSuccessRate + averageSuccessRate)/2;
         Log.d(TAG, "QOS Confidence Factor:\n" + confidenceFactor);
 
         //Step 3: Clean Data
@@ -259,9 +256,9 @@ public class NetworkQualityMetrics extends AsyncMetrics {
 
         int pivotScore = 0;
         ///Not using switch since it doesn't accept long type
-        if (minDefaultRttServer.getRttMean() < 50) pivotScore = 5;
-        else if (minDefaultRttServer.getRttMean() >= 50 && minDefaultRttServer.getRttMean() < 75) pivotScore = 4;
-        else if (minDefaultRttServer.getRttMean() >= 75 && minDefaultRttServer.getRttMean() < 100) pivotScore = 3;
+        if (minDefaultRttServer.getRttMean() < 25) pivotScore = 5;
+        else if (minDefaultRttServer.getRttMean() >= 25 && minDefaultRttServer.getRttMean() < 50) pivotScore = 4;
+        else if (minDefaultRttServer.getRttMean() >= 50 && minDefaultRttServer.getRttMean() < 100) pivotScore = 3;
         else if (minDefaultRttServer.getRttMean() >= 100 && minDefaultRttServer.getRttMean() < 125) pivotScore = 2;
         else if (minDefaultRttServer.getRttMean() >= 125) pivotScore = 1;
 
@@ -290,9 +287,9 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         //Step 7: Map step 6 result to pivot range:
         int averageStdDevScore = 0;
         ///Not using switch since it doesn't accept long type
-        if (averageStdDev < 50) averageStdDevScore = 5;
-        else if (averageStdDev >= 50 && averageStdDev < 75) averageStdDevScore = 4;
-        else if (averageStdDev >= 75 && averageStdDev < 100) averageStdDevScore = 3;
+        if (averageStdDev < 25) averageStdDevScore = 5;
+        else if (averageStdDev >= 25 && averageStdDev < 50) averageStdDevScore = 4;
+        else if (averageStdDev >= 50 && averageStdDev < 100) averageStdDevScore = 3;
         else if (averageStdDev >= 100 && averageStdDev < 125) averageStdDevScore = 2;
         else if (averageStdDev >= 125) averageStdDevScore = 1;
 
