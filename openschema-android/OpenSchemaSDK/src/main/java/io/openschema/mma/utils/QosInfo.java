@@ -25,7 +25,6 @@ public class QosInfo {
         mRttVariance = calculateVariance();
         mRttStdDev = calculateStandardDeviation();
         mSuccessRate = calculateSuccessRate();
-        Log.d(TAG, "QoSInfo object created successfully for DNS: " + mDnsServer);
     }
 
     private long getMinRTT() {
@@ -68,18 +67,20 @@ public class QosInfo {
         double plusStdDev = mRttMean + mRttStdDev;
         double minusStdDev = mRttMean - mRttStdDev;
 
-        Log.d(TAG, "Cleaning DNS: " + mDnsServer);
-        Log.d(TAG, "Mean + StdDev: " + plusStdDev);
-        Log.d(TAG, "Mean - StdDev: " + minusStdDev);
+        //TODO: cleanup test logs
+//        Log.d(TAG, "MMA: Cleaning DNS: " + mDnsServer);
+//        Log.d(TAG, "MMA: Mean + StdDev: " + plusStdDev);
+//        Log.d(TAG, "MMA: Mean - StdDev: " + minusStdDev);
 
         for (int i = 0; i < mRttValues.size(); i++) {
             if(mRttValues.get(i) > plusStdDev || mRttValues.get(i) < minusStdDev) {
-                Log.d(TAG, "Value to be deleted:" + mRttValues.get(i));
+//                Log.d(TAG, "MMA: Value to be deleted:" + mRttValues.get(i));
+                //TODO: does removing the element during loop crash the app?
                 mRttValues.remove(i);
             }
         }
 
-        Log.d(TAG, "Finished Cleaning DNS: " + mDnsServer);
+//        Log.d(TAG, "MMA: Finished Cleaning DNS: " + mDnsServer);
         mRttMean = calculateMean();
         mMinRTTValue = getMinRTT();
         mRttVariance = getRttVariance();

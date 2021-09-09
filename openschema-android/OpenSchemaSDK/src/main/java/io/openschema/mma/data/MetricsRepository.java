@@ -220,7 +220,18 @@ public class MetricsRepository {
         if (entity != null) {
             //TODO: disable with flag from MMA builder
             Log.d(TAG, "MMA: Writing network quality to DB");
-            mExecutor.execute(() -> mNetworkQualityDAO.insert(entity));
+            mExecutor.execute(() -> {
+                //TODO: cleanup test logs
+//                Log.d(TAG, "MMA: Writing Network Quality Entity: " +
+//                        "\nID:" + entity.getId() +
+//                        "\nnetworkConnectionID:" + entity.getNetworkConnectionId() +
+//                        "\ntransportType:" + entity.getTransportType() +
+//                        "\nqualityScore:" + entity.getQualityScore() +
+//                        "\nrtt:" + entity.getRtt() +
+//                        "\nrssi:" + entity.getRssi() +
+//                        "\ntimestamp:" + entity.getTimestamp());
+                mNetworkQualityDAO.insert(entity);
+            });
         }
     }
 

@@ -77,18 +77,12 @@ public class DnsServersDetector {
         // METHOD 1: old deprecated system properties
         result = getServersMethodSystemProperties();
         if (result != null && result.length > 0) {
-            for(int i = 0; i < result.length; i++){
-                Log.d(TAG, "Device DNS Server number " + i + " : " + result[i]);
-            }
             return result;
         }
 
         // METHOD 2 - use connectivity manager
         result = getServersMethodConnectivityManager();
         if (result != null && result.length > 0) {
-            for(int i = 0; i < result.length; i++){
-                Log.d(TAG, "Device DNS Server number " + i + " : " + result[i]);
-            }
             return result;
         }
 
@@ -97,9 +91,6 @@ public class DnsServersDetector {
         // so it's used only as a failsafe scenario
         result = getServersMethodExec();
         if (result != null && result.length > 0) {
-            for(int i = 0; i < result.length; i++){
-                Log.d(TAG, "Device DNS Server number " + i + " : " + result[i]);
-            }
             return result;
         }
 

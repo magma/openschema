@@ -171,8 +171,8 @@ public abstract class NetworkSessionMetrics extends AsyncMetrics {
 
             //TODO: remove? used for accuracy testing purposes
             if (totalBytesDiff > BYTES_THRESHOLD || totalBytesDiff < 0) {
-                Log.e(TAG, "MMA: The measurement caught an unusual amount over " + BYTES_THRESHOLD +
-                        "Current usage measurements: (transport: " + mTransportType + ")" +
+                Log.e(TAG, "MMA: The measurement caught an unusual amount over " + BYTES_THRESHOLD + " bytes" +
+                        "\nCurrent usage measurements: (transport: " + mTransportType + ")" +
                         "\nDiff since last measurement (Total Bytes): " + totalBytesDiff +
                         "\nTotal Bytes: " + (mTotalRxBytes + mTotalTxBytes) +
                         "\nRx Bytes: " + mTotalRxBytes +

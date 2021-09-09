@@ -106,6 +106,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
 
                 //Check if the previous test is still running and cancel it. Due to active network changes the results won't be relevant anymore.
                 if (mLastRequestFuture != null && !mLastRequestFuture.isDone()) {
+                    Log.d(TAG, "MMA: Network disconnected, cancelling previous DNS test.");
                     mLastRequestFuture.cancel(true);
                 }
             }
@@ -127,14 +128,24 @@ public class NetworkQualityMetrics extends AsyncMetrics {
     }
 
     private void requestMetrics(final int networkConnectionId, final int transportType) {
+
+        if (mLastRequestFuture != null && !mLastRequestFuture.isDone()) {
+            Log.d(TAG, "MMA: Requesting a new test, cancelling previous DNS test");
+            mLastRequestFuture.cancel(true);
+        }
+
         mLastRequestFuture = mExecutorService.submit(() -> {
-            List<Pair<String, String>> networkQualityMetrics = runTests(networkConnectionId, transportType);
-            //Collect metrics to DB to be pushed later
-            mListener.onMetricCollected(METRIC_NAME, networkQualityMetrics);
+            try {
+                List<Pair<String, String>> networkQualityMetrics = runTests(networkConnectionId, transportType);
+                //Collect metrics to DB to be pushed later
+                mListener.onMetricCollected(METRIC_NAME, networkQualityMetrics);
+            } catch (InterruptedException e) {
+                Log.d(TAG, "MMA: This network quality test was cancelled. Ignoring the result");
+            }
         });
     }
 
-    private List<Pair<String, String>> runTests(final int networkConnectionId, final int transportType) {
+    private List<Pair<String, String>> runTests(final int networkConnectionId, final int transportType) throws InterruptedException {
         Log.d(TAG, "MMA: Generating network quality metrics...");
 
         //Latency / RTT
@@ -159,41 +170,49 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         metricsList.add(new Pair<>(METRIC_RSSI, Integer.toString(rssi)));
 
         //Write to local DB
+        if (Thread.currentThread().isInterrupted()) {
+            Log.d(TAG, "MMA: This network quality test was cancelled");
+            throw new InterruptedException();
+        }
         writeNetworkQuality(new NetworkQualityEntity(networkConnectionId, transportType, score, rtt, rssi, System.currentTimeMillis()));
 
         Log.d(TAG, "MMA: Collected report:\n" + metricsList.toString());
         return metricsList;
     }
 
-    private Pair<List<QosInfo>, List<QosInfo>> runRttTests() {
+    private Pair<List<QosInfo>, List<QosInfo>> runRttTests() throws InterruptedException {
+        Log.d(TAG, "MMA: Running RTT tests...");
         DnsTester.randomizeDomains();
         List<QosInfo> testDnsServers = DnsTester.testDefaultServers();
-        DnsServersDetector mDnsServersDetector = new DnsServersDetector(mContext);
+
+        //Randomizing domains again in case there's collisions between our default DNS servers and the device's
         DnsTester.randomizeDomains();
+        DnsServersDetector mDnsServersDetector = new DnsServersDetector(mContext);
         List<QosInfo> deviceDnsServers = DnsTester.testServers(mDnsServersDetector.getServers());
         return new Pair<>(testDnsServers, deviceDnsServers);
     }
 
     private double calculateQualityScore(Pair<List<QosInfo>, List<QosInfo>> rttTestsResults) {
-
         //For the default DNS we will be using the one that returns the lowest RTTs for now from the ones returned from mDnsServersDetector.getServers()
         //Step 1: Get the min RTT from default DNS. And make sure test is usable:
         //1- each dns test should have at least 50% success to be considered for the calculation.
         //2- Default DNS tes should be success
         //3- at least 50% of non default DNS test should be success
+        Log.d(TAG, "MMA: Calculating final quality score...");
+        //TODO: cleanup test logs
 
         QosInfo minDefaultRttServer = rttTestsResults.second.get(0);
 
         for (int i = 1; i < rttTestsResults.second.size(); i++) {
             //TODO: Handle 0(failed RTT's) in a better way
-            if(rttTestsResults.second.get(i).getSuccessRate() < 0.5) {
+            if (rttTestsResults.second.get(i).getSuccessRate() < 0.5) {
                 continue;
             }
 
             if (rttTestsResults.second.get(i).getMinRTTValue() == 0) {
                 continue;
             }
-            if(minDefaultRttServer.getMinRTTValue() == 0){
+            if (minDefaultRttServer.getMinRTTValue() == 0) {
                 minDefaultRttServer = rttTestsResults.second.get(i);
             }
             if (rttTestsResults.second.get(i).getMinRTTValue() < minDefaultRttServer.getMinRTTValue()) {
@@ -204,27 +223,27 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         //TODO: Handle no default DNS, Maybe throw an error.
         //Conditions Default DNS
         //Default DNS has to have a successRate of 0.5 or greater.
-        if(minDefaultRttServer.getRttMean() == 0 || minDefaultRttServer.getSuccessRate() < 0.5){
-            Log.d(TAG, "Default DNS success Rate is lower than 50%\n");
+        if (minDefaultRttServer.getRttMean() == 0 || minDefaultRttServer.getSuccessRate() < 0.5) {
+            Log.d(TAG, "MMA: Default DNS success Rate is lower than 50%\n");
             //return -1;
         }
 
         double totalSuccessfulHardcodedDNS = 0.0;
         for (int i = 0; i < rttTestsResults.first.size(); i++) {
-            if(rttTestsResults.first.get(i).getSuccessRate() >= 0.5) {
+            if (rttTestsResults.first.get(i).getSuccessRate() >= 0.5) {
                 totalSuccessfulHardcodedDNS = totalSuccessfulHardcodedDNS + 1.0;
             }
         }
-        Log.d(TAG, "Hardcoded DNSs Total successful Tests: " + totalSuccessfulHardcodedDNS + " and Total hardcoded DNSs: " + rttTestsResults.first.size());
+        Log.d(TAG, "MMA: Hardcoded DNSs Total successful Tests: " + totalSuccessfulHardcodedDNS + " and Total hardcoded DNSs: " + rttTestsResults.first.size());
 
-        double totalSuccessfulHardcodedDNSPercentage = totalSuccessfulHardcodedDNS/rttTestsResults.first.size();
-        if(totalSuccessfulHardcodedDNSPercentage < 0.5) {
-            Log.d(TAG, "Hardcoded Dns Servers success rate is lower than 50%:\n" + Double.toString(totalSuccessfulHardcodedDNSPercentage));
+        double totalSuccessfulHardcodedDNSPercentage = totalSuccessfulHardcodedDNS / rttTestsResults.first.size();
+        if (totalSuccessfulHardcodedDNSPercentage < 0.5) {
+            Log.d(TAG, "MMA: Hardcoded Dns Servers success rate is lower than 50%:\n" + totalSuccessfulHardcodedDNSPercentage);
             //return -1;
         }
 
-        Log.d(TAG, "Default DNS Success Rate:\n" + minDefaultRttServer.getSuccessRate());
-        Log.d(TAG, "Default Min RTT:\n" + minDefaultRttServer.getMinRTTValue());
+        Log.d(TAG, "MMA: Default DNS Success Rate:\n" + minDefaultRttServer.getSuccessRate());
+        Log.d(TAG, "MMA: Default Min RTT:\n" + minDefaultRttServer.getMinRTTValue());
 
         //Step 2: Calculate confidence Factor: (percentage of non default success test) + (average of success's of all tests) / 2
         double confidenceFactor;
@@ -236,18 +255,18 @@ public class NetworkQualityMetrics extends AsyncMetrics {
 
             averageSuccessRate = averageSuccessRate + rttTestsResults.first.get(i).getSuccessRate();
 
-            if(rttTestsResults.first.get(i).getSuccessRate() >= 0.5) {
+            if (rttTestsResults.first.get(i).getSuccessRate() >= 0.5) {
                 successfulNonDefaultTests = successfulNonDefaultTests + 1.0;
             }
         }
 
-        nonDefaultSuccessRate = successfulNonDefaultTests/rttTestsResults.first.size();
-        Log.d(TAG, "QOS Confidence Percentage of non default success tests: " + nonDefaultSuccessRate);
-        averageSuccessRate = (averageSuccessRate + minDefaultRttServer.getSuccessRate())/(rttTestsResults.first.size()+1);
-        Log.d(TAG, "QOS Confidence average of success of all tests: " + averageSuccessRate);
+        nonDefaultSuccessRate = successfulNonDefaultTests / rttTestsResults.first.size();
+        Log.d(TAG, "MMA: QOS Confidence Percentage of non default success tests: " + nonDefaultSuccessRate);
+        averageSuccessRate = (averageSuccessRate + minDefaultRttServer.getSuccessRate()) / (rttTestsResults.first.size() + 1);
+        Log.d(TAG, "MMA: QOS Confidence average of success of all tests: " + averageSuccessRate);
 
-        confidenceFactor = nonDefaultSuccessRate + (averageSuccessRate/2);
-        Log.d(TAG, "QOS Confidence Factor:\n" + confidenceFactor);
+        confidenceFactor = nonDefaultSuccessRate + (averageSuccessRate / 2);
+        Log.d(TAG, "MMA: QOS Confidence Factor:\n" + confidenceFactor);
 
         //Step 3: Clean Data
         minDefaultRttServer.cleanData();
@@ -260,22 +279,25 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         int pivotScore = 0;
         ///Not using switch since it doesn't accept long type
         if (minDefaultRttServer.getRttMean() < 50) pivotScore = 5;
-        else if (minDefaultRttServer.getRttMean() >= 50 && minDefaultRttServer.getRttMean() < 75) pivotScore = 4;
-        else if (minDefaultRttServer.getRttMean() >= 75 && minDefaultRttServer.getRttMean() < 100) pivotScore = 3;
-        else if (minDefaultRttServer.getRttMean() >= 100 && minDefaultRttServer.getRttMean() < 125) pivotScore = 2;
+        else if (minDefaultRttServer.getRttMean() >= 50 && minDefaultRttServer.getRttMean() < 75)
+            pivotScore = 4;
+        else if (minDefaultRttServer.getRttMean() >= 75 && minDefaultRttServer.getRttMean() < 100)
+            pivotScore = 3;
+        else if (minDefaultRttServer.getRttMean() >= 100 && minDefaultRttServer.getRttMean() < 125)
+            pivotScore = 2;
         else if (minDefaultRttServer.getRttMean() >= 125) pivotScore = 1;
 
-        Log.d(TAG, "Pivot Score:\n" + pivotScore);
+        Log.d(TAG, "MMA: Pivot Score:\n" + pivotScore);
 
         //Step 5: Scale other result of default DNS
 
         ArrayList<Long> defaultDNStRTTS = minDefaultRttServer.getRttValues();
         double[] scaledDefaultDNSRTTS = new double[defaultDNStRTTS.size()];
 
-        for(int i = 0; i < defaultDNStRTTS.size(); i++) {
-            scaledDefaultDNSRTTS[i] = (pivotScore * minDefaultRttServer.getRttMean())/defaultDNStRTTS.get(i);
-            if(scaledDefaultDNSRTTS[i] < 1.0) scaledDefaultDNSRTTS[i] = 1.0;
-            if(scaledDefaultDNSRTTS[i] > 5.0) scaledDefaultDNSRTTS[i] = 5.0;
+        for (int i = 0; i < defaultDNStRTTS.size(); i++) {
+            scaledDefaultDNSRTTS[i] = (pivotScore * minDefaultRttServer.getRttMean()) / defaultDNStRTTS.get(i);
+            if (scaledDefaultDNSRTTS[i] < 1.0) scaledDefaultDNSRTTS[i] = 1.0;
+            if (scaledDefaultDNSRTTS[i] > 5.0) scaledDefaultDNSRTTS[i] = 5.0;
 
         }
 
@@ -285,7 +307,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
             averageStdDev = averageStdDev + rttTestsResults.first.get(i).getRttStdDev();
         }
 
-        averageStdDev = (averageStdDev + minDefaultRttServer.getRttStdDev())/(rttTestsResults.first.size() +1);
+        averageStdDev = (averageStdDev + minDefaultRttServer.getRttStdDev()) / (rttTestsResults.first.size() + 1);
 
         //Step 7: Map step 6 result to pivot range:
         int averageStdDevScore = 0;
@@ -296,14 +318,14 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         else if (averageStdDev >= 100 && averageStdDev < 125) averageStdDevScore = 2;
         else if (averageStdDev >= 125) averageStdDevScore = 1;
 
-        Log.d(TAG, "Average StdDev Score:\n" + averageStdDevScore);
+        Log.d(TAG, "MMA: Average StdDev Score:\n" + averageStdDevScore);
 
         //Step 8: Calculate QoS score -> .7(average of step5) + .3 of step 7
         double averageScaledDefaultDNSRTTS = Arrays.stream(scaledDefaultDNSRTTS).average().orElse(0.0);
         if (averageScaledDefaultDNSRTTS > 5.0) averageScaledDefaultDNSRTTS = 5.0;
         if (averageScaledDefaultDNSRTTS < 1.0) averageScaledDefaultDNSRTTS = 1.0;
         double qosScore = 0.7 * averageScaledDefaultDNSRTTS + 0.3 * averageStdDevScore;
-        Log.d(TAG, "Final QoS Score:\n" + qosScore);
+        Log.d(TAG, "MMA: Final QoS Score:\n" + qosScore);
 
         return qosScore;
     }

@@ -46,14 +46,14 @@ public class DnsTester {
 
     //Test a single specified DNS server.
     @WorkerThread
-    public static QosInfo testServer(String dnsServer) {
+    public static QosInfo testServer(String dnsServer) throws InterruptedException {
         Log.d(TAG, "MMA: Starting DNS test specified server.");
         return requestAllDomains(dnsServer);
     }
 
     //Test a list of specified DNS servers.
     @WorkerThread
-    public static List<QosInfo> testServers(String[] dnsServers) {
+    public static List<QosInfo> testServers(String[] dnsServers) throws InterruptedException {
         Log.d(TAG, "MMA: Starting DNS test on specified list of servers.");
         List<QosInfo> testResults = new ArrayList<>();
         for (int i = 0; i < dnsServers.length; i++) {
@@ -64,7 +64,7 @@ public class DnsTester {
 
     //Test our default list DNS servers.
     @WorkerThread
-    public static List<QosInfo> testDefaultServers() {
+    public static List<QosInfo> testDefaultServers() throws InterruptedException {
         Log.d(TAG, "MMA: Starting DNS test on our default list of servers.");
         List<QosInfo> testResults = new ArrayList<>();
         for (int i = 0; i < TEST_DNS_SERVERS.length; i++) {
@@ -74,7 +74,7 @@ public class DnsTester {
     }
 
     //Run a test with every randomized test domains on the specified DNS server.
-    private static QosInfo requestAllDomains(String dnsServer) {
+    private static QosInfo requestAllDomains(String dnsServer) throws InterruptedException {
         //TODO: Implement Retries
 
         ArrayList<Long> individualValues = new ArrayList<Long>();
@@ -82,22 +82,28 @@ public class DnsTester {
 
         for (int i = 0; i < TEST_DOMAINS.length; i++) {
             try {
+                if (Thread.currentThread().isInterrupted()) {
+                    Log.d(TAG, "MMA: This DNS test was cancelled");
+                    throw new InterruptedException();
+                }
+
                 individualValues.add(requestDomain(dnsServer, TEST_DOMAIN_REQUESTS[i]));
-                Log.d(TAG, "MMA: DNS RTT Result " + dnsServer + " on " + TEST_DOMAINS[i] + ": " + individualValues.get(individualValues.size()-1));
+//                Log.d(TAG, "MMA: DNS RTT Result " + dnsServer + " on " + TEST_DOMAINS[i] + ": " + individualValues.get(individualValues.size() - 1));
             } catch (IOException e) {
                 failures++;
                 Log.e(TAG, "MMA: DNS RTT Error " + dnsServer + ": " + e);
             }
         }
 
-        Log.d(TAG, "MMA: DNS RTT values size " + dnsServer + ": " + individualValues.size());
+        //TODO: cleanup test logs
+//        Log.d(TAG, "MMA: DNS RTT values size " + dnsServer + ": " + individualValues.size());
         QosInfo qosInfo = new QosInfo(dnsServer, individualValues, failures);
-        Log.d(TAG, "MMA: DNS RTT Min Result " + qosInfo.getDnsServer() + ": " + qosInfo.getMinRTTValue());
-        Log.d(TAG, "MMA: DNS RTT Average Result " + qosInfo.getDnsServer() + ": " + qosInfo.getRttMean());
-        Log.d(TAG, "MMA: DNS RTT variance " + qosInfo.getDnsServer() + ": " + qosInfo.getRttVariance());
-        Log.d(TAG, "MMA: DNS RTT failures " + qosInfo.getDnsServer() + ": " + qosInfo.getTotalFailedRequests());
-        Log.d(TAG, "MMA: DNS RTT SuccessRate " + qosInfo.getDnsServer() + ": " + qosInfo.getSuccessRate());
-        Log.d(TAG, "MMA: DNS RTT StdDev " + qosInfo.getDnsServer() + ": " + qosInfo.getRttStdDev());
+//        Log.d(TAG, "MMA: DNS RTT Min Result " + qosInfo.getDnsServer() + ": " + qosInfo.getMinRTTValue());
+//        Log.d(TAG, "MMA: DNS RTT Average Result " + qosInfo.getDnsServer() + ": " + qosInfo.getRttMean());
+//        Log.d(TAG, "MMA: DNS RTT variance " + qosInfo.getDnsServer() + ": " + qosInfo.getRttVariance());
+//        Log.d(TAG, "MMA: DNS RTT failures " + qosInfo.getDnsServer() + ": " + qosInfo.getTotalFailedRequests());
+//        Log.d(TAG, "MMA: DNS RTT SuccessRate " + qosInfo.getDnsServer() + ": " + qosInfo.getSuccessRate());
+//        Log.d(TAG, "MMA: DNS RTT StdDev " + qosInfo.getDnsServer() + ": " + qosInfo.getRttStdDev());
         return qosInfo;
     }
 
@@ -105,7 +111,7 @@ public class DnsTester {
     private static long requestDomain(String dnsServer, byte[] requestQuestion) throws IOException {
         //Request
         DatagramPacket requestPacket;
-        if(dnsServer.contains(":")){
+        if (dnsServer.contains(":")) {
             InetAddress ipv6Dns = InetAddress.getByName(dnsServer);
             requestPacket = new DatagramPacket(requestQuestion, requestQuestion.length, InetAddress.getByAddress(ipv6Dns.getAddress()), DNS_PORT);
         } else {
