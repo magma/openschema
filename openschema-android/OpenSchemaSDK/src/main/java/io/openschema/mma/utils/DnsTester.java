@@ -1,5 +1,6 @@
 package io.openschema.mma.utils;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -10,12 +11,19 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import androidx.annotation.WorkerThread;
 
+//TODO: change from static class to instantiated?
 public class DnsTester {
     private static final String TAG = "DnsTester";
     private static final int TIMEOUT = 5000;
@@ -44,67 +52,96 @@ public class DnsTester {
         TEST_DOMAINS = randomizeTestDomains();
     }
 
-    //Test a single specified DNS server.
-    @WorkerThread
-    public static QosInfo testServer(String dnsServer) throws InterruptedException {
-        Log.d(TAG, "MMA: Starting DNS test specified server.");
-        return requestAllDomains(dnsServer);
-    }
-
     //Test a list of specified DNS servers.
     @WorkerThread
     public static List<QosInfo> testServers(String[] dnsServers) throws InterruptedException {
         Log.d(TAG, "MMA: Starting DNS test on specified list of servers.");
-        List<QosInfo> testResults = new ArrayList<>();
-        for (int i = 0; i < dnsServers.length; i++) {
-            testResults.add(requestAllDomains(dnsServers[i]));
+
+        //Split DNS server tests into different threads
+        final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        final CountDownLatch latch = new CountDownLatch(dnsServers.length);
+        final List<QosInfo> testResults = Collections.synchronizedList(new ArrayList<>());
+
+        for (final String dnsServer : dnsServers) {
+            threadPoolExecutor.execute(() -> {
+                try {
+                    QosInfo testResult = requestAllDomains(dnsServer, threadPoolExecutor);
+                    testResults.add(testResult);
+                } catch (InterruptedException e) {
+                    Log.d(TAG, "MMA: This DNS task was interrupted");
+                } finally {
+                    latch.countDown();
+                }
+            });
         }
+
+        //Wait until all servers have completed their tests
+        Log.d(TAG, "MMA: Waiting for DNS tests to complete...");
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Log.d(TAG, "MMA: Main DNS test latch was interrupted");
+
+            //Make sure child threads are interrupted correctly before finishing interruption.
+            threadPoolExecutor.shutdownNow();
+            Log.d(TAG, "MMA: Awaiting threadpool shutdown...");
+            threadPoolExecutor.awaitTermination(10, TimeUnit.SECONDS);
+
+            //Continue interruption sequence.
+            throw new InterruptedException();
+        }
+
         return testResults;
     }
 
     //Test our default list DNS servers.
     @WorkerThread
     public static List<QosInfo> testDefaultServers() throws InterruptedException {
-        Log.d(TAG, "MMA: Starting DNS test on our default list of servers.");
-        List<QosInfo> testResults = new ArrayList<>();
-        for (int i = 0; i < TEST_DNS_SERVERS.length; i++) {
-            testResults.add(requestAllDomains(TEST_DNS_SERVERS[i]));
-        }
-        return testResults;
+        return testServers(TEST_DNS_SERVERS);
     }
 
     //Run a test with every randomized test domains on the specified DNS server.
-    private static QosInfo requestAllDomains(String dnsServer) throws InterruptedException {
+    private static QosInfo requestAllDomains(String dnsServer, ThreadPoolExecutor threadPoolExecutor) throws InterruptedException {
         //TODO: Implement Retries
 
-        ArrayList<Long> individualValues = new ArrayList<Long>();
-        int failures = 0;
+        //Split DNS requests into separate threads
+        final List<Long> individualValues = Collections.synchronizedList(new ArrayList<>());
+        final AtomicInteger failures = new AtomicInteger(0);
+        final CountDownLatch latch = new CountDownLatch(TEST_DOMAINS.length);
 
-        for (int i = 0; i < TEST_DOMAINS.length; i++) {
-            try {
-                if (Thread.currentThread().isInterrupted()) {
-                    Log.d(TAG, "MMA: This DNS test was cancelled");
-                    throw new InterruptedException();
-                }
+        for (final byte[] requestQuestion : TEST_DOMAIN_REQUESTS) {
+            threadPoolExecutor.execute(() -> {
+                try {
+                    //TODO: Is this working? Latch seems to be handling all cancelations automatically
+                    if (Thread.currentThread().isInterrupted()) {
+                        Log.d(TAG, "MMA: This DNS test was interrupted");
+                        return;
+                    }
 
-                individualValues.add(requestDomain(dnsServer, TEST_DOMAIN_REQUESTS[i]));
+                    individualValues.add(requestDomain(dnsServer, requestQuestion));
 //                Log.d(TAG, "MMA: DNS RTT Result " + dnsServer + " on " + TEST_DOMAINS[i] + ": " + individualValues.get(individualValues.size() - 1));
-            } catch (IOException e) {
-                failures++;
-                Log.e(TAG, "MMA: DNS RTT Error " + dnsServer + ": " + e);
-            }
+                } catch (IOException e) {
+                    failures.incrementAndGet();
+                    Log.e(TAG, "MMA: DNS RTT Error " + dnsServer + ": " + e);
+                } finally {
+                    latch.countDown();
+                }
+            });
         }
+
+        //Wait until all requests have returned
+        latch.await();
 
         //TODO: cleanup test logs
 //        Log.d(TAG, "MMA: DNS RTT values size " + dnsServer + ": " + individualValues.size());
-        QosInfo qosInfo = new QosInfo(dnsServer, individualValues, failures);
+//        QosInfo qosInfo = new QosInfo(dnsServer, individualValues, failures.get());
 //        Log.d(TAG, "MMA: DNS RTT Min Result " + qosInfo.getDnsServer() + ": " + qosInfo.getMinRTTValue());
 //        Log.d(TAG, "MMA: DNS RTT Average Result " + qosInfo.getDnsServer() + ": " + qosInfo.getRttMean());
 //        Log.d(TAG, "MMA: DNS RTT variance " + qosInfo.getDnsServer() + ": " + qosInfo.getRttVariance());
 //        Log.d(TAG, "MMA: DNS RTT failures " + qosInfo.getDnsServer() + ": " + qosInfo.getTotalFailedRequests());
 //        Log.d(TAG, "MMA: DNS RTT SuccessRate " + qosInfo.getDnsServer() + ": " + qosInfo.getSuccessRate());
 //        Log.d(TAG, "MMA: DNS RTT StdDev " + qosInfo.getDnsServer() + ": " + qosInfo.getRttStdDev());
-        return qosInfo;
+        return new QosInfo(dnsServer, individualValues, failures.get());
     }
 
     //Make the DNS request to the specified DNS server using a specified domain.
@@ -127,10 +164,10 @@ public class DnsTester {
         DatagramSocket socket = new DatagramSocket();
         socket.setSoTimeout(TIMEOUT);
 
-        long startTime = System.currentTimeMillis();
+        long startTime = SystemClock.elapsedRealtime();
         socket.send(requestPacket);
         socket.receive(responsePacket);
-        long endTime = System.currentTimeMillis();
+        long endTime = SystemClock.elapsedRealtime();
         socket.close();
 
         return (endTime - startTime);
@@ -217,8 +254,8 @@ public class DnsTester {
 
         String[] domainParts = domain.split("\\.");
 
-        for (int i = 0; i < domainParts.length; i++) {
-            byte[] domainBytes = domainParts[i].getBytes(StandardCharsets.UTF_8);
+        for (String domainPart : domainParts) {
+            byte[] domainBytes = domainPart.getBytes(StandardCharsets.UTF_8);
             dos.writeByte(domainBytes.length);
             dos.write(domainBytes);
         }
