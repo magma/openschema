@@ -15,8 +15,9 @@ router.use(function (req, res, next) {
     //Trim request body to expected parameters
     req.body = _.pick(req.body, ['metricName', 'metricsList', 'identifier', 'timestamp'])
 
-    if (req.body.identifier.clientType === 'android') {
-        //Processing request from ANDROID clients
+    if (req.body.identifier.clientType === 'android' ||
+        req.body.identifier.clientType === 'ios') {
+        //Processing request from ANDROID and IOS clients
         req.body.metrics = {}
         for (let i = 0; i < req.body.metricsList.length; i++) {
             const metricPair = req.body.metricsList[i];
@@ -27,8 +28,6 @@ router.use(function (req, res, next) {
         }
         delete req.body.metricsList
     }
-
-    //TODO: implement other client types
 
     next()
 })
