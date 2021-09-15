@@ -1,14 +1,13 @@
 package io.openschema.mma.utils;
 
-import android.util.Log;
-import java.util.ArrayList;
+import java.util.List;
 
 public class QosInfo {
 
     private static final String TAG = "QosInfo";
 
     private final String mDnsServer;
-    private final ArrayList<Long> mRttValues;
+    private final List<Long> mRttValues;
     private double mRttMean;
     private float mRttVariance;
     private final int mTotalFailedRequests;
@@ -16,7 +15,7 @@ public class QosInfo {
     private double mRttStdDev;
     private final double mSuccessRate;
 
-    public QosInfo(String dnsServer, ArrayList<Long> rttValues, int totalFailedRequests) {
+    public QosInfo(String dnsServer, List<Long> rttValues, int totalFailedRequests) {
         mDnsServer = dnsServer;
         mRttValues = rttValues;
         mTotalFailedRequests = totalFailedRequests;
@@ -28,7 +27,7 @@ public class QosInfo {
     }
 
     private long getMinRTT() {
-        return  mRttValues.stream()
+        return mRttValues.stream()
                 .mapToLong(d -> d)
                 .filter(d -> d != 0)
                 .min()
@@ -48,18 +47,18 @@ public class QosInfo {
             temp += (a - mRttMean) * (a - mRttMean);
         }
 
-        if(temp == 0) return 0;
+        if (temp == 0) return 0;
         return temp / (mRttValues.size() - 1);
     }
 
     private double calculateStandardDeviation() {
-        if(mRttVariance == 0.0) return 0.0;
+        if (mRttVariance == 0.0) return 0.0;
         return Math.sqrt(mRttVariance);
     }
 
     private double calculateSuccessRate() {
-        if(mRttValues.isEmpty()) return 0.0;
-        return (double)(mRttValues.size() - mTotalFailedRequests)/mRttValues.size();
+        if (mRttValues.isEmpty()) return 0.0;
+        return (double) (mRttValues.size() - mTotalFailedRequests) / mRttValues.size();
     }
 
     public void cleanData() {
@@ -73,7 +72,7 @@ public class QosInfo {
 //        Log.d(TAG, "MMA: Mean - StdDev: " + minusStdDev);
 
         for (int i = 0; i < mRttValues.size(); i++) {
-            if(mRttValues.get(i) > plusStdDev || mRttValues.get(i) < minusStdDev) {
+            if (mRttValues.get(i) > plusStdDev || mRttValues.get(i) < minusStdDev) {
 //                Log.d(TAG, "MMA: Value to be deleted:" + mRttValues.get(i));
                 //TODO: does removing the element during loop crash the app?
                 mRttValues.remove(i);
@@ -102,5 +101,5 @@ public class QosInfo {
 
     public double getSuccessRate() { return mSuccessRate; }
 
-    public ArrayList<Long> getRttValues() { return mRttValues;}
+    public List<Long> getRttValues() { return mRttValues;}
 }
