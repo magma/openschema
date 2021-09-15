@@ -64,8 +64,8 @@ public class QosInfo {
 
     public void cleanData() {
 
-        double plusStdDev = mRttMean + mRttStdDev;
-        double minusStdDev = mRttMean - mRttStdDev;
+        double plusStdDev = mRttMean + 2 * mRttStdDev;
+        double minusStdDev = mRttMean - 2 * mRttStdDev;
 
         //TODO: cleanup test logs
 //        Log.d(TAG, "MMA: Cleaning DNS: " + mDnsServer);

@@ -319,6 +319,7 @@ public class NetworkQualityMetrics extends AsyncMetrics {
         if (averageScaledDefaultDNSRTTS > 5.0) averageScaledDefaultDNSRTTS = 5.0;
         if (averageScaledDefaultDNSRTTS < 1.0) averageScaledDefaultDNSRTTS = 1.0;
         double qosScore = 0.7 * averageScaledDefaultDNSRTTS + 0.3 * averageStdDevScore;
+        qosScore = qosScore * confidenceFactor;
         Log.d(TAG, "MMA: Final QoS Score:\n" + qosScore);
 
         return qosScore;
