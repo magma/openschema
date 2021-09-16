@@ -1,11 +1,14 @@
-## OpenSchema Read Me
+# OpenSchema Root
 
-This repo will be renamed to reflect the openschema namespace.
+![OpenSchema Architecture](docs/assets/openschema_architecture.png)
 
-Many confluence pages will be converted into ghmd readme files like this one.
+#### Directories
 
-##### Directories
-- openschema-android
-- openschema-ios
-- openschema-backend
-- openschema-dashboard
+- openschema-android (client)
+- openschema-ios (client)
+- openschema-backend (etl)
+- openschema-dashboard (reporting & visualization)
+
+## License
+
+OpenSchema is BSD-3 licensed, as found in the LICENSE file.
