@@ -1,6 +1,5 @@
 package io.openschema.client.util;
 
-import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
@@ -14,8 +13,6 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import io.openschema.client.R;
 import io.openschema.client.view.CustomNotification;
-import io.openschema.client.view.NetworkQualityView;
-import io.openschema.client.viewmodel.NetworkQualityViewModel;
 import io.openschema.mma.MobileMetricsAgent;
 import io.openschema.mma.MobileMetricsService;
 import io.openschema.mma.metrics.HourlyUsageWorker;
@@ -51,21 +48,21 @@ public class ServiceStatusWorker extends Worker {
                 .build();
 
         //Start permanent observer to update custom notification. (Only if service isn't running so that we don't create multiple observers on subsequent app starts)
-        if (!MobileMetricsService.isServiceRunning(mContext.getApplicationContext())) {
-            Log.d(TAG, "UI: Setting up observer to update notification.");
-//                NetworkQualityViewModel networkQualityViewModel = new ViewModelProvider(context.getApplicationContext()).get(NetworkQualityViewModel.class);
-            NetworkQualityViewModel networkQualityViewModel = new NetworkQualityViewModel((Application) mContext.getApplicationContext());
-
-            networkQualityViewModel.getActiveNetworkQuality().observeForever(networkStatus -> {
-                CustomNotification customNotification = CustomNotification.getInstance(mContext.getApplicationContext());
-
-                //Update the notification's view
-                customNotification.updateNetworkStatus(networkStatus);
-
-                //Update the notification shown by the OS
-                customNotification.show(mContext.getApplicationContext());
-            });
-        }
+//        if (!MobileMetricsService.isServiceRunning(mContext.getApplicationContext())) {
+//            Log.d(TAG, "UI: Setting up observer to update notification.");
+////                NetworkQualityViewModel networkQualityViewModel = new ViewModelProvider(context.getApplicationContext()).get(NetworkQualityViewModel.class);
+//            NetworkQualityViewModel networkQualityViewModel = new NetworkQualityViewModel((Application) mContext.getApplicationContext());
+//
+//            networkQualityViewModel.getActiveNetworkQuality().observeForever(networkStatus -> {
+//                CustomNotification customNotification = CustomNotification.getInstance(mContext.getApplicationContext());
+//
+//                //Update the notification's view
+//                customNotification.updateNetworkStatus(networkStatus);
+//
+//                //Update the notification shown by the OS
+//                customNotification.show(mContext.getApplicationContext());
+//            });
+//        }
 
         //Initialize agent
         Log.d(TAG, "UI: Initializing MMA object.");

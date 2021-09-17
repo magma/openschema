@@ -25,7 +25,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.util.Pair;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -33,10 +32,7 @@ import androidx.navigation.ui.NavigationUI;
 import io.openschema.client.R;
 import io.openschema.client.util.ServiceStatusWorker;
 import io.openschema.client.view.CustomNotification;
-import io.openschema.client.view.NetworkQualityView;
-import io.openschema.client.viewmodel.NetworkQualityViewModel;
 import io.openschema.mma.MobileMetricsAgent;
-import io.openschema.mma.MobileMetricsService;
 import io.openschema.mma.utils.PermissionManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -79,18 +75,18 @@ public class MainActivity extends AppCompatActivity {
                     .build();
 
             //Start permanent observer to update custom notification. (Only if service isn't running so that we don't create multiple observers on subsequent app starts)
-            if (!MobileMetricsService.isServiceRunning(getApplicationContext())) {
-                NetworkQualityViewModel networkQualityViewModel = new ViewModelProvider(this).get(NetworkQualityViewModel.class);
-                networkQualityViewModel.getActiveNetworkQuality().observeForever(networkStatus -> {
-                    CustomNotification customNotification = CustomNotification.getInstance(getApplicationContext());
-
-                    //Update the notification's view
-                    customNotification.updateNetworkStatus(networkStatus);
-
-                    //Update the notification shown by the OS
-                    customNotification.show(getApplicationContext());
-                });
-            }
+//            if (!MobileMetricsService.isServiceRunning(getApplicationContext())) {
+//                NetworkQualityViewModel networkQualityViewModel = new ViewModelProvider(this).get(NetworkQualityViewModel.class);
+//                networkQualityViewModel.getActiveNetworkQuality().observeForever(networkStatus -> {
+//                    CustomNotification customNotification = CustomNotification.getInstance(getApplicationContext());
+//
+//                    //Update the notification's view
+//                    customNotification.updateNetworkStatus(networkStatus);
+//
+//                    //Update the notification shown by the OS
+//                    customNotification.show(getApplicationContext());
+//                });
+//            }
 
             //Initialize agent
             mMobileMetricsAgent.init();
