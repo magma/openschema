@@ -15,6 +15,7 @@
 
 package io.openschema.client.fragment;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,7 +35,10 @@ import io.openschema.client.databinding.FragmentAutoBrowserBinding;
 public class AutoBrowserFragment extends Fragment {
 
     private static final String TAG = "AutoBrowser";
+    private long onPageStartedTime, onPageFinishedTime, totalResourcesLoadedTime, totalURLLoadTime = 0;
+    private int URL_index = 0;
     private FragmentAutoBrowserBinding mBinding;
+    private String[] URLS = {"https://www.google.com"};
 
     @Nullable
     @Override
@@ -51,7 +55,7 @@ public class AutoBrowserFragment extends Fragment {
         mBinding.startBenchmarkButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                //startTest();
+                startTest();
             }
         });
 
@@ -60,12 +64,49 @@ public class AutoBrowserFragment extends Fragment {
 
         // Force links and redirects to open in the WebView instead of in a browser
         mBinding.benchmarkWebView.setWebViewClient(new WebViewClient(){
+
+            @Override
+            public void onPageStarted (WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                onPageStartedTime = System.nanoTime();
+                Log.d(TAG, "On Page Started Called at " + onPageStartedTime + " URL:" + url);
+            }
+
+            @Override
+            public void onLoadResource(WebView view, String url) {
+                super.onLoadResource(view, url);
+                long resourceLoadStartTime = System.nanoTime();
+                Log.d(TAG, "On Load Resource Called");
+                Log.d(TAG, "Loading resource: " + url);
+                long resourceLoadEndTime = System.nanoTime();
+                long resourceLoadTime = resourceLoadEndTime - resourceLoadStartTime;
+                totalResourcesLoadedTime += resourceLoadTime;
+                Log.d(TAG, "Resource Loaded in: " + (resourceLoadEndTime - resourceLoadStartTime) + " nano seconds");
+            }
+
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                Log.d(TAG, url);
-                //runTest();
+                onPageFinishedTime = System.nanoTime();
+                Log.d(TAG, "On Page Finished Called at " + onPageFinishedTime + " URL:" + url);
+                Log.d(TAG, "On Page Finished: website load duration " + (onPageFinishedTime - onPageStartedTime) + " nano seconds");
             }
+
         });
     }
+
+    private void startTest() {
+        Log.d(TAG, "Testing Loading Times");
+        mBinding.timeBenchmarkTextView.setText("Testing ...");
+        totalURLLoadTime = 0;
+
+        URL_index = 0;
+        mBinding.benchmarkWebView.loadUrl(URLS[URL_index]);
+        URL_index++;
+
+        totalURLLoadTime = (onPageFinishedTime - onPageStartedTime)/1000000;
+        mBinding.timeBenchmarkTextView.setText(String.valueOf(totalURLLoadTime) + " ms");
+    }
+
+
 }
