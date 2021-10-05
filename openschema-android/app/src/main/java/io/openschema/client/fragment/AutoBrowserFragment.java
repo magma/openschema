@@ -24,12 +24,13 @@ import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import java.util.Random;
+
 import io.openschema.client.databinding.FragmentAutoBrowserBinding;
 
 public class AutoBrowserFragment extends Fragment {
@@ -38,7 +39,8 @@ public class AutoBrowserFragment extends Fragment {
     private long onPageStartedTime, onPageFinishedTime, totalResourcesLoadedTime, totalURLLoadTime = 0;
     private int URL_index = 0;
     private FragmentAutoBrowserBinding mBinding;
-    private String[] URLS = {"https://www.google.com"};
+    private String[] URLS = {"https://www.google.com", "https://m.youtube.com", "https://www.yahoo.com", "https://www.wikipedia.org",
+            "https://m.imdb.com", "https://www.cnn.com", "https://weather.com", "https://www.reddit.com"};
 
     @Nullable
     @Override
@@ -89,7 +91,11 @@ public class AutoBrowserFragment extends Fragment {
                 super.onPageFinished(view, url);
                 onPageFinishedTime = System.nanoTime();
                 Log.d(TAG, "On Page Finished Called at " + onPageFinishedTime + " URL:" + url);
-                Log.d(TAG, "On Page Finished: website load duration " + (onPageFinishedTime - onPageStartedTime) + " nano seconds");
+                totalURLLoadTime = (onPageFinishedTime - onPageStartedTime)/1000000;
+
+                Log.d(TAG, "On Page Finished: website load duration " + totalURLLoadTime + " nano seconds");
+                Log.d(TAG, "Resources total loading time: " + totalResourcesLoadedTime/1000000 + " ms");
+                mBinding.timeBenchmarkTextView.setText(totalURLLoadTime + " ms");
             }
 
         });
@@ -99,13 +105,9 @@ public class AutoBrowserFragment extends Fragment {
         Log.d(TAG, "Testing Loading Times");
         mBinding.timeBenchmarkTextView.setText("Testing ...");
         totalURLLoadTime = 0;
+        Random rand = new Random();
+        mBinding.benchmarkWebView.loadUrl(URLS[rand.nextInt(URLS.length)]);
 
-        URL_index = 0;
-        mBinding.benchmarkWebView.loadUrl(URLS[URL_index]);
-        URL_index++;
-
-        totalURLLoadTime = (onPageFinishedTime - onPageStartedTime)/1000000;
-        mBinding.timeBenchmarkTextView.setText(String.valueOf(totalURLLoadTime) + " ms");
     }
 
 
