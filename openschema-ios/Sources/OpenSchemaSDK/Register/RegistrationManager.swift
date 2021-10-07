@@ -17,7 +17,6 @@ import Foundation
 ///This class Registers the device to the server.
 public class RegistrationManager {
     
-    private let hardwareKey = HardwareKEY()
     private let uuidManager = UUIDManager.shared
     private var registerServerAddress : String
     private var registerServerAuthCertPath : String
@@ -36,27 +35,6 @@ public class RegistrationManager {
         self.registerDevice()
     }
     
-    ///Remove Header, Footer and spaces to just send the key to Registration Server.
-    private func trimPublicKeyPEMString() -> String {
-        
-        var publicKeyString : String = hardwareKey.getHwPublicKeyPEMString()
-        
-        print("Before Trim: \n" + publicKeyString)
-        
-        var range = publicKeyString.index(publicKeyString.endIndex, offsetBy: -25)..<publicKeyString.endIndex
-        publicKeyString.removeSubrange(range)
-
-        range = publicKeyString.index(publicKeyString.startIndex, offsetBy: 0)..<publicKeyString.index(publicKeyString.startIndex, offsetBy: 27)
-        publicKeyString.removeSubrange(range)
-
-        publicKeyString = publicKeyString.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        
-        print("After Trim: \n" + publicKeyString)
-        
-        return publicKeyString
-    }
-    
     /**
     This function Registers the device UUID and Public Hardware Key to the server to be able to collect and push analytics to it.
     */
@@ -67,7 +45,6 @@ public class RegistrationManager {
         guard let serviceUrl = URL(string: Url) else { return }
         let parameters: [String: Any] = [
             "uuid" : self.uuidManager.getUUID(),
-            "publicKey": self.trimPublicKeyPEMString()
         ]
 
         var request = URLRequest(url: serviceUrl)

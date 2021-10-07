@@ -19,9 +19,7 @@ public class CellularNetworkMetrics {
     
     ///CellularNetworkInfo class object.
     private let cellularNetworkInfo : CellularNetworkInfo = CellularNetworkInfo()
-    ///CustomMetrics class object.
-    private let customMetrics = CustomMetrics()
-    
+
     //Label Names
     ///Carrier Label Name
     private let carrierNameLabelName : String = "carrier_name"
@@ -45,7 +43,7 @@ public class CellularNetworkMetrics {
     ///Using CreateGRPCStringMetric it collects the values from cellular connection  and return a Magma_Orc8r_MetricsContainer with them
     public func CollectCellularNetworkInfoMetrics() {
         
-        var labelContainer : [(String, String)] = [(String, String)]()
+        /*var labelContainer : [(String, String)] = [(String, String)]()
         labelContainer.append((self.carrierNameLabelName, self.cellularNetworkInfo.getCarrierName()))
         labelContainer.append((self.mobileNetworkCodeLabelName, self.cellularNetworkInfo.getMobileNetworkCode()))
         labelContainer.append((self.mobileCountryCodeLabelName, self.cellularNetworkInfo.getMobileCountryCode()))
@@ -56,7 +54,7 @@ public class CellularNetworkMetrics {
             print("Cellular Metrics Data Stored Succesfully")
         } else {
             print("Cellular Metrics was not stored")
-        }
+        }*/
 
     }
 }
