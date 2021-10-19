@@ -5,9 +5,10 @@
     >
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_faq"
-            android:icon="@drawable/ic_nav_faq"
-            android:title="FAQ"
+            android:id="@+id/nav_about"
+            android:icon="@drawable/ic_openschema_logo"
+            android:iconTint="@color/surfaceTextColor"
+            android:title="@string/about_title"
             />
     </group>
 </menu>
