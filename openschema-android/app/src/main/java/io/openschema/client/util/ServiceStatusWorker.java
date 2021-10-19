@@ -15,7 +15,6 @@ import io.openschema.client.R;
 import io.openschema.client.view.CustomNotification;
 import io.openschema.mma.MobileMetricsAgent;
 import io.openschema.mma.MobileMetricsService;
-import io.openschema.mma.metrics.HourlyUsageWorker;
 import io.openschema.mma.utils.PermissionManager;
 
 // Testing if this method works for keeping our service running long term.
@@ -87,7 +86,7 @@ public class ServiceStatusWorker extends Worker {
 
     public static void enqueuePeriodicWorker(Context context) {
         Log.d(TAG, "UI: Enqueuing ServiceStatusWorker");
-        PeriodicWorkRequest.Builder workBuilder = new PeriodicWorkRequest.Builder(HourlyUsageWorker.class, 2, TimeUnit.HOURS)
+        PeriodicWorkRequest.Builder workBuilder = new PeriodicWorkRequest.Builder(ServiceStatusWorker.class, 2, TimeUnit.HOURS)
                 .addTag(WORKER_TAG);
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(UNIQUE_PERIODIC_WORKER_NAME, ExistingPeriodicWorkPolicy.REPLACE, workBuilder.build());

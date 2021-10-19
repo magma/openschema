@@ -27,7 +27,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-import io.openschema.mma.backend.BackendApi;
 import io.openschema.mma.data.dao.HourlyUsageDAO;
 import io.openschema.mma.data.dao.MetricsDAO;
 import io.openschema.mma.data.dao.NetworkConnectionsDAO;
@@ -59,7 +58,7 @@ public class MetricsRepository {
     public static MetricsRepository getRepository(Context appContext) {
         Log.d(TAG, "UI: Fetching MetricsRepository");
         if (_instance == null) {
-            synchronized (BackendApi.class) {
+            synchronized (MetricsRepository.class) {
                 if (_instance == null) {
                     _instance = new MetricsRepository(appContext);
                 }

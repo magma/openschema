@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Alternative resource to change the app name only for debug builds.-->
+    <string name="app_name">OpenSchema Debug</string>
+</resources>
