@@ -16,6 +16,9 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(rootProject.file("keystore/openschema_keystore.properties")))
+
 //get latest commit hash
 def getGitHash = { ->
     def stdout = new ByteArrayOutputStream()
@@ -30,6 +33,14 @@ android {
     compileSdkVersion 30
     buildToolsVersion "29.0.3"
 
+    signingConfigs {
+        config {
+            storeFile rootProject.file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
     defaultConfig {
         applicationId 'io.openschema.client'
         minSdkVersion 26
@@ -51,9 +62,9 @@ android {
             versionNameSuffix '-DEBUG'
         }
         release {
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
 
