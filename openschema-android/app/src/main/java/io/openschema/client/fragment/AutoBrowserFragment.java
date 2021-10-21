@@ -16,6 +16,7 @@
 package io.openschema.client.fragment;
 
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,9 +30,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import java.io.File;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import io.openschema.client.databinding.FragmentAutoBrowserBinding;
+import io.openschema.mma.utils.MultiThreadDownloader;
 
 public class AutoBrowserFragment extends Fragment {
 
@@ -41,6 +47,9 @@ public class AutoBrowserFragment extends Fragment {
     private FragmentAutoBrowserBinding mBinding;
     private String[] URLS = {"https://www.google.com", "https://m.youtube.com", "https://www.yahoo.com", "https://www.wikipedia.org",
             "https://m.imdb.com", "https://www.cnn.com", "https://weather.com", "https://www.reddit.com"};
+
+    //TODO: Move this download stuff to another place when testing done
+    private MultiThreadDownloader mMultiThreadDownloader;
 
     @Nullable
     @Override
@@ -58,6 +67,17 @@ public class AutoBrowserFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startTest();
+            }
+        });
+
+        mBinding.downloadTestButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                try {
+                    startDownload();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -110,5 +130,23 @@ public class AutoBrowserFragment extends Fragment {
 
     }
 
+    private void startDownload() throws Exception {
+
+        File appPrivateDir = getActivity().getApplicationContext().getFilesDir();
+        mMultiThreadDownloader = new MultiThreadDownloader(appPrivateDir.getPath());
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                //TODO your background code
+                try {
+                    //mMultiThreadDownloader.executeDownLoad();
+                    mMultiThreadDownloader.downloadFile();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
 }
