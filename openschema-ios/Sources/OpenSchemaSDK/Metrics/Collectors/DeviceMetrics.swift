@@ -15,16 +15,6 @@
 import Logging
 import UIKit
 
-extension Date {
-    var millisecondsSince1970:Int64 {
-        return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
-    }
-
-    init(milliseconds:Int64) {
-        self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
-    }
-}
-
 ///Collects metrics related to the device.
 public class DeviceMetrics : SyncMetrics{
     
@@ -39,10 +29,10 @@ public class DeviceMetrics : SyncMetrics{
     public let METRIC_OPENSCHEMA_VERSION : String = "openschemaVersion"; //TODO: need to decide on a versioning scheme
 
     ///Metric name to be used for the collected information.
-    private let iOSVersion : String
-    private let deviceManufacturer : String = "Apple Inc."
-    private let deviceModel : String
-    private let deviceBrand : String = "Apple Inc."
+    public let iOSVersion : String
+    public let deviceManufacturer : String = "Apple Inc."
+    public let deviceModel : String
+    public let deviceBrand : String = "Apple Inc."
 
     public init() {
         self.iOSVersion = UIDevice.current.systemVersion
@@ -56,11 +46,11 @@ public class DeviceMetrics : SyncMetrics{
         deviceInfo.deviceManufacturer = deviceManufacturer
         deviceInfo.deviceBrand = deviceBrand
         deviceInfo.deviceModel = deviceModel
-        deviceInfo.timestamp = Date.init(milliseconds: Date.now)
+        deviceInfo.timestamp = Date().millisecondsSince1970
         deviceInfo.offsetMinutes = 0
         
         do {
-            try DBManager.shared.storyDao.save(object: deviceInfo)
+            try CoreDataController.shared.deviceInfoDao.save(object: deviceInfo)
             Log.debug("Collected Device Information Succesfully!")
             
         } catch {

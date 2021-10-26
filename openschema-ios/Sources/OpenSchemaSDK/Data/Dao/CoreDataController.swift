@@ -12,21 +12,21 @@
  * limitations under the License.
  */
 
-class CoreDataController {
+public class CoreDataController {
 
     // MARK: - Private properties
     private var storageContext: StorageContext?
 
     // MARK: - Public properties
-    static var shared = CoreDataController()
+    public static var shared = CoreDataController()
     
     //Here your xdata classes
-    lazy var deviceInfoDao = DeviceInfoDAO(storageContext: storageContextImpl())
+    public lazy var deviceInfoDao = DeviceInfoDAO(storageContext: storageContextImpl())
 
     private init() {
     }
 
-    static func setup(storageContext: StorageContext) {
+    public static func setup(storageContext: StorageContext) {
         shared.storageContext = storageContext
     }
 

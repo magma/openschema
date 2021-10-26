@@ -15,7 +15,7 @@
 import CoreData
 
 ///Implements all the required methods from theStorageContext protocol. To be noted here is that all the methods are expecting entities of theStorable type.
-extension CoreDataStorageContext {
+public extension CoreDataStorageContext {
 
     func create<DBEntity: Storable>(_ model: DBEntity.Type) -> DBEntity? {
         let entityDescription =  NSEntityDescription.entity(forEntityName: String.init(describing: model.self),
@@ -53,5 +53,16 @@ extension CoreDataStorageContext {
         }
 
         return nil
+    }
+    
+    func countObjects(request : NSFetchRequest<NSFetchRequestResult>) -> Int {
+        do {
+            let count = try managedContext!.count(for: request)
+            return count
+        } catch {
+            print("Can't count objects in database")
+        }
+        
+      return 0
     }
 }

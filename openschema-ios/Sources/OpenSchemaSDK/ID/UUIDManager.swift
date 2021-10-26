@@ -26,6 +26,7 @@ public class UUIDManager {
     
     ///Initiliaze UUIDManager, calls GenerateUUID function.
     private init() {
+        
         GenerateUUID()
     }
     

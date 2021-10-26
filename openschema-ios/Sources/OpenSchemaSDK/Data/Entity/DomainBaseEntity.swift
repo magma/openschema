@@ -15,9 +15,9 @@
 import CoreData
 
 ///Base entity for all of my domain entities. All domain entities should inherit from this DomainBaseEntity
-class DomainBaseEntity: Mappable {
-    var objectID: NSManagedObjectID?
+public class DomainBaseEntity: Mappable {
+    public var objectID: NSManagedObjectID?
 
-    required init() {
+    public required init() {
     }
 }

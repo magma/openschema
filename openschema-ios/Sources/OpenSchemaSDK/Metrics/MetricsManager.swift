@@ -16,7 +16,7 @@ import Logging
 import Dispatch
 import CoreData
 
-extension Date {
+public extension Date {
     var millisecondsSince1970:Int64 {
         return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
     }
@@ -30,42 +30,33 @@ extension Date {
 public class MetricsManager {
     
     private static let TAG : String = "MetricsManager"
-    
-    private let signedCert : Data
+
     private let uuidManager = UUIDManager.shared
     private let cellularNetworkMetrics : CellularNetworkMetrics = CellularNetworkMetrics()
     private let wifiNetworkMetrics : WifiNetworkMetrics = WifiNetworkMetrics()
     private let deviceMetrics : DeviceMetrics = DeviceMetrics()
-    private var certificateFilePath : String
 
-
-    init(signedCert : Data , certificateFilePath : String) {
-        
-        self.signedCert = signedCert
-        self.certificateFilePath = certificateFilePath
-        
+    public init() {
+        CoreDataController.setup(storageContext: CoreDataStorageContext())
     }
 
-    /*private func IsCoreDataEmpty() -> Bool {
-        do {
+    private func IsCoreDataEmpty() -> Bool {
+     
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "DeviceInfoEntity")
+        let count = CoreDataController.shared.deviceInfoDao.count(request: request)
             
-            let request = NSFetchRequest<NSFetchRequestResult>(entityName: "MetricFamily")
-            let count  = try coreDataController.managedObjectContext.count(for: request)
-                
-            if (count == 0) {
-                print("Database is empty")
-                return true
-            }
-                
-            } catch {
-                return true
-            }
+        print("CoreData has " + String(count) + " DeviceInfo Entities")
         
+        if (count == 0) {
+            print("Database is empty")
+            return true
+        }
+ 
         return false
-    }*/
+    }
     
     ///This function is called after a succesful bootstrap to push available metrics to server
-    /*public func CollectAndPushMetrics() {
+    public func CollectAndPushMetrics() {
         
         if (!IsCoreDataEmpty())
         {
@@ -73,6 +64,6 @@ public class MetricsManager {
         } else {
             print("No Metrics stored to be collected")
         }
-    }*/
+    }
     
 }

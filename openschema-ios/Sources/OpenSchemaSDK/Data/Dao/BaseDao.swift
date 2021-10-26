@@ -13,8 +13,9 @@
  */
 
 import UIKit
+import CoreData
 
-class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
+public class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
 
     private var storageContext: StorageContext?
 
@@ -22,12 +23,12 @@ class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
         self.storageContext = storageContext
     }
 
-    func create() -> Mappable? {
+    public func create() -> Mappable? {
         let dbEntity: DBEntity? = storageContext?.create(DBEntity.self)
         return mapToDomain(dbEntity: dbEntity!)
     }
 
-    func save<DomainEntity: Mappable>(object: DomainEntity) throws {
+    public func save<DomainEntity: Mappable>(object: DomainEntity) throws {
         var dbEntity: DBEntity?
         if object.objectID != nil {
             dbEntity = storageContext?.objectWithObjectId(objectId: object.objectID!)
@@ -39,13 +40,13 @@ class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
         try storageContext?.save(object: dbEntity!)
     }
 
-    func saveAll<DomainEntity: Mappable>(objects: [DomainEntity]) throws {
+    public func saveAll<DomainEntity: Mappable>(objects: [DomainEntity]) throws {
         for domainEntity in objects {
             try self.save(object: domainEntity)
         }
     }
 
-    func update<DomainEntity: Mappable>(object: DomainEntity) throws {
+    public func update<DomainEntity: Mappable>(object: DomainEntity) throws {
         if object.objectID != nil {
             let dbEntity: DBEntity? = storageContext?.objectWithObjectId(objectId: object.objectID!)
             Mapper.mapToDB(from: object, target: dbEntity!)
@@ -53,22 +54,27 @@ class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
         }
     }
 
-    func delete<DomainEntity: Mappable>(object: DomainEntity) throws {
+    public func delete<DomainEntity: Mappable>(object: DomainEntity) throws {
         if object.objectID != nil {
             let dbEntity: DBEntity? = storageContext?.objectWithObjectId(objectId: object.objectID!)
             try storageContext?.delete(object: dbEntity!)
         }
     }
 
-    func deleteAll() throws {
+    public func deleteAll() throws {
         try storageContext?.deleteAll(DBEntity.self)
     }
 
-    func fetch(predicate: NSPredicate?, sorted: Sorted? = nil) -> [DomainEntity] {
+    public func fetch(predicate: NSPredicate?, sorted: Sorted? = nil) -> [DomainEntity] {
         let dbEntities = storageContext?.fetch(DBEntity.self, predicate: predicate, sorted: sorted) as? [DBEntity]
         return mapToDomain(dbEntities: dbEntities)
     }
-
+    
+    public func count(request : NSFetchRequest<NSFetchRequestResult>) -> Int {
+        let countEntities = storageContext?.countObjects(request: request)
+        return countEntities ?? 0
+    }
+    
     private func mapToDomain<DBEntity: Storable>(dbEntity: DBEntity) -> DomainEntity {
         var domainEntity = DomainEntity.init()
         Mapper.mapToDomain(from: dbEntity, target: &domainEntity)

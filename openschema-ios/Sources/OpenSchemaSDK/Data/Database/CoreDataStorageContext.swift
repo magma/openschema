@@ -15,11 +15,11 @@
 import CoreData
 
 ///CoreDataStorageContext is the implementation of the StorageContext.
-class CoreDataStorageContext: StorageContext {
+public class CoreDataStorageContext: StorageContext {
 
     var managedContext: NSManagedObjectContext?
 
-    required init(configuration: ConfigurationType = .basic(identifier: "AnalyticsModel")) {
+    public required init(configuration: ConfigurationType = .basic(identifier: "AnalyticsModel")) {
         switch configuration {
         case .basic:
             initDB(modelName: configuration.identifier(), storeType: .sqLiteStoreType)

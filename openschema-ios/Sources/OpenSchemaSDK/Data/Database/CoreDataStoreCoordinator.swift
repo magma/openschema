@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 
+import Logging
 import CoreData
 
 public enum StoreType: String {
@@ -21,7 +22,9 @@ public enum StoreType: String {
 
 ///CoreDataStoreCoordinator is the class responsible for the initialization of the database and setting up all the prerequisites.
 class CoreDataStoreCoordinator {
-
+    
+    private let Log : Logger = Logger(label: "CoreDataStoreCoordinator")
+    
     static func persistentStoreCoordinator(modelName: String? = nil, storeType: StoreType = .sqLiteStoreType) -> NSPersistentStoreCoordinator? {
         do {
             return try NSPersistentStoreCoordinator.coordinator(modelName: modelName, storeType: storeType)
@@ -45,9 +48,9 @@ extension NSPersistentStoreCoordinator {
     }
 
     /// Return NSPersistentStoreCoordinator object
-    static func coordinator(modelName: String? = nil, storeType: StoreType) throws -> NSPersistentStoreCoordinator? {
+    public static func coordinator(modelName: String? = nil, storeType: StoreType) throws -> NSPersistentStoreCoordinator? {
 
-        guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "momd") else {
+        guard let modelURL = Bundle.module.url(forResource: modelName, withExtension: "momd") else {
             throw CoordinatorError.modelFileNotFound
         }
 

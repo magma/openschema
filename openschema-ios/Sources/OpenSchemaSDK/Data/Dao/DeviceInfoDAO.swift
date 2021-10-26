@@ -14,9 +14,9 @@
 
 import UIKit
 
-class DeviceInfoDAO: BaseDao<DeviceInfo, DeviceInfoEntity> {
+public class DeviceInfoDAO: BaseDao<DeviceInfo, DeviceInfoEntity> {
 
     /*func findById(storyNumber: String) -> DeviceInfo? {
-        return super.fetch(predicate: NSPredicate(format: "deviceInfoNumber = %"+deviceInfoNumber)).last
+        return super.fetch(predicate: NSPredicate(format: "deviceInfoNumber = %"+device)).last
     }*/
 }

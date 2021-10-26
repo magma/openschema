@@ -15,7 +15,7 @@
 import CoreData
 
 ///StorageContext consists of generic DB operations that are required with almost any DB implementation
-protocol StorageContext {
+public protocol StorageContext {
 
     func create<DBEntity: Storable>(_ model: DBEntity.Type) -> DBEntity?
 
@@ -30,4 +30,5 @@ protocol StorageContext {
     func deleteAll(_ model: Storable.Type) throws
 
     func fetch(_ model: Storable.Type, predicate: NSPredicate?, sorted: Sorted?) -> [Storable]
+
 }

@@ -14,6 +14,6 @@
 
 import Logging
 
-protocol SyncMetrics {
+public protocol SyncMetrics {
     func retrieveMetrics() -> Void
 }

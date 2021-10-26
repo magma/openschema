@@ -15,7 +15,7 @@
 import CoreData
 
 ///View controllers and the business (service) layer should not know about the database entities; the view controller should not know what a NSManagedObject is.
-protocol Mappable {
+public protocol Mappable {
     var objectID: NSManagedObjectID? { get set }
     init()
 }
