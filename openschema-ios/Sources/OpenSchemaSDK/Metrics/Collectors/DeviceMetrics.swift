@@ -15,8 +15,18 @@
 import Logging
 import UIKit
 
+extension Date {
+    var millisecondsSince1970:Int64 {
+        return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
+    }
+
+    init(milliseconds:Int64) {
+        self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
+    }
+}
+
 ///Collects metrics related to the device.
-public class DeviceMetrics {
+public class DeviceMetrics : SyncMetrics{
     
     private let Log : Logger = Logger(label: "DeviceMetrics")
     
@@ -39,21 +49,23 @@ public class DeviceMetrics {
         self.deviceModel = UIDevice.current.model
     }
     
-    ///Collects information about the device and generates a dictionary
-    /*public func retrieveMetrics() -> [String:String] {
-        Log.debug("MMA: Generating device metrics...")
-
-        var metricDictionary : [String:String] = [:]
+    public func retrieveMetrics() -> Void {
         
-        metricDictionary[METRIC_OS_VERSION] = UIDevice.current.systemVersion
-        metricDictionary[METRIC_MODEL] = UIDevice.current.model
-        metricDictionary[METRIC_MANUFACTURER] = "Apple Inc."
-        metricDictionary[METRIC_BRAND] = "Apple"
+        let deviceInfo = DeviceInfo()
+        deviceInfo.iOSVersion = iOSVersion
+        deviceInfo.deviceManufacturer = deviceManufacturer
+        deviceInfo.deviceBrand = deviceBrand
+        deviceInfo.deviceModel = deviceModel
+        deviceInfo.timestamp = Date.init(milliseconds: Date.now)
+        deviceInfo.offsetMinutes = 0
         
-        //TODO: Add debugging flag to enable detailed metrics
-        Log.debug(Logger.Message(stringLiteral: "MMA: Collected metrics:\n" + metricDictionary.description))
-
-        return metricDictionary
-    }*/
+        do {
+            try DBManager.shared.storyDao.save(object: deviceInfo)
+            Log.debug("Collected Device Information Succesfully!")
+            
+        } catch {
+            Log.error("Failed to Collect Device Information")
+        }
+    }
     
 }

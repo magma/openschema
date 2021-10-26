@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-class DBManager {
+class CoreDataController {
 
     // MARK: - Private properties
     private var storageContext: StorageContext?
 
     // MARK: - Public properties
-    static var shared = DBManager()
+    static var shared = CoreDataController()
     
     //Here your xdata classes
     lazy var deviceInfoDao = DeviceInfoDAO(storageContext: storageContextImpl())

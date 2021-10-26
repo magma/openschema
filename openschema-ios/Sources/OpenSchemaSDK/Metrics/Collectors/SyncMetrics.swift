@@ -12,13 +12,8 @@
  * limitations under the License.
  */
 
-import Foundation
+import Logging
 
-class DeviceInfo: DomainBaseEntity, Encodable {
-    var iOSVersion: String?
-    var deviceManufacturer: String?
-    var deviceModel: String?
-    var deviceBrand: String?
-    var timestamp: Date?
-    var offsetMinutes: Int32?
+protocol SyncMetrics {
+    func retrieveMetrics() -> Void
 }
