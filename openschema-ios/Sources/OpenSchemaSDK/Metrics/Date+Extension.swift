@@ -11,15 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+import Foundation
 
-import UIKit
-import CoreData
-
-public class DeviceInfoDAO: BaseDao<DeviceInfo, DeviceInfoEntity> {
-
-    func findLast() -> DeviceInfo? {
-        let filter = "Apple Inc."
-        return super.fetch(predicate: NSPredicate(format: "deviceManufacturer = %@", filter)).last
+public extension Date {
+    var millisecondsSince1970:Int64 {
+        return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
     }
-    
+
+    init(milliseconds:Int64) {
+        self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
+    }
 }

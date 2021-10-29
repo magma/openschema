@@ -16,16 +16,6 @@ import Logging
 import Dispatch
 import CoreData
 
-public extension Date {
-    var millisecondsSince1970:Int64 {
-        return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
-    }
-
-    init(milliseconds:Int64) {
-        self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
-    }
-}
-
 ///Class in charge of handling pushing metrics to the controller.
 public class MetricsManager {
     
@@ -42,15 +32,17 @@ public class MetricsManager {
 
     private func IsCoreDataEmpty() -> Bool {
      
-        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "DeviceInfoEntity")
-        let count = CoreDataController.shared.deviceInfoDao.count(request: request)
+        //Testing
+
             
-        print("CoreData has " + String(count) + " DeviceInfo Entities")
+        /*print("CoreData has " + String(count) + " DeviceInfo Entities")
         
         if (count == 0) {
             print("Database is empty")
             return true
-        }
+        }*/
+        
+        
  
         return false
     }
@@ -66,4 +58,27 @@ public class MetricsManager {
         }
     }
     
+    public func countObjects() -> Int {
+        CoreDataController.shared.deviceInfoDao.countObjects(entityName: "DeviceInfoEntity")
+    }
+    
+    public func fetchAllByEntity(entityName: String) -> [Storable] {
+        return CoreDataController.shared.deviceInfoDao.fetchAllByEntity(entityName: entityName)
+    }
+    
+    public func encodeDeviceInfo() {
+        let filter = "Apple Inc."
+        let deviceInfoObjects : [DeviceInfo] = CoreDataController.shared.deviceInfoDao.fetch(predicate: NSPredicate(format: "deviceManufacturer == %@",filter))
+        
+        print(deviceInfoObjects.count)
+    }
+    
+    public func deleteAllCoreData() {
+        do {
+            try CoreDataController.shared.deviceInfoDao.deleteAll()
+            
+        } catch {
+            
+        }
+    }
 }

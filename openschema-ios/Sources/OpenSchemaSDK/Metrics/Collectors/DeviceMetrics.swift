@@ -51,9 +51,11 @@ public class DeviceMetrics : SyncMetrics{
         
         do {
             try CoreDataController.shared.deviceInfoDao.save(object: deviceInfo)
+            print("Collected Device Information Succesfully!")
             Log.debug("Collected Device Information Succesfully!")
             
         } catch {
+            print("error")
             Log.error("Failed to Collect Device Information")
         }
     }

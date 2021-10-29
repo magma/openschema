@@ -14,11 +14,12 @@
 
 import Foundation
 
-public class DeviceInfo: DomainBaseEntity, Encodable {
+public class DeviceInfo: DomainBaseEntity, Codable {
     public var iOSVersion: String?
     public var deviceManufacturer: String?
     public var deviceModel: String?
     public var deviceBrand: String?
     public var timestamp: Int64?
     public var offsetMinutes: Int32?
+  
 }

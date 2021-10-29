@@ -14,14 +14,7 @@
 
 import CoreData
 
-///Core Data has some functions that are required in most cases, so let's add these methods as an extension of the StorageContext. CoreData entities are identified by NSManagedObjectID; we’ll need this method when fetching existing objects by ID from the database. You can also add other similar methods as needed.
+///Core Data has some functions that are required in most cases, so let's add these methods as an extension of the StorageContext.
 public extension StorageContext {
-
-    func objectWithObjectId<DBEntity: Storable>(objectId: NSManagedObjectID) -> DBEntity? {
-        return nil
-    }
-    
-    func countObjects(request : NSFetchRequest<NSFetchRequestResult>) -> Int? {
-        return nil
-    }
+    //TODO: Find if there is a way to extend protocols properly
 }

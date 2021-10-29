@@ -14,11 +14,8 @@
 
 import Foundation
 
-/**
- * DEPRECATED. Might get reused in the future for a more robust device registration into data lake.
- * Class in charge of registering the UE using a generated UUID and Key.
- */
-public class RegistrationManager {
+///This class Registers the device to the server.
+public class MetricPushManager {
     
     private let uuidManager = UUIDManager.shared
     private var serverAddress : String
@@ -28,30 +25,40 @@ public class RegistrationManager {
     private var requestAuthorityUsername : String
     private var requestAuthorityPassword : String
     
-    private let registerRequest : RegisterRequest
-    
-    public init(serverAddress : String, registerServerAuthCertPath : String, authorityRequiresAuthentication : Bool, requestAuthorityUsername : String, requestAuthorityPassword : String) {
+    public init(serverAddress : String, serverAuthCertPath : String, authorityRequiresAuthentication : Bool, requestAuthorityUsername : String, requestAuthorityPassword : String) {
         self.serverAddress = serverAddress
-        self.serverAuthCertPath = registerServerAuthCertPath
+        self.serverAuthCertPath = serverAuthCertPath
         self.authorityRequiresAuthentication = authorityRequiresAuthentication
         self.requestAuthorityUsername = requestAuthorityUsername
         self.requestAuthorityPassword = requestAuthorityPassword
-        self.registerRequest = RegisterRequest(uuid: uuidManager.getUUID())
-        
-        self.registerDevice()
     }
     
     /**
-    This function Registers the device UUID and Public Hardware Key to the server to be able to collect and push analytics to it.
+     /metrics/push
     */
-    public func registerDevice() {
+    public func pushMetric() {
 
         let Url = String(format: self.serverAddress)
         
         guard let serviceUrl = URL(string: Url) else { return }
-        
-        let parameters: [String: Any] = registerRequest.buildRegisterRequest()
-        
+        let parameters: [String: Any] = [
+              "metricName" : "openschemaDeviceInfo",
+              "metricsList": [
+                ["first": "osVersion", "second": "15"],
+                ["first": "model", "second": "iPhone"],
+                ["first": "manufacturer", "second": "Apple Inc"],
+                ["first": "brand", "second": "Apple Inc"]
+              ],
+              "timestamp": [
+                "timestamp": String(Date().millisecondsSince1970),
+                "offsetMinutes": String(0)
+              ],
+              "identifier":[
+                "clientType": "ios",
+                "uuid": self.uuidManager.getUUID()
+              ]
+        ]
+
         var request = URLRequest(url: serviceUrl)
         request.httpMethod = "POST"
         

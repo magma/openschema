@@ -12,14 +12,24 @@
  * limitations under the License.
  */
 
-import UIKit
-import CoreData
-
-public class DeviceInfoDAO: BaseDao<DeviceInfo, DeviceInfoEntity> {
-
-    func findLast() -> DeviceInfo? {
-        let filter = "Apple Inc."
-        return super.fetch(predicate: NSPredicate(format: "deviceManufacturer = %@", filter)).last
+/**
+* Class with the structure expected to be received in the OpenSchema's middle box registration API.
+*/
+public class RegisterRequest {
+    private var uuid : String
+    
+    public init(uuid : String) {
+        self.uuid = uuid
+        
+    }
+    
+    ///This function build the expected JSON request to push to register into the server. Edit as required.
+    public func buildRegisterRequest() -> [String: Any] {
+        
+        let request: [String: Any] = [
+            "uuid" : self.uuid
+        ]
+        return request
     }
     
 }

@@ -70,9 +70,14 @@ public class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
         return mapToDomain(dbEntities: dbEntities)
     }
     
-    public func count(request : NSFetchRequest<NSFetchRequestResult>) -> Int {
-        let countEntities = storageContext?.countObjects(request: request)
-        return countEntities ?? 0
+    public func countObjects(entityName : String) -> Int {
+        let count = storageContext?.countObjects(entityName: entityName)
+        return count ?? 0
+    }
+    
+    public func fetchAllByEntity(entityName : String) -> [Storable] {
+        let entities = storageContext?.fetchAllByEntity(entityName: entityName)
+        return entities!
     }
     
     private func mapToDomain<DBEntity: Storable>(dbEntity: DBEntity) -> DomainEntity {

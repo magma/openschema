@@ -14,7 +14,7 @@
 
 import CoreData
 
-///Implements all the required methods from theStorageContext protocol. To be noted here is that all the methods are expecting entities of theStorable type.
+///Implements all the required methods from the StorageContext protocol.
 public extension CoreDataStorageContext {
 
     func create<DBEntity: Storable>(_ model: DBEntity.Type) -> DBEntity? {
@@ -43,7 +43,7 @@ public extension CoreDataStorageContext {
     func fetch(_ model: Storable.Type, predicate: NSPredicate?, sorted: Sorted?) -> [Storable] {
         return []
     }
-
+    
     func objectWithObjectId<DBEntity: Storable>(objectId: NSManagedObjectID) -> DBEntity? {
         do {
             let result = try managedContext!.existingObject(with: objectId)
@@ -55,14 +55,36 @@ public extension CoreDataStorageContext {
         return nil
     }
     
-    func countObjects(request : NSFetchRequest<NSFetchRequestResult>) -> Int {
+    func countObjects(entityName : String) -> Int {
+        
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        
         do {
             let count = try managedContext!.count(for: request)
+            print("CoreDataStorageContext there are " + String(count) + " " + entityName + " Objects")
             return count
         } catch {
-            print("Can't count objects in database")
+            print("CoreDataStorageContext can't count object")
         }
         
-      return 0
+        return 0
     }
+    
+    func fetchAllByEntity(entityName : String) -> [Storable] {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+
+        do {
+            let entities = try managedContext!.fetch(fetchRequest) as! [Storable]
+            print("fetched something ")
+            print(entities)
+            return entities
+            
+        } catch {
+            print(error)
+        }
+        
+        return []
+        
+    }
+    
 }

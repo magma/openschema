@@ -12,16 +12,35 @@
  * limitations under the License.
  */
 
-import Foundation
+/**
+ * Class with the structure expected to be received in the OpenSchema's middle box registration API.
+ */
 
-private struct MetricsPushRequest : Codable {
-    public var metricName : String
-    public var metrisList : Array<Dictionary<String, String>>
-    public struct Identifier : Codable {
-        public var uuid : String
-        public var clientType : String = "ios"
+public class MetricsPushRequest {
+    private var metricName : String
+    private var metricList : [String : Any]
+    private var identifier : [String : Any]
+    private var timestamp : [String : Any]
+    
+    public init(metricName : String, metricList : [String : Any], identifier : [String : Any], timestamp : [String : Any]) {
+        self.metricName = metricName
+        self.metricList = metricList
+        self.identifier = identifier
+        self.timestamp = timestamp
+        
     }
-    public var identifier : Identifier
-    public var timestamp : Date
+    
+    ///This function build the expected JSON request to push to metrics server. Edit as required.
+    public func buildPushRequest() -> [String: Any] {
+        let request : [String: Any] = [
+            "metricName" : String(self.metricName),
+            "metricsList" : self.metricList,
+            "timestamp": self.timestamp,
+            "identifier": self.identifier
+            ]
+        
+        print(request)
+        return request
+    }
+    
 }
-
