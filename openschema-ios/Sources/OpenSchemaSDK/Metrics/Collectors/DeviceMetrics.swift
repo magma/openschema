@@ -22,25 +22,24 @@ public class DeviceMetrics : SyncMetrics{
     
     ///Metric name to be used for the collected information.
     public let METRIC_NAME : String = "openschemaDeviceInfo";
-    public let METRIC_OS_VERSION : String = "osVersion";
-    public let METRIC_MODEL : String = "model";
-    public let METRIC_MANUFACTURER : String = "manufacturer";
-    public let METRIC_BRAND : String = "brand";
-    public let METRIC_OPENSCHEMA_VERSION : String = "openschemaVersion"; //TODO: need to decide on a versioning scheme
+    private let METRIC_OS_VERSION : String = "osVersion";
+    private let METRIC_MODEL : String = "model";
+    private let METRIC_MANUFACTURER : String = "manufacturer";
+    private let METRIC_BRAND : String = "brand";
+    private let METRIC_OPENSCHEMA_VERSION : String = "openschemaVersion"; //TODO: need to decide on a versioning scheme
 
-    ///Metric name to be used for the collected information.
-    public let iOSVersion : String
-    public let deviceManufacturer : String = "Apple Inc."
-    public let deviceModel : String
-    public let deviceBrand : String = "Apple Inc."
+    ///Metric values.
+    private let iOSVersion : String
+    private let deviceManufacturer : String = "Apple Inc"
+    private let deviceModel : String
+    private let deviceBrand : String = "Apple Inc"
 
     public init() {
-        self.iOSVersion = UIDevice.current.systemVersion
+        self.iOSVersion = String((UIDevice.current.systemVersion as NSString).intValue) //UIDevice.current.systemVersion -> Gives string with like 15.0.2
         self.deviceModel = UIDevice.current.model
     }
     
-    public func retrieveMetrics() -> Void {
-        
+    public func storeInCoredata() -> Void {
         let deviceInfo = DeviceInfo()
         deviceInfo.iOSVersion = iOSVersion
         deviceInfo.deviceManufacturer = deviceManufacturer
@@ -51,13 +50,26 @@ public class DeviceMetrics : SyncMetrics{
         
         do {
             try CoreDataController.shared.deviceInfoDao.save(object: deviceInfo)
-            print("Collected Device Information Succesfully!")
             Log.debug("Collected Device Information Succesfully!")
             
         } catch {
-            print("error")
-            Log.error("Failed to Collect Device Information")
+            Log.error("Failed to Collect Device Information: \(error)")
         }
+    }
+    
+    public func retrieveMetrics() -> [[String : Any]] {
+        
+        //For current server version cast OS version to Int
+        let iosVersion : Int = Int(self.iOSVersion) ?? 0
+        
+        let json : [[String : Any]] = [
+            ["first" : METRIC_OS_VERSION , "second" : iosVersion ],
+            ["first" : METRIC_MODEL , "second" : self.deviceModel ],
+            ["first" : METRIC_MANUFACTURER , "second" : self.deviceManufacturer ],
+            ["first" : METRIC_BRAND , "second" : self.deviceBrand ]
+        ]
+        
+        return json
     }
     
 }

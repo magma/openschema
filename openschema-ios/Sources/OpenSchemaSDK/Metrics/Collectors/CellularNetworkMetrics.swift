@@ -57,4 +57,8 @@ public class CellularNetworkMetrics {
         }*/
 
     }
+    
+    public func getCellularDataUsage() -> UInt64{
+        return SystemDataUsage.wwanCompelete
+    }
 }

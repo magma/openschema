@@ -50,5 +50,16 @@ public class UUIDManager {
 
     ///This function overrides current stored UUID. Currently unused function. Might be useful if want to register device to magma with a new UUID without uninstalling app from device.
     public func setUUID(uuid : String) { self.uuid = uuid }
+    
+    ///This function retrieves the stored UUID and onverts it to Identifier expected by backend push metric request
+    public func getIdentifier() -> [String : Any] {
+        
+        let identifier = [
+            "clientType" : "ios",
+            "uuid" : uuid.lowercased()
+        ]
+        
+        return identifier
+    }
         
 }

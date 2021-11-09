@@ -13,16 +13,16 @@
  */
 
 /**
- * Class with the structure expected to be received in the OpenSchema's middle box registration API.
- */
+* Class with the structure expected to be received in the OpenSchema's middle box registration API.
+*/
 
 public class MetricsPushRequest {
     private var metricName : String
-    private var metricList : [String : Any]
+    private var metricList : [[String : Any]]
     private var identifier : [String : Any]
     private var timestamp : [String : Any]
     
-    public init(metricName : String, metricList : [String : Any], identifier : [String : Any], timestamp : [String : Any]) {
+    public init(metricName : String, metricList : [[String : Any]], identifier : [String : Any], timestamp : [String : Any]) {
         self.metricName = metricName
         self.metricList = metricList
         self.identifier = identifier
@@ -33,7 +33,7 @@ public class MetricsPushRequest {
     ///This function build the expected JSON request to push to metrics server. Edit as required.
     public func buildPushRequest() -> [String: Any] {
         let request : [String: Any] = [
-            "metricName" : String(self.metricName),
+            "metricName" : self.metricName,
             "metricsList" : self.metricList,
             "timestamp": self.timestamp,
             "identifier": self.identifier

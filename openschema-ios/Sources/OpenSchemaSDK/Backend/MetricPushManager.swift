@@ -34,30 +34,14 @@ public class MetricPushManager {
     }
     
     /**
-     /metrics/push
+        Push a Single metric to the server.
     */
-    public func pushMetric() {
+    public func pushMetric(metricsPushRequest : MetricsPushRequest) {
 
         let Url = String(format: self.serverAddress)
         
         guard let serviceUrl = URL(string: Url) else { return }
-        let parameters: [String: Any] = [
-              "metricName" : "openschemaDeviceInfo",
-              "metricsList": [
-                ["first": "osVersion", "second": "15"],
-                ["first": "model", "second": "iPhone"],
-                ["first": "manufacturer", "second": "Apple Inc"],
-                ["first": "brand", "second": "Apple Inc"]
-              ],
-              "timestamp": [
-                "timestamp": String(Date().millisecondsSince1970),
-                "offsetMinutes": String(0)
-              ],
-              "identifier":[
-                "clientType": "ios",
-                "uuid": self.uuidManager.getUUID()
-              ]
-        ]
+        let parameters: [String: Any] = metricsPushRequest.buildPushRequest()
 
         var request = URLRequest(url: serviceUrl)
         request.httpMethod = "POST"

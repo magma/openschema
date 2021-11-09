@@ -29,34 +29,6 @@ public class MetricsManager {
     public init() {
         CoreDataController.setup(storageContext: CoreDataStorageContext())
     }
-
-    private func IsCoreDataEmpty() -> Bool {
-     
-        //Testing
-
-            
-        /*print("CoreData has " + String(count) + " DeviceInfo Entities")
-        
-        if (count == 0) {
-            print("Database is empty")
-            return true
-        }*/
-        
-        
- 
-        return false
-    }
-    
-    ///This function is called after a succesful bootstrap to push available metrics to server
-    public func CollectAndPushMetrics() {
-        
-        if (!IsCoreDataEmpty())
-        {
-            
-        } else {
-            print("No Metrics stored to be collected")
-        }
-    }
     
     public func countObjects() -> Int {
         CoreDataController.shared.deviceInfoDao.countObjects(entityName: "DeviceInfoEntity")
@@ -64,13 +36,6 @@ public class MetricsManager {
     
     public func fetchAllByEntity(entityName: String) -> [Storable] {
         return CoreDataController.shared.deviceInfoDao.fetchAllByEntity(entityName: entityName)
-    }
-    
-    public func encodeDeviceInfo() {
-        let filter = "Apple Inc."
-        let deviceInfoObjects : [DeviceInfo] = CoreDataController.shared.deviceInfoDao.fetch(predicate: NSPredicate(format: "deviceManufacturer == %@",filter))
-        
-        print(deviceInfoObjects.count)
     }
     
     public func deleteAllCoreData() {

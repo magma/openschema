@@ -12,8 +12,9 @@
  * limitations under the License.
  */
 
-import Logging
-
+/**
+ * Protocol for metrics that can be collected synchronously.
+ */
 public protocol SyncMetrics {
-    func retrieveMetrics() -> Void
+    func retrieveMetrics() -> [[String : Any]]
 }

@@ -122,4 +122,8 @@ public class CellularNetworkInfo {
         return "newer type!"
     }
     
+    public func getCellularDataUsage() -> UInt64{
+        return SystemDataUsage.wwanCompelete
+    }
+    
 }

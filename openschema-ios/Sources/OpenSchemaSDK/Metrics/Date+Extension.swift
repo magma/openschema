@@ -22,4 +22,14 @@ public extension Date {
     init(milliseconds:Int64) {
         self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
     }
+    
+    func getTimestampForPushMetricRequest() -> [String : Any] {
+        
+        let timestamp = [
+            "offsetMinutes" : 0,
+            "timestamp" : Date().millisecondsSince1970
+        ]
+        
+        return timestamp
+    }
 }

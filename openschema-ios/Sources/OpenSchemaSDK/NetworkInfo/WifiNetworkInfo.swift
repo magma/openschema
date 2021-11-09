@@ -22,14 +22,15 @@ public class WifiNetworkInfo : ObservableObject {
     public static let shared = WifiNetworkInfo()
     @Published public private(set) var SSID = "Unable to get value"
     @Published public private(set) var BSSID = "Unable to get value"
-    
+    @Published public private(set) var signalStrength = 0.0
+
     private init(){
-        self.getWiFiInfo()
+        
     }
     
     //TODO: Implement beter version with as this is deprecated for iOS 14 onwards
     ///This function returns current SSID and BSSID info from the connnected Wi-Fi.
-    private func getWiFiInfo() {
+    public func getWiFiInfoOld() {
         if let interfaces = CNCopySupportedInterfaces() {
             for i in 0..<CFArrayGetCount(interfaces) {
                 let interfaceName: UnsafeRawPointer = CFArrayGetValueAtIndex(interfaces, i)
@@ -43,6 +44,29 @@ public class WifiNetworkInfo : ObservableObject {
                 }
             }
         }
+    }
+    
+    public func getWiFiInfo() {
+        if #available(iOS 14.0, *) {
+            NEHotspotNetwork.fetchCurrent(completionHandler: { (network) in
+                if let unwrappedNetwork = network {
+                    self.SSID = unwrappedNetwork.ssid
+                    self.BSSID = unwrappedNetwork.bssid
+                    self.signalStrength = unwrappedNetwork.signalStrength
+                    
+                    print("Retrieved SSID: " + self.SSID)
+                    
+                } else {
+                    print("No available network")
+                }
+            })
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+    
+    public func getWifiDataUsage() -> UInt64{
+        return SystemDataUsage.wifiCompelete
     }
     
     /*///This function returns current SSID and BSSID info from the connnected Wi-Fi.
