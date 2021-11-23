@@ -38,7 +38,6 @@ public class RegistrationManager {
         self.requestAuthorityPassword = requestAuthorityPassword
         self.registerRequest = RegisterRequest(uuid: uuidManager.getUUID())
         
-        self.registerDevice()
     }
     
     /**

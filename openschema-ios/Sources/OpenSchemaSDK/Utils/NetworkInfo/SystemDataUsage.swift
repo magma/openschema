@@ -15,12 +15,28 @@
 import Foundation
 
 extension SystemDataUsage {
-
-    public static var wifiCompelete: UInt64 {
-        return SystemDataUsage.getDataUsage().wifiSent + SystemDataUsage.getDataUsage().wifiReceived
+    
+    public static var wifiTxBytes: UInt64 {
+        return SystemDataUsage.getDataUsage().wifiSent
+    }
+    
+    public static var wifiRxBytes: UInt64 {
+        return SystemDataUsage.getDataUsage().wifiReceived
     }
 
-    public static var wwanCompelete: UInt64 {
+    public static var wifiComplete: UInt64 {
+        return SystemDataUsage.getDataUsage().wifiSent + SystemDataUsage.getDataUsage().wifiReceived
+    }
+    
+    public static var wwanTxBytes: UInt64 {
+        return SystemDataUsage.getDataUsage().wirelessWanDataSent
+    }
+    
+    public static var wwanRxBytes: UInt64 {
+        return SystemDataUsage.getDataUsage().wirelessWanDataReceived
+    }
+    
+    public static var wwanComplete: UInt64 {
         return SystemDataUsage.getDataUsage().wirelessWanDataSent + SystemDataUsage.getDataUsage().wirelessWanDataReceived
     }
 

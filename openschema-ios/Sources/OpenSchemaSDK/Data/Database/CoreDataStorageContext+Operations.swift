@@ -87,4 +87,24 @@ public extension CoreDataStorageContext {
         
     }
     
+    func fetchLastItem(entityName : String, dateItemName : String) -> Storable? {
+        
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: dateItemName, ascending: false)]
+        fetchRequest.fetchLimit = 1
+        
+        do {
+            let entities = try managedContext!.fetch(fetchRequest) as! [Storable]
+            print("Fetched Last item in " + entityName)
+            print(entities.last)
+            return entities.last
+            
+        } catch {
+            print(error)
+        }
+        
+        return nil
+
+    }
+    
 }

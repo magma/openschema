@@ -15,6 +15,7 @@
 import Foundation
 import NetworkExtension
 import SystemConfiguration.CaptiveNetwork
+import BackgroundTasks
 
 ///This class retrieves currently connected Wi-Fi information.
 public class WifiNetworkInfo : ObservableObject {
@@ -28,7 +29,7 @@ public class WifiNetworkInfo : ObservableObject {
         
     }
     
-    //TODO: Implement beter version with as this is deprecated for iOS 14 onwards
+    //TODO: Implement better version with as this is deprecated for iOS 14 onwards
     ///This function returns current SSID and BSSID info from the connnected Wi-Fi.
     public func getWiFiInfoOld() {
         if let interfaces = CNCopySupportedInterfaces() {
@@ -61,43 +62,21 @@ public class WifiNetworkInfo : ObservableObject {
                 }
             })
         } else {
-            // Fallback on earlier versions
+            self.getWiFiInfoOld()
         }
+    }
+    
+    public func getTxBytes() -> UInt64 {
+        return SystemDataUsage.wifiTxBytes
+    }
+    
+    public func getRxBytes() -> UInt64 {
+        return SystemDataUsage.wifiRxBytes
     }
     
     public func getWifiDataUsage() -> UInt64{
-        return SystemDataUsage.wifiCompelete
+        return SystemDataUsage.wifiComplete
     }
-    
-    /*///This function returns current SSID and BSSID info from the connnected Wi-Fi.
-    private func getWiFiInfo() {
-        guard let interfaces = CNCopySupportedInterfaces() as? [String] else {
-            print("No Wi-Fi interfaces found!")
-            return
-        }
-        
-        for interface in interfaces {
-            
-            print("Number of Wi-Fi interfaces: \(interfaces.count)")
-            
-            guard let interfaceInfo = CNCopyCurrentNetworkInfo(interface as CFString) as NSDictionary? else {
-                print("Wi-Fi Interface info Failed!")
-                return
-            }
-            guard let ssid = interfaceInfo[kCNNetworkInfoKeySSID as String] as? String else {
-                print("Wi-Fi SSID could not be retrieved")
-                return
-            }
-            guard let bssid = interfaceInfo[kCNNetworkInfoKeyBSSID as String] as? String else {
-                print("Wi-Fi BSSID could not be retrieved")
-                return
-            }
-            
-            self.SSID = ssid
-            self.BSSID = bssid
-            break
-        }
-    }*/
     
     ///Calls fetchSSIDInfo used to update values on Wi-Fi change. For example to refresh UI.
     public func updateWifiNetworkInfo() -> Void {

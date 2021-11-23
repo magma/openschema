@@ -37,5 +37,7 @@ public protocol StorageContext {
     func countObjects(entityName: String) -> Int
     
     func fetchAllByEntity(entityName : String) -> [Storable]
+    
+    func fetchLastItem(entityName : String, dateItemName : String) -> Storable?
 
 }

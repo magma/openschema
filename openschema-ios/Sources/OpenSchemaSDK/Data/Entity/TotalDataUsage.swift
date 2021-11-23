@@ -12,20 +12,12 @@
  * limitations under the License.
  */
 
-import CoreData
-
-///Base entity for all of my domain entities. All domain entities should inherit from this DomainBaseEntity
-public class DomainBaseEntity: Mappable , Hashable {
-    public static func == (lhs: DomainBaseEntity, rhs: DomainBaseEntity) -> Bool {
-        lhs.objectID == rhs.objectID
-    }
+public class TotalDataUsage: DomainBaseEntity {
     
-    public func hash(into hasher: inout Hasher) {
-            hasher.combine(objectID)
-        }
-    
-    public var objectID: NSManagedObjectID?
+    public var cellularRxBytes: Int64?
+    public var cellularTxBytes: Int64?
+    public var wifiRxBytes: Int64?
+    public var wifiTxBytes: Int64?
+    public var timestamp: Int64?
 
-    public required init() {
-    }
 }

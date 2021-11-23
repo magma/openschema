@@ -25,18 +25,20 @@ public class MetricsManager {
     private let cellularNetworkMetrics : CellularNetworkMetrics = CellularNetworkMetrics()
     private let wifiNetworkMetrics : WifiNetworkMetrics = WifiNetworkMetrics()
     private let deviceMetrics : DeviceMetrics = DeviceMetrics()
+    private let networkHourlyMetrics : NetworkHourlyMetrics = NetworkHourlyMetrics()
 
     public init() {
         CoreDataController.setup(storageContext: CoreDataStorageContext())
     }
     
-    public func countObjects() -> Int {
-        CoreDataController.shared.deviceInfoDao.countObjects(entityName: "DeviceInfoEntity")
+    public func countObjects(entityName : String) -> Int {
+        CoreDataController.shared.deviceInfoDao.countObjects(entityName: entityName)
     }
     
-    public func fetchAllByEntity(entityName: String) -> [Storable] {
+    public func fetchAllByEntity(entityName: String) -> [DeviceInfo] {
         return CoreDataController.shared.deviceInfoDao.fetchAllByEntity(entityName: entityName)
     }
+    
     
     public func deleteAllCoreData() {
         do {

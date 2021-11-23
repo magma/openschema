@@ -30,18 +30,8 @@ public class WifiNetworkMetrics {
         
     }
 
-    ///Using CreateGRPCStringMetric it collects the values from Wi-Fi connection  and return a Magma_Orc8r_MetricsContainer with them.
     public func CollectWifiNetworkInfoMetrics() {
-        
-        /*var labelContainer : [(String, String)] = [(String, String)]()
-        labelContainer.append((self.ssidLabelName, self.wifiNetworkinfo.SSID))
-        labelContainer.append((self.bssidLabelName, self.wifiNetworkinfo.BSSID))
-        
-        if(customMetrics.CreateSimpleMetric(familyName: wifiNetworkInfoFamilyName, LabelContainer: labelContainer, metricValue: 0)) {
-            print("Wi-fi Metrics Stored which SSID is: \(self.wifiNetworkinfo.SSID)")
-        } else {
-            print("Failed to Store Wi-Fi Metrics")
-        }*/
+
     }
     
 }

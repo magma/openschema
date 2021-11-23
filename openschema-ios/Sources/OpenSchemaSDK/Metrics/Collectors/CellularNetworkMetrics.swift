@@ -39,26 +39,5 @@ public class CellularNetworkMetrics {
     public init(){
         
     }
-    
-    ///Using CreateGRPCStringMetric it collects the values from cellular connection  and return a Magma_Orc8r_MetricsContainer with them
-    public func CollectCellularNetworkInfoMetrics() {
-        
-        /*var labelContainer : [(String, String)] = [(String, String)]()
-        labelContainer.append((self.carrierNameLabelName, self.cellularNetworkInfo.getCarrierName()))
-        labelContainer.append((self.mobileNetworkCodeLabelName, self.cellularNetworkInfo.getMobileNetworkCode()))
-        labelContainer.append((self.mobileCountryCodeLabelName, self.cellularNetworkInfo.getMobileCountryCode()))
-        labelContainer.append((self.isoCountryCodeLabelName, self.cellularNetworkInfo.getIsoCountryCode()))
-        labelContainer.append((self.radioTechnologyLabelName, self.cellularNetworkInfo.getCurrentRadioAccessTechnology()))
-        
-        if (customMetrics.CreateSimpleMetric(familyName: self.cellularNetworkInfoFamilyName, LabelContainer: labelContainer, metricValue: 0.0)) {
-            print("Cellular Metrics Data Stored Succesfully")
-        } else {
-            print("Cellular Metrics was not stored")
-        }*/
 
-    }
-    
-    public func getCellularDataUsage() -> UInt64{
-        return SystemDataUsage.wwanCompelete
-    }
 }

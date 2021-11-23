@@ -75,9 +75,14 @@ public class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
         return count ?? 0
     }
     
-    public func fetchAllByEntity(entityName : String) -> [Storable] {
-        let entities = storageContext?.fetchAllByEntity(entityName: entityName)
-        return entities!
+    public func fetchAllByEntity(entityName : String) -> [DomainEntity] {
+        let entities = storageContext?.fetchAllByEntity(entityName: entityName) as? [DBEntity]
+        return mapToDomain(dbEntities: entities)
+    }
+    
+    public func fetchLastItem(entityName : String, dateItemName : String) -> DBEntity? {
+        let entity = storageContext?.fetchLastItem(entityName: entityName, dateItemName: dateItemName) as? DBEntity
+        return entity
     }
     
     private func mapToDomain<DBEntity: Storable>(dbEntity: DBEntity) -> DomainEntity {

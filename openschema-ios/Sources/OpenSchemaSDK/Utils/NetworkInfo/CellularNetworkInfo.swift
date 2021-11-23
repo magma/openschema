@@ -122,8 +122,16 @@ public class CellularNetworkInfo {
         return "newer type!"
     }
     
+    public func getTxBytes() -> UInt64 {
+        return SystemDataUsage.wwanTxBytes
+    }
+    
+    public func getRxBytes() -> UInt64 {
+        return SystemDataUsage.wwanRxBytes
+    }
+    
     public func getCellularDataUsage() -> UInt64{
-        return SystemDataUsage.wwanCompelete
+        return SystemDataUsage.wwanComplete
     }
     
 }

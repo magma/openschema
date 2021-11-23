@@ -16,7 +16,7 @@ import CoreData
 
 ///CoreDataStorageContext is the implementation of the StorageContext.
 public class CoreDataStorageContext: StorageContext {
-    
+
     var managedContext: NSManagedObjectContext?
 
     public required init(configuration: ConfigurationType = .basic(identifier: "AnalyticsModel")) {

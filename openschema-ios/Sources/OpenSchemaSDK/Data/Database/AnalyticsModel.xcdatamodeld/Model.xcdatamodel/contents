@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19461" systemVersion="20G165" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19461" systemVersion="21A559" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="DeviceInfoEntity" representedClassName="DeviceInfoEntity" syncable="YES" codeGenerationType="class">
         <attribute name="deviceBrand" optional="YES" attributeType="String"/>
         <attribute name="deviceManufacturer" optional="YES" attributeType="String"/>
@@ -8,7 +8,24 @@
         <attribute name="offsetMinutes" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
+    <entity name="HourlyDataEntity" representedClassName="HourlyDataEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="offsetMinutes" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="rxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="segmentStartTime" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="transportType" optional="YES" attributeType="String"/>
+        <attribute name="txBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="TotalDataUsageEntity" representedClassName="TotalDataUsageEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="cellularRxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="cellularTxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="wifiRxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="wifiTxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
     <elements>
         <element name="DeviceInfoEntity" positionX="-54" positionY="18" width="128" height="119"/>
+        <element name="HourlyDataEntity" positionX="-54" positionY="63" width="128" height="119"/>
+        <element name="TotalDataUsageEntity" positionX="-54" positionY="90" width="128" height="104"/>
     </elements>
 </model>
