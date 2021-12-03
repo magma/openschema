@@ -28,6 +28,10 @@ public class MetricsManager {
     private let networkHourlyMetrics : NetworkHourlyMetrics = NetworkHourlyMetrics()
 
     public init() {
+        
+    }
+    
+    public func initCoreData() {
         CoreDataController.setup(storageContext: CoreDataStorageContext())
     }
     
