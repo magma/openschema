@@ -16,16 +16,8 @@
         <attribute name="transportType" optional="YES" attributeType="String"/>
         <attribute name="txBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
-    <entity name="TotalDataUsageEntity" representedClassName="TotalDataUsageEntity" syncable="YES" codeGenerationType="class">
-        <attribute name="cellularRxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="cellularTxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="wifiRxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="wifiTxBytes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-    </entity>
     <elements>
         <element name="DeviceInfoEntity" positionX="-54" positionY="18" width="128" height="119"/>
         <element name="HourlyDataEntity" positionX="-54" positionY="63" width="128" height="119"/>
-        <element name="TotalDataUsageEntity" positionX="-54" positionY="90" width="128" height="104"/>
     </elements>
 </model>
