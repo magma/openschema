@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 
-import UIKit
 import CoreData
 
 public class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
@@ -65,14 +64,20 @@ public class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
         try storageContext?.deleteAll(DBEntity.self)
     }
 
-    public func fetch(predicate: NSPredicate?, sorted: Sorted? = nil) -> [DomainEntity] {
-        let dbEntities = storageContext?.fetch(DBEntity.self, predicate: predicate, sorted: sorted) as? [DBEntity]
+    public func fetch(predicate: NSPredicate?, sorted: Sorted? = nil, entityName : String) -> [DomainEntity] {
+        let dbEntities = storageContext?.fetch(DBEntity.self, predicate: predicate, sorted: sorted, entityName : entityName) as? [DBEntity]
         return mapToDomain(dbEntities: dbEntities)
     }
     
     public func countObjects(entityName : String) -> Int {
         let count = storageContext?.countObjects(entityName: entityName)
         return count ?? 0
+    }
+    
+    public func deleteAllByEntity(entityName : String) throws {
+        do {
+            try storageContext?.deleteAllByEntity(entityName: entityName)
+        }
     }
     
     public func fetchAllByEntity(entityName : String) -> [DomainEntity] {
@@ -82,6 +87,11 @@ public class BaseDao<DomainEntity: Mappable, DBEntity: Storable> {
     
     public func fetchLastItem(entityName : String, dateItemName : String) -> DBEntity? {
         let entity = storageContext?.fetchLastItem(entityName: entityName, dateItemName: dateItemName) as? DBEntity
+        return entity
+    }
+    
+    public func fetchFirstItem(entityName : String) -> DBEntity? {
+        let entity = storageContext?.fetchFirstItem(entityName: entityName) as? DBEntity
         return entity
     }
     

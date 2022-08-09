@@ -24,6 +24,7 @@ public class CoreDataController {
     public lazy var deviceInfoDao = DeviceInfoDAO(storageContext: storageContextImpl())
     public lazy var hourlyDataDao = HourlyDataDAO(storageContext: storageContextImpl())
     public lazy var totalDataUsageDao = TotalDataUsageDAO(storageContext: storageContextImpl())
+    public lazy var totalHourlyDataUsageDao = TotalHourlyDataUsageDAO(storageContext: storageContextImpl())
 
     private init() {
     }

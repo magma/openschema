@@ -42,34 +42,35 @@ public class NetworkHourlyMetrics : SyncMetrics{
         self.segmentStartTime = Date().millisecondsSince1970
     }
     
-    public func storeInCoredata() -> Void {
-        
-        self.calculateHourlyUsage()
-        
-        let hourlyData = HourlyData()
-        hourlyData.transportType = self.transportType
-        hourlyData.rxBytes = self.rxBytes
-        hourlyData.txBytes = self.txBytes
-        hourlyData.segmentStartTime = Date().millisecondsSince1970
-
-        do {
-            try CoreDataController.shared.hourlyDataDao.save(object: hourlyData)
-            Log.debug("Collected Network Hourly Data Succesfully!")
-            
-        } catch {
-            Log.error("Failed to Collect Network Hourly Data: \(error)")
+    //Might be needed for a more robust data usage
+    private func bootTime() -> Date? {
+        var tv = timeval()
+        var tvSize = MemoryLayout<timeval>.size
+        let err = sysctlbyname("kern.boottime", &tv, &tvSize, nil, 0);
+        guard err == 0, tvSize == MemoryLayout<timeval>.size else {
+            return nil
         }
+        return Date(timeIntervalSince1970: Double(tv.tv_sec) + Double(tv.tv_usec) / 1_000_000.0)
     }
-    
+
     private func storeTotalDataUsage() -> Void {
+        
+        let totalWifiDataUsage = Int64(wifiNetworkInfo.getWifiDataUsage())
+        let totalCellularDataUsage = Int64(cellularNetworkInfo.getCellularDataUsage())
+        
         let totalDataUsage : TotalDataUsage = TotalDataUsage()
-        totalDataUsage.wifiRxBytes = Int64(wifiNetworkInfo.getRxBytes())
-        totalDataUsage.wifiTxBytes = Int64(wifiNetworkInfo.getTxBytes())
-        totalDataUsage.cellularRxBytes = Int64(cellularNetworkInfo.getRxBytes())
-        totalDataUsage.cellularTxBytes = Int64(cellularNetworkInfo.getTxBytes())
-        totalDataUsage.timestamp = Date().millisecondsSince1970
+        totalDataUsage.eventWifiDataUsage = 0
+        totalDataUsage.eventCellularDataUsage = 0
+        let firstTimestamp = Date().millisecondsSince1970
+        totalDataUsage.startTimestamp = firstTimestamp
+        totalDataUsage.endTimestamp = firstTimestamp
+        totalDataUsage.offsetMinutes = Int32(TimeZone.current.secondsFromGMT() * 1000)
+        totalDataUsage.eventDuration = 0
         
-        
+        //TODO: might need to remove this in the future
+        totalDataUsage.totalWifiDataUsage = totalWifiDataUsage
+        totalDataUsage.totalCellularDataUsage = totalCellularDataUsage
+    
         do {
             try CoreDataController.shared.totalDataUsageDao.save(object: totalDataUsage)
             print("Collected Total Data Usage Succesfully!")
@@ -79,22 +80,52 @@ public class NetworkHourlyMetrics : SyncMetrics{
         }
     }
     
-    private func calculateHourlyUsage() -> Void {
+    private func storeTotalDataUsage(previousTimestamp: Int64, previousTotalWifiUsage : Int64, previousTotalCellularUsage: Int64) -> Void {
         
-        guard let previousTotalUsage = CoreDataController.shared.totalDataUsageDao.fetchLastItem(entityName: "TotalDataUsageEntity", dateItemName: "timestamp") else {
-            self.rxBytes = 0
-            self.txBytes = 0
-            print("Error This means there was no total usage")
+        let totalWifiDataUsage = Int64(wifiNetworkInfo.getWifiDataUsage())
+        let totalCellularDataUsage = Int64(cellularNetworkInfo.getCellularDataUsage())
+        
+        let totalDataUsage : TotalDataUsage = TotalDataUsage()
+        
+        //Handle phone restart
+        //TODO: maybe need to know phone uptime possible issue time zone change? https://developer.apple.com/forums/thread/101874
+        if(totalWifiDataUsage < previousTotalWifiUsage || totalCellularDataUsage < previousTotalCellularUsage)
+        {
+            totalDataUsage.eventWifiDataUsage = totalWifiDataUsage
+            totalDataUsage.eventCellularDataUsage = totalCellularDataUsage
+        }
+        else {
+            //Default case where phone has not rebooted and API not reset
+            totalDataUsage.eventWifiDataUsage = totalWifiDataUsage - previousTotalWifiUsage
+            totalDataUsage.eventCellularDataUsage = totalCellularDataUsage - previousTotalCellularUsage
+        }
+        totalDataUsage.startTimestamp = previousTimestamp
+        totalDataUsage.endTimestamp = Date().millisecondsSince1970
+        totalDataUsage.offsetMinutes = Int32(TimeZone.current.secondsFromGMT() * 1000)
+        totalDataUsage.eventDuration = Int32(totalDataUsage.endTimestamp! - previousTimestamp)
+        
+        //TODO: might need to remove this in the future
+        totalDataUsage.totalWifiDataUsage = totalWifiDataUsage
+        totalDataUsage.totalCellularDataUsage = totalCellularDataUsage
+    
+        do {
+            try CoreDataController.shared.totalDataUsageDao.save(object: totalDataUsage)
+            print("Collected Total Data Usage Succesfully!")
+            
+        } catch {
+            print("Failed to Collect Data Usage: \(error)")
+        }
+    }
+    
+    public func calculateHourlyUsage() -> Void {
+        
+        guard let previousTotalUsage = CoreDataController.shared.totalDataUsageDao.fetchLastItem(entityName: "TotalDataUsageEntity", dateItemName: "endTimestamp") else {
+            self.storeTotalDataUsage()
+            print("This means there was no total usage or that this is first run")
             return
         }
-        
-        let hourRxBytes = Int64(wifiNetworkInfo.getRxBytes()) - previousTotalUsage.wifiRxBytes
-        let hourTxBytes = Int64(wifiNetworkInfo.getTxBytes()) - previousTotalUsage.wifiTxBytes
-        
-        self.rxBytes = hourRxBytes
-        self.txBytes = hourTxBytes
-        
-        self.storeTotalDataUsage()
+ 
+        self.storeTotalDataUsage(previousTimestamp: previousTotalUsage.endTimestamp, previousTotalWifiUsage: previousTotalUsage.totalWifiDataUsage, previousTotalCellularUsage: previousTotalUsage.totalCellularDataUsage)
 
     }
     

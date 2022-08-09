@@ -29,15 +29,19 @@ public protocol StorageContext {
 
     func deleteAll(_ model: Storable.Type) throws
 
-    func fetch(_ model: Storable.Type, predicate: NSPredicate?, sorted: Sorted?) -> [Storable]
+    func fetch(_ model: Storable.Type, predicate: NSPredicate?, sorted: Sorted?, entityName : String) -> [Storable]
     
     //Coredata Only should be moved to StorageContext extension but currently running into issue like this one https://stackoverflow.com/questions/44703205/swift-protocol-extension-method-is-called-instead-of-method-implemented-in-subcl
     func objectWithObjectId<DBEntity: Storable>(objectId: NSManagedObjectID) -> DBEntity?
     
     func countObjects(entityName: String) -> Int
     
+    func deleteAllByEntity(entityName : String) throws
+    
     func fetchAllByEntity(entityName : String) -> [Storable]
     
     func fetchLastItem(entityName : String, dateItemName : String) -> Storable?
+    
+    func fetchFirstItem(entityName : String) -> Storable?
 
 }

@@ -12,13 +12,12 @@
  * limitations under the License.
  */
 
-import CoreData
-
-public class DeviceInfoDAO: BaseDao<DeviceInfo, DeviceInfoEntity> {
-
-    /*func findLast() -> DeviceInfo? {
-        let filter = "Apple Inc."
-        return super.fetch(predicate: NSPredicate(format: "deviceManufacturer = %@", filter)).last
-    }*/
+public class TotalHourlyDataUsage: DomainBaseEntity {
     
+    public var startTimestamp : Int64?
+    public var endTimestamp : Int64?
+    public var hourlyCellularDataUsage : Int64?
+    public var hourlyWifiDataUsage : Int64?
+    public var hour : Int32?
+
 }

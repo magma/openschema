@@ -15,16 +15,16 @@
 import Foundation
 
 ///Class in charge of handling all the custom self-signed certificates used in the metrics agent flow. This class pins the server certificate to verify the server origin.
-class NSURLSessionPinningDelegate : NSObject, URLSessionDelegate {
+public class NSURLSessionPinningDelegate : NSObject, URLSessionDelegate {
     
     private var serverAuthCertPath : String
     
-    init(serverAuthCertPath : String) {
+    public init(serverAuthCertPath : String) {
         self.serverAuthCertPath = serverAuthCertPath
     }
     
     ///This extends the urlSession function to verify server identity
-    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
 
         print("*** received SESSION challenge...\(challenge)")
         let trust = challenge.protectionSpace.serverTrust!

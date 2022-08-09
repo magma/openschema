@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 
-import UIKit
 import CoreData
 
 public class HourlyDataDAO: BaseDao<HourlyData, HourlyDataEntity> {

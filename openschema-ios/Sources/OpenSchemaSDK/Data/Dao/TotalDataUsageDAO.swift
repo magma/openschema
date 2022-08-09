@@ -14,11 +14,6 @@
 
 import CoreData
 
-public class DeviceInfoDAO: BaseDao<DeviceInfo, DeviceInfoEntity> {
+public class TotalDataUsageDAO: BaseDao<TotalDataUsage, TotalDataUsageEntity> {
 
-    /*func findLast() -> DeviceInfo? {
-        let filter = "Apple Inc."
-        return super.fetch(predicate: NSPredicate(format: "deviceManufacturer = %@", filter)).last
-    }*/
-    
 }

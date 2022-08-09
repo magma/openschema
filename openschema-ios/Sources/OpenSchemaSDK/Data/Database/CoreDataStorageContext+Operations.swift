@@ -26,9 +26,21 @@ public extension CoreDataStorageContext {
     }
 
     func save(object: Storable) throws {
+        do {
+            try self.managedContext?.save()
+        } catch {
+            print("Failed to Save data")
+        }
     }
 
     func saveAll(objects: [Storable]) throws {
+        do {
+            for object in objects {
+                try save(object: object)
+            }
+        } catch {
+            print("Failed to save objects")
+        }
     }
 
     func update(object: Storable) throws {
@@ -38,9 +50,31 @@ public extension CoreDataStorageContext {
     }
 
     func deleteAll(_ model: Storable.Type) throws {
+        /*guard let url = persistentContainer.persistentStoreDescriptions.first?.url else { return }
+        
+        self.managedContext?.persis
+
+         do {
+             try self.managedContext?.persistentStoreCoordinator.destroyPersistentStore(at:url, ofType: model, options: nil)
+             try self.managedContext?.persistentStoreCoordinator.addPersistentStore(ofType: model, configurationName: nil, at: url, options: nil)
+         } catch {
+             print("Attempted to clear persistent store: " + error.localizedDescription)
+         }*/
     }
 
-    func fetch(_ model: Storable.Type, predicate: NSPredicate?, sorted: Sorted?) -> [Storable] {
+    func fetch(_ model: Storable.Type, predicate: NSPredicate?, sorted: Sorted?, entityName : String) -> [Storable] {
+        
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        request.predicate = predicate
+
+        do {
+            let entities = try managedContext!.fetch(request) as! [Storable]
+            print("Fetched items filtered by predicate with EntityName: \(entityName)")
+            return entities
+        } catch {
+            print(error)
+        }
+        
         return []
     }
     
@@ -70,13 +104,25 @@ public extension CoreDataStorageContext {
         return 0
     }
     
+    func deleteAllByEntity(entityName : String) throws {
+        let fetchRequest : NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: entityName)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+        do {
+            try managedContext?.execute(deleteRequest)
+            print("Deleted elements with entity name \(entityName)")
+        } catch let error as NSError {
+            // TODO: handle the error
+            print("Failed to delete elements with entity name \(entityName) with \(error)")
+        }
+    }
+    
     func fetchAllByEntity(entityName : String) -> [Storable] {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
 
         do {
             let entities = try managedContext!.fetch(fetchRequest) as! [Storable]
             print("fetched something ")
-            print(entities)
             return entities
             
         } catch {
@@ -95,9 +141,24 @@ public extension CoreDataStorageContext {
         
         do {
             let entities = try managedContext!.fetch(fetchRequest) as! [Storable]
-            print("Fetched Last item in " + entityName)
-            print(entities.last)
             return entities.last
+            
+        } catch {
+            print(error)
+        }
+        
+        return nil
+
+    }
+    
+    func fetchFirstItem(entityName : String) -> Storable? {
+        
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        fetchRequest.fetchLimit = 1
+        
+        do {
+            let entities = try managedContext!.fetch(fetchRequest) as! [Storable]
+            return entities.first
             
         } catch {
             print(error)
